@@ -1,0 +1,3 @@
+include *.txt *.xml *.py
+recursive-include src *.py
+prune build
