@@ -26,7 +26,7 @@ import hconfig
 DEFAULT_MAKEFILE_NAME = 'hamakefile.xml'
 
 def usage():
-    print "Usage: hamake.py [--dry-run] [-j N] [--verbose] [--test] [-f hamakefile.xml] [<target> ...]"
+    print "Usage: hamake [--dry-run] [-j N] [--verbose] [--test] [-f hamakefile.xml] [<target> ...]"
 
 
 class HMake:

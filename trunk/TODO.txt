@@ -5,3 +5,4 @@
 * DFS COPY, MOVE commands
 * Allow to run external any script/command
 * Allow to specify log file in hamkefile
+* Handle files removal in MAP tasks.
