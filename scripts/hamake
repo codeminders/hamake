@@ -3,7 +3,7 @@
 """
 Hadoop Make Execution script
 
-@author Vadim Zaliva <lord@codeminders.com>
+@author Vadim Zaliva <lord@crocodile.org>
 """
 
 from hamake import hamake

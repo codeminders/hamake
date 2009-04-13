@@ -1,7 +1,7 @@
 """
 HAMake command execution related classes
 
-@author Vadim Zaliva <lord@codeminders.com>
+@author Vadim Zaliva <lord@crocodile.org>
 """
 
 from utils import *

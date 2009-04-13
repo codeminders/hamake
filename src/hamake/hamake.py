@@ -1,7 +1,7 @@
 """
 Hadoop Make
 
-@author Vadim Zaliva <lord@codeminders.com>
+@author Vadim Zaliva <lord@crocodile.org>
 """
 
 from thrift.transport import TTransport

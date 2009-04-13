@@ -1,7 +1,7 @@
 """
 HAMake tasks classes
 
-@author Vadim Zaliva <lord@codeminders.com>
+@author Vadim Zaliva <lord@crocodile.org>
 """
 
 from __future__ import with_statement # 2.5 only
