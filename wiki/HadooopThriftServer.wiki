@@ -1,0 +1,7 @@
+== HadooopThriftServer ==
+
+'hamake' makes use of HadooopThriftServer to access HDFS. HadooopThriftServer is part of Hadoop-0.19 distribution but could be easily ported to Hadoop-0.18. We provide pre-built version for your convenience in download area. It is built from sources taken from Hadoop-0.19.1  source distribution towards hadoop 0.18.3.
+
+If could be started with _HadooopThriftServer.sh_ script. (please adjust _DAEMON_HOME_ in the script to your installation location)
+
+(this is not official distribution, just a convenience package for HAMAKE project)
