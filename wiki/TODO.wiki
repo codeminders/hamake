@@ -3,7 +3,7 @@ TODO List for hamake project
 
   * Option to stop MAP task if one or certain number file processing failures (now it tries to process all files)
   * File-to-file MAP tasks
-  * Allow to control JobConf parameters per task.
+  * Allow to control {{{JobConf}}} parameters per task.
   * DFS COPY, MOVE commands
   * Allow to run external any script/command
   * Allow to specify log file in hamkefile
