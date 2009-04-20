@@ -100,11 +100,21 @@ class HMake:
         tx = dom.getElementsByTagName("map")
         if tx:
             for t in tx:
+                dattr = getOptionalAttribute(t,"disabled",props)
+                if dattr!=None and (dattr.lower()=='yes' or dattr.lower()=='true'):
+                    if hconfig.verbose:
+                        print "Ignoring disabled task %s" % getOptionalAttribute(t,"name",props)
+                    continue
                 task = MapTask.fromDOM(t,props)
                 tasks.append(task)
         tx = dom.getElementsByTagName("reduce")
         if tx:
             for t in tx:
+                dattr = getOptionalAttribute(t,"disabled",props)
+                if dattr!=None and (dattr.lower()=='yes' or dattr.lower()=='true'):
+                    if hconfig.verbose:
+                        print "Ignoring disabled task %s" % getOptionalAttribute(t,"name",props)
+                    continue
                 task = ReduceTask.fromDOM(t,props)
                 tasks.append(task)
         return tasks
