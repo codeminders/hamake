@@ -1,3 +1,10 @@
+2009-04-21  Vadim Zaliva  <lord@deco.local>
+
+	* src/hamake/tasks.py: Cleaned up parameters types for Pig and
+	Hadoop tasks. Params elements are now: 'pigparam', 'jobconfparam',
+	'constparam' and 'pathparam'. 'jobconfparam' passed to hadoop task
+	via '-jobconf' option.
+
 2009-04-20  Vadim Zaliva  <lord@deco.local>
 
 	* src/hamake/hamake.py (HMake.parseTasks): ignore tasks which have 'disabled' attribute set to 'true'

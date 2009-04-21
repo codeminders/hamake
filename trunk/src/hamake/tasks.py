@@ -103,44 +103,64 @@ class BaseCommand:
         pindex=0
         for c in dom.childNodes:
             if c.nodeType == xml.dom.Node.ELEMENT_NODE:
-                pname="param%d" %pindex
-                pindex=pindex+1
                 if c.nodeName == "constparam":
-                    p = ConstParam.fromDOM(c, props, pname)
+                    p = ConstParam.fromDOM(c, props)
                 elif c.nodeName == "pathparam":
-                    p = PathParam.fromDOM(c, props, pname)
+                    p = PathParam.fromDOM(c, props)
+                elif c.nodeName == "jobconfparam":
+                    p = JobConfParam.fromDOM(c, props)
+                elif c.nodeName == "pigparam":
+                    p = PigParam.fromDOM(c, props)
                 else:
                     raise Exception("Unknown sub-element '%s' under %s" % (c.nodeName, getElementPath(c)))
                 scriptparam.append(p)
         return scriptparam
         
 
+class Param:
+    pass
 
-class PigParam:
-    def __init__(self, name):
-        self.name = name
-
-class ConstParam(PigParam):
-    def __init__(self, name, value):
-        PigParam.__init__(self, name)
+class ConstParam(Param):
+    def __init__(self, value):
         self.value = value
 
     def get(self, param_dict, fsclient = None):
         return [self.value]
    
     @classmethod
-    def fromDOM(cls, dom, props, default_name):
-        if default_name==None:
-            name = getRequiredAttribute(dom, "name", props)
-        else:
-            name = getOptionalAttribute(dom, "name", props)
-            if name==None:
-                name=default_name
+    def fromDOM(cls, dom, props):
         value = getRequiredAttribute(dom, "value", props)
-        return ConstParam(name, value)
+        return ConstParam(value)
 
+class JobConfParam(Param):
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
 
-class PathParam(PigParam):
+    def get(self, param_dict, fsclient = None):
+        return ["-jobconf", "%s=%s" % (self.name, self.value)]
+   
+    @classmethod
+    def fromDOM(cls, dom, props):
+        name = getRequiredAttribute(dom, "name", props)
+        value = getRequiredAttribute(dom, "value", props)
+        return JobConfParam(name, value)
+
+class PigParam(Param):
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+    def get(self, param_dict, fsclient = None):
+        return ["-param", "%s=%s" % (self.name, self.value)]
+   
+    @classmethod
+    def fromDOM(cls, dom, props):
+        name = getRequiredAttribute(dom, "name", props)
+        value = getRequiredAttribute(dom, "value", props)
+        return PigParam(name, value)
+
+class PathParam(Param):
 
     # 'Type' attribute values
     INPUT_TYPE      = "input"
@@ -154,8 +174,7 @@ class PathParam(PigParam):
     SUPRESS_MASK = "suppress"
     EXPAND_MASK  = "expand"
     
-    def __init__(self, name, ptype, number, mask_handling=KEEP_MASK):
-        PigParam.__init__(self, name)
+    def __init__(self, ptype, number, mask_handling=KEEP_MASK):
         self.ptype = ptype
         self.number = number
         self.mask_handling = mask_handling
@@ -191,13 +210,7 @@ class PathParam(PigParam):
             return self._toStrArr(param_dict[self.ptype][self.number], fsclient)
 
     @classmethod
-    def fromDOM(cls, dom, props, default_name):
-        if default_name==None:
-            name = getRequiredAttribute(dom, "name", props)
-        else:
-            name = getOptionalAttribute(dom, "name", props)
-            if name==None:
-                name=default_name
+    def fromDOM(cls, dom, props):
         ptype = getRequiredAttribute(dom, "type", props)
         number_s = getOptionalAttribute(dom, "number", props)
         if number_s!=None:
@@ -210,7 +223,7 @@ class PathParam(PigParam):
         else:
             if mask_handling not in [PathParam.KEEP_MASK, PathParam.SUPRESS_MASK, PathParam.EXPAND_MASK]:
                 raise Exception("Unsupported value of 'mask' parameter in %s" % getElementPath(dom))
-        return PathParam(name, ptype, number, mask_handling)
+        return PathParam(ptype, number, mask_handling)
 
     
 class PigCommand(BaseCommand):
@@ -230,11 +243,7 @@ class PigCommand(BaseCommand):
         cmd = [os.environ.get(PigCommand.PIGCMDENV, PigCommand.PIGCMD)]
         fsclient = exec_context['fsclient']
         for p in self.scriptparam:
-            cmd.append("-param")
-            pv = p.get(params_dict, fsclient)
-            if len(pv)!=1:
-                raise Exception("Pig param %s must have only 1 value" % p.name)
-            cmd.append("%s=%s" % (p.name, pv[0]))
+            cmd = cmd + p.get(params_dict, fsclient)
         cmd.append("-f")
         cmd.append(self.script)
         scmd = string.join(cmd)
@@ -275,8 +284,14 @@ class HadoopCommand(BaseCommand):
     def execute(self, params_dict, exec_context):
         fsclient = exec_context['fsclient']
         cmd = [os.environ.get(HadoopCommand.HADOOPCMDENV, HadoopCommand.HADOOPCMD), "jar", self.jar, self.main]
+        # first add jobconf params
         for p in self.scriptparam:
-            cmd = cmd + p.get(params_dict, fsclient)
+            if isinstance(p, JobConfParam):
+                cmd = cmd + p.get(params_dict, fsclient)
+        # then regular arguments, passed to main
+        for p in self.scriptparam:
+            if not isinstance(p, JobConfParam):
+                cmd = cmd + p.get(params_dict, fsclient)
         scmd = string.join(cmd)
         if hconfig.verbose:
             print >> sys.stderr, "Executing: %s" % scmd
