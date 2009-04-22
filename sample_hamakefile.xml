@@ -10,6 +10,7 @@
   
   <property name="dfsroot" value="/dfs"/>
   <property name="scriptdir" value="/home/user/hadoop-scripts"/>
+  <property name="numreducers" value="14" />
 
   <map name="access2related">
     <description>
@@ -25,6 +26,7 @@
     <task jar="%(scriptdir)s/datamining.jar" main="Access2Related">
       <pathparam type="inputfile"/>
       <pathparam type="outputfile"/>
+      <jobconfparam name="us.imageshack.numreducers" value="%(numreducers)s" />
     </task>
   </map>
 
@@ -43,7 +45,7 @@
       <path location="%(dfsroot)s/related" filename="max_cluster.tsv"/>
     </output>
     <pig script="%(scriptdir)s/recommendations.pig">
-      <constparam name="jarpath" value="%(scriptdir)s"/>
+      <pigparam name="jarpath" value="%(scriptdir)s"/>
       <pathparam name="logs" type="input" number="0"/>
       <pathparam name="private" type="input" number="1"/>
       <pathparam name="clusters" type="input" number="2"/>
