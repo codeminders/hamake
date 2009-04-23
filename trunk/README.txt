@@ -1,8 +1,7 @@
 Hadoop "Make" utility
 =====================
 
-[This is a brief description. Visit project page where eventually more
-detailed documentation will be published]
+[This is a brief description. Full documentation is located at project Wiki: http://code.google.com/p/hamake/]
 
 'hamake' utility allows you to automate incremental processing of
 datasets stored on HDFS using Hadoop tasks written in Java or using
