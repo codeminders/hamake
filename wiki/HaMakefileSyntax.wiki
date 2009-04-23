@@ -15,12 +15,21 @@ The root element is 'project'
 Attributes:
   * 'default' - name of default target (optional)
   * 'name' - project name (optional)
-Allowed sub-elements: 'config', 'property', 'map', 'reduce'
+Allowed sub-elements: 'config',  'map', 'reduce'
 
-=== config ===
+== project/config ==
 
 This element describes general configuration parameters.
+Allowed sub-elements: 'dfs' and  'property'
 
+== project/config/dfs ==
+
+This elements contains DFS-related information. Currently only
+one sub-element is understood: thriftAPI
+
+Element: 'thriftAPI'
+Attributes:
+  * 'host' - host name of ThriftApi
 
 = XML Schema ==
 
