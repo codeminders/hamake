@@ -11,7 +11,8 @@ The file is an XML document.
 
 == project ==
 
-The root element is 'project'
+The root element is 'project'.
+It must contain one 'config' sub-element and one or more 'map' or 'reduce' sub-elements.
 
 Attributes:
   * 'default' - name of default target (optional)
@@ -57,6 +58,10 @@ Now they could be used in any string attribute, using [http://docs.python.org/li
 {{{
 <path location="%(dfsroot)s/data" />
 }}}
+
+== project/map ==
+
+This element described map task
 
 = XML Schema ==
 
