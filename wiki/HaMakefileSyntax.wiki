@@ -6,7 +6,12 @@ This page describe syntax of XML files understood by 'hamake'.
 
 = Informal description ==
 
-The file is an XML document.
+The file is an XML document. 
+Root element is:
+Name: 'project'
+Attributes:
+  * 'default' - name of default target (optional)
+  * 'name' - project name (optional)
 
 = XML Schema ==
 
