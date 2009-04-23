@@ -48,8 +48,14 @@ are named values, which could be used in sections of hamakefile (outside 'config
 They work like macros. Example of property definition:
 
 {{{
-            <property name="dfsroot" value="/dfs" />
-            <property name="numreducers" value="14" />
+<property name="dfsroot" value="/dfs" />
+<property name="numreducers" value="14" />
+}}}
+
+Now they could be used in any string attribute, using [http://docs.python.org/library/stdtypes.html#string-formatting Python string formatting syntax]. For example:
+
+{{{
+<path location="%(dfsroot)s/data" />
 }}}
 
 = XML Schema ==
