@@ -1,0 +1,17 @@
+#summary hamakefile syntax
+
+= Introduction =
+
+This page describe syntax of XML files understood by 'hamake'. 
+
+= Informal description ==
+
+The file is an XML document.
+
+= XML Schema ==
+
+TBD
+
+= Examples =
+
+See 'sample_hamakefile.xml' included in distribution for an example. 
