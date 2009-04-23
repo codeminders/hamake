@@ -7,11 +7,20 @@ This page describe syntax of XML files understood by 'hamake'.
 = Informal description ==
 
 The file is an XML document. 
-Root element is:
-Name: 'project'
+
+== project ==
+
+The root element is 'project'
+
 Attributes:
   * 'default' - name of default target (optional)
   * 'name' - project name (optional)
+Allowed sub-elements: 'config', 'property', 'map', 'reduce'
+
+=== config ===
+
+This element describes general configuration parameters.
+
 
 = XML Schema ==
 
