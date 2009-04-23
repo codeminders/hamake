@@ -62,8 +62,8 @@ class HMake:
     def loadHaMakefile(self,fname):
         f = open(fname)
         dom = parse(f)
-        props = self.parseProperties(dom) # only used on loading stage
-        self.parseConfig(dom, props)
+        # properties used only during makefile parsing, not saved.
+        props = self.parseConfig(dom)
         tasks = self.parseTasks(dom, props)
         dom.unlink()
         f.close()
@@ -81,10 +81,13 @@ class HMake:
                 res[pname] = pval
         return res
     
-    def parseConfig(self, dom, props):
+    def parseConfig(self, dom):
         c = dom.getElementsByTagName("config")
         if not c or len(c)!=1:
             raise Exception("Missing or ambiguous 'config' section")
+
+        props = self.parseProperties(c[0]) 
+
         d=c[0].getElementsByTagName("dfs")
         if not d or len(d)!=1:
             raise Exception("Missing or ambiguous 'config/dfs' section")
@@ -94,6 +97,7 @@ class HMake:
             raise Exception("Missing or ambiguous 'config/dfs/thriftAPI' element")
         self.thrift_host = getRequiredAttribute(n[0],'host', props)
         self.thrift_port = int(getRequiredAttribute(n[0],'port', props))
+        return props
         
     def parseTasks(self, dom, props):
         tasks = []

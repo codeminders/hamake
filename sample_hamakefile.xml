@@ -6,11 +6,13 @@
     <dfs>
       <thriftAPI host="localhost" port="5009"/>
     </dfs>
+
+    <property name="dfsroot" value="/dfs"/>
+    <property name="scriptdir" value="/home/user/hadoop-scripts"/>
+    <property name="numreducers" value="14" />
+
   </config>
   
-  <property name="dfsroot" value="/dfs"/>
-  <property name="scriptdir" value="/home/user/hadoop-scripts"/>
-  <property name="numreducers" value="14" />
 
   <map name="access2related">
     <description>
