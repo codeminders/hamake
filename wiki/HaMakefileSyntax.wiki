@@ -82,6 +82,37 @@ Sub-elements:
   * 'output' - this element must one or more 'path' element (mandatory)
   * Exactly one either 'task' or 'pig' element (mandatory)
 
+== project/reduce ==
+TBD
+
+== 'path' elements ==
+
+'path' elements are used to specify input or output paths.
+
+Attributes:
+  * 'location' - path on DFS  (mandatory)
+  * 'mask' - filename glob mask (optional)
+  * 'filename' - filename (optional)
+  * 'generation' - "generation" of the file. (see below) 
+
+location usually corresponds to filesystem path. If filename specified, the elements
+corresponds to one file under this location. 
+
+Alternatively, instead of 'filename', 'mask' could be specified to reference more than one file.
+
+TODO: document 'generation'
+TODO: document how paths 'intersect' to calculate dependencies.
+
+Example:
+{{{
+<path location="%(dfsroot)s/access_logs" mask="*.log" />
+}}}
+
+== {map/reduce}/task  ==
+TBD
+
+== {map/reduce}/pig  ==
+TBD
 
 
 
