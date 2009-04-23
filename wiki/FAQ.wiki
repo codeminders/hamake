@@ -2,10 +2,13 @@
 #labels Phase-Support
 
 = General =
+Q: How 'hamake' is different from [http://www.cascading.org/ Cascading]
 
+A: In short: 'Cascading' is a framework, while 'hamake' is a tool. Some differences:
+  * hamake does not require any custom programming. It helps to automate running your existing Hadoop tasks and PIG scripts
+  * We found hamake especially suitable for incremental processing of datasets
+  * You can use 'hamake' to automate tasks written in other languages, using _Hadoop streaming_
 
 
 = Development =
-Q: How can I help?
-
-A: 
+TBD
