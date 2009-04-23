@@ -82,6 +82,27 @@ Sub-elements:
   * 'output' - this element must one or more 'path' elements (mandatory)
   * Exactly one either 'task' or 'pig' element (mandatory)
 
+Example:
+
+{{{
+	<map name="a2r">
+		<description>
+                     Extract some information from access logs
+               </description>
+		<input>
+			<path location="%(dfsroot)s/access_logs" mask="*.log" />
+		</input>
+		<dependencies />
+		<output>
+			<path location="%(dfsroot)s/r" />
+		</output>
+		<task jar="%(queries)s/datamining.jar" main="us.imageshack.datamining.A2R">
+			<pathparam type="inputfile" />
+			<pathparam type="outputfile" />
+		</task>
+	</map>
+}}}
+
 == project/reduce ==
 This a type of task which takes a group of files as an input and produce one or more outputs. All input files are considered to be a set, and if any of them is newer than any of destination, the re-calculation will be triggered.
 
@@ -95,6 +116,26 @@ Sub-elements:
   * 'input' - this element must contain one ore more 'path' elements (mandatory)
   * 'output' - this element must one or more 'path' elements (mandatory)
   * Exactly one either 'task' or 'pig' element (mandatory)
+
+Example:
+
+{{{
+	<reduce name="caclulate_totals">
+		<description>
+                  Calculate something
+               </description>
+		<input>
+			<path location="%(dfsroot)s/r" mask="*.log" />
+		</input>
+		<output>
+			<path location="%(dfsroot)s/r_t" />
+		</output>
+		<task jar="%(queries)s/datamining.jar" main="us.imageshack.datamining.CalcTotals">
+			<pathparam type="input" mask="suppress"/>
+			<pathparam type="output" />
+		</task>
+	</reduce>
+}}}
 
 == 'path' elements ==
 
