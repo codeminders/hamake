@@ -61,7 +61,29 @@ Now they could be used in any string attribute, using [http://docs.python.org/li
 
 == project/map ==
 
-This element described map task
+This element described map task. This a type of task which maps a group of files at one location to another location(s). This task assumes 1 to 1 file mapping between locations, and can process them incrementally, converting only files which are present at source location, but not present or not current at all of destinations.
+
+The task have one input path, and one or more dependent paths and one or more output paths.
+One output file must produce one output file with the same name, per output location. 
+Output location file considered to be current if all of the following conditions are satisfied:
+   # Output file is present
+   # Output file time stamp is older than input file
+   # Output file time stamp is older than any of time stamps of files with same name in all dependent directories
+
+In its simplest form, 'map' have one input and one output.
+
+Attributes:
+  * 'name' - name of the task (mandatory). Used for reporting or could be specified as build target
+
+Sub-elements:
+  * 'description' - single element which context is textual description of the task. (optional)
+  * 'input' - this element must contain one and only one 'path' element (mandatory)
+  * 'dependencies' - this element may contain zero or more path elements (optional)
+  * 'output' - this element must one or more 'path' element (mandatory)
+  * Exactly one either 'task' or 'pig' element (mandatory)
+
+
+
 
 = XML Schema ==
 
