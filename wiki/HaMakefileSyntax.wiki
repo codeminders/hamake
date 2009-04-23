@@ -79,11 +79,22 @@ Sub-elements:
   * 'description' - single element which context is textual description of the task. (optional)
   * 'input' - this element must contain one and only one 'path' element (mandatory)
   * 'dependencies' - this element may contain zero or more path elements (optional)
-  * 'output' - this element must one or more 'path' element (mandatory)
+  * 'output' - this element must one or more 'path' elements (mandatory)
   * Exactly one either 'task' or 'pig' element (mandatory)
 
 == project/reduce ==
-TBD
+This a type of task which takes a group of files as an input and produce one or more outputs. All input files are considered to be a set, and if any of them is newer than any of destination, the re-calculation will be triggered.
+
+In its simplest form, 'reduce' have one input and one output.
+
+Attributes:
+  * 'name' - name of the task (mandatory). Used for reporting or could be specified as build target
+
+Sub-elements:
+  * 'description' - single element which context is textual description of the task. (optional)
+  * 'input' - this element must contain one ore more 'path' elements (mandatory)
+  * 'output' - this element must one or more 'path' elements (mandatory)
+  * Exactly one either 'task' or 'pig' element (mandatory)
 
 == 'path' elements ==
 
