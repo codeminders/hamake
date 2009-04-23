@@ -37,8 +37,19 @@ Example:
 
 {{{
 <dfs>
- <thriftAPI host="namenode.imageshack.us" port="5009" />
+ <thriftAPI host="example.com" port="9009" />
 </dfs>
+}}}
+
+=== project/config/property ===
+
+For user convenience user can define one or more "properties". Properties
+are named values, which could be used in sections of hamakefile (outside 'config').
+They work like macros. Example of property definition:
+
+{{{
+            <property name="dfsroot" value="/dfs" />
+            <property name="numreducers" value="14" />
 }}}
 
 = XML Schema ==
