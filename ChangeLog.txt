@@ -1,3 +1,7 @@
+2009-04-23  Vadim Zaliva  <lord@deco.local>
+
+	* src/hamake/tasks.py (PigCommand.execute): fixed passing pathparams to PIG scripts
+
 2009-04-23  Vadim Zaliva  <lord@crocodile.org>
 
 	* hamakefile.xsd: preliminary XSD schema for 'hamakefile'
