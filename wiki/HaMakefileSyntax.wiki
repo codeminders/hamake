@@ -170,8 +170,7 @@ TBD
 
 = XML Schema ==
 
-TBD
-
+XML Schema definition for hamakefiles could be found in _hamakefile.xsd_ file in the hamake distribution.
 = Examples =
 
 See 'sample_hamakefile.xml' included in distribution for an example. 
