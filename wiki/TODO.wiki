@@ -2,8 +2,11 @@
 TODO List for hamake project
 
   * Option to stop MAP task if one or certain number file processing failures (now it tries to process all files)
-  * File-to-file MAP tasks
-  * DFS COPY, MOVE commands
+  * Implement file-to-file MAP tasks
+  * Tasks DFS COPY, MOVE commands
   * Allow to run external any script/command
-  * Allow to specify log file in hamkefile
   * Handle files removal in MAP tasks.
+  * Review how REDUCE tasks without inputs of outputs supposed to work
+  * in schema specify enums for 'pathparam' 'type' attr.
+  * Option to limit number of Hadoop jobs running per file simultaneously for MAP tasks. For example MAP on 10K files now will try to spawn 10K tasks at once. Should be limited have no more than certain number running at the same time. The number could be set via command line or 'config' section
+  * Allow to specify -j value via config. (Command line overrides it)
