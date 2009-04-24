@@ -106,7 +106,8 @@ class BaseCommand:
                 if c.nodeName == "constparam":
                     p = ConstParam.fromDOM(c, props)
                 elif c.nodeName == "pathparam":
-                    p = PathParam.fromDOM(c, props)
+                    p = PathParam.fromDOM(c, props, "path%d" % pindex)
+                    pindex = pindex + 1
                 elif c.nodeName == "jobconfparam":
                     p = JobConfParam.fromDOM(c, props)
                 elif c.nodeName == "pigparam":
@@ -152,7 +153,7 @@ class PigParam(Param):
         self.value = value
 
     def get(self, param_dict, fsclient = None):
-        return ["-param", "%s=%s" % (self.name, self.value)]
+        return [self.value]
    
     @classmethod
     def fromDOM(cls, dom, props):
@@ -174,10 +175,11 @@ class PathParam(Param):
     SUPRESS_MASK = "suppress"
     EXPAND_MASK  = "expand"
     
-    def __init__(self, ptype, number, mask_handling=KEEP_MASK):
+    def __init__(self, name, ptype, number, mask_handling=KEEP_MASK):
         self.ptype = ptype
         self.number = number
         self.mask_handling = mask_handling
+        self.name = name
 
 
     def _toStrArr(self, i, fsclient = None):
@@ -210,7 +212,7 @@ class PathParam(Param):
             return self._toStrArr(param_dict[self.ptype][self.number], fsclient)
 
     @classmethod
-    def fromDOM(cls, dom, props):
+    def fromDOM(cls, dom, props, default_name):
         ptype = getRequiredAttribute(dom, "type", props)
         number_s = getOptionalAttribute(dom, "number", props)
         if number_s!=None:
@@ -223,7 +225,10 @@ class PathParam(Param):
         else:
             if mask_handling not in [PathParam.KEEP_MASK, PathParam.SUPRESS_MASK, PathParam.EXPAND_MASK]:
                 raise Exception("Unsupported value of 'mask' parameter in %s" % getElementPath(dom))
-        return PathParam(ptype, number, mask_handling)
+        name = getOptionalAttribute(dom, "name", props)
+        if name==None:
+            name = default_name
+        return PathParam(name, ptype, number, mask_handling)
 
     
 class PigCommand(BaseCommand):
@@ -243,7 +248,11 @@ class PigCommand(BaseCommand):
         cmd = [os.environ.get(PigCommand.PIGCMDENV, PigCommand.PIGCMD)]
         fsclient = exec_context['fsclient']
         for p in self.scriptparam:
-            cmd = cmd + p.get(params_dict, fsclient)
+            pval = p.get(params_dict, fsclient)
+            if len(pval)!=1:
+                print >> sys.stderr, "Multiple values for param %s are no supported in PIG scripts" % p.name
+                return -1000
+            cmd = ["-param ", "%s=%s" % (p.name, p.get(params_dict, fsclient))]
         cmd.append("-f")
         cmd.append(self.script)
         scmd = string.join(cmd)
