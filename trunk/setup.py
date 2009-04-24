@@ -16,5 +16,5 @@ setup(name='hamake',
       package_dir = {'hadoopfs' : 'src/hadoopfs', 'hamake' : 'src/hamake'},
       
       scripts=['scripts/hamake','src/hadoopfs/ThriftHadoopFileSystem-remote'],
-      data_files=[('share/doc/hamake', ['TODO.txt','ChangeLog.txt', 'README.txt','sample_hamakefile.xml'])]
+      data_files=[('share/doc/hamake', ['TODO.txt','ChangeLog.txt', 'README.txt','hamakefile.xsd','sample_hamakefile.xml'])]
      )
