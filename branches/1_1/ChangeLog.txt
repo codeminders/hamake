@@ -1,0 +1,27 @@
+2009-05-12  Vadim Zaliva  <lord@deco.local>
+
+	* setup.py: 1.1 release
+
+2009-04-23  Vadim Zaliva  <lord@deco.local>
+
+	* src/hamake/tasks.py (PigCommand.execute): fixed passing pathparams to PIG scripts
+
+2009-04-23  Vadim Zaliva  <lord@crocodile.org>
+
+	* hamakefile.xsd: preliminary XSD schema for 'hamakefile'
+
+2009-04-22  Vadim Zaliva  <lord@crocodile.org>
+
+	* src/hamake/hamake.py (HMake.parseConfig): 'properties' element moved under 'config.
+
+2009-04-21  Vadim Zaliva  <lord@crocodile.org>
+
+	* src/hamake/tasks.py: Cleaned up parameters types for Pig and
+	Hadoop tasks. Params elements are now: 'pigparam', 'jobconfparam',
+	'constparam' and 'pathparam'. 'jobconfparam' passed to hadoop task
+	via '-jobconf' option.
+
+2009-04-20  Vadim Zaliva  <lord@crocodile.org>
+
+	* src/hamake/hamake.py (HMake.parseTasks): ignore tasks which have 'disabled' attribute set to 'true'
+
