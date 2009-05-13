@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='hamake',
-      version='1.0',
+      version='1.1',
       description='Hadoop Make Utility',
       author='Vadim Zaliva',
       author_email='lord@crocodile.org',
