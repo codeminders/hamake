@@ -26,7 +26,7 @@ class TaskThread(threading.Thread):
     def run(self):
         try:
             rc = self.task.execute(self.job_semaphore, self.exec_context)
-        except:
+        except Exception:
             print >> sys.stderr, 'Unexpected exception during task execution!'
             print >> sys.stderr, traceback.format_exc()
             rc = -1000
@@ -40,7 +40,8 @@ class TaskThread(threading.Thread):
             self.cv.release()
 
 class TaskRunner:
-    """ This class coordinates tasks lauching and execution """
+    """ This class coordinates tasks lauching and execution
+    """
     
     def __init__(self, taskslist, njobs, targets, exec_context):
         self.graph = DependencyGraph(taskslist, targets)
@@ -91,7 +92,8 @@ class TaskRunner:
 
 class DependencyGraph:
     """ Class implementing simple algorithm to calculated tasks dependencies
-    and order of execution """
+    and order of execution
+    """
     
     def __init__(self, tasklist, targets):
         self.tasks = {}
@@ -101,7 +103,8 @@ class DependencyGraph:
 
 
     def setTargets(self, targets):
-        """ Clean up dependency graph to build only given targets and tasks they depend on """
+        """ Clean up dependency graph to build only given targets and tasks they depend on
+        """
         if hconfig.test_mode:
             print >> sys.stderr, "Setting targets: %s" % targets
         while True:
@@ -133,18 +136,21 @@ class DependencyGraph:
             self.tasks[t.name]=d
 
     def removeTask(self, name):
-        """ Remove task from the graph """
+        """ Remove task from the graph
+        """
         del self.tasks[name]
         for (t,d) in self.tasks.items():
             self.tasks[t]=[x for x in d if x!=name]
         
     def getReadyToRunTasks(self):
-        """ Returns tasks which could be executed """
+        """ Returns tasks which could be executed
+        """
         return [t for (t,d) in self.tasks.items() if len(d)==0]
 
 
     def dump(self):
-        """ Debug method. dumps curent state to stdout """
+        """ Debug method. dumps curent state to stdout
+        """
         for (t,d) in self.tasks.items():
             print >> sys.stderr, "%s:%s" % (t, d)
 
