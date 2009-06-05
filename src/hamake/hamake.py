@@ -155,7 +155,7 @@ def main():
 
     try:
         m = HMake(mname, njobs, args)
-    except:
+    except Exception:
         print >> sys.stderr, 'Error initializing hamake process'
         xvalue = sys.exc_info()[1]
         if xvalue!=None and hasattr(xvalue, 'message'):
@@ -165,8 +165,8 @@ def main():
         sys.exit(exitcodes.INITERR)
 
     try:
-        rc=m.run()
-    except:
+        rc = m.run()
+    except Exception:
         print >> sys.stderr, 'HMake failed'
         xvalue = sys.exc_info()[1]
         if xvalue!=None and hasattr(xvalue, 'message'):

@@ -21,7 +21,8 @@ from hadoopfs.ttypes import Pathname, ThriftIOException
 
 
 def _getFileList(fsclient, ipath, create = False, mask=None):
-    """ Utility method to get list of files from DFS """
+    """ Utility method to get list of files from DFS
+    """
     if hconfig.test_mode:
         print >> sys.stderr, "Scanning %s" % ipath.pathname
 
@@ -68,7 +69,7 @@ class CommandThread(threading.Thread):
         try:
             try:
                 self.rc = self.command.execute(self.params, self.exec_context)
-            except:
+            except Exception:
                 print >> sys.stderr, "Execution of command %s failed" % self.command
                 if hconfig.test_mode:
                     print >> sys.stderr, traceback.format_exc()
@@ -233,10 +234,12 @@ class PathParam(Param):
     
 class PigCommand(BaseCommand):
 
-    """ Default name of pig executable """
+    """ Default name of pig executable
+    """
     PIGCMD="pig"
 
-    """ Name of env. var. which holds name of pig executable """
+    """ Name of env. var. which holds name of pig executable
+    """
     PIGCMDENV="PIG"
     
     def __init__(self, script, scriptparam=[]):
@@ -263,7 +266,7 @@ class PigCommand(BaseCommand):
                 return 0
             else:
                 return subprocess.call(cmd)
-        except:
+        except Exception:
             print >> sys.stderr, '%s execution failed!' % scmd
             if hconfig.test_mode:
                 print >> sys.stderr, traceback.format_exc()
@@ -278,10 +281,12 @@ class PigCommand(BaseCommand):
 
 class HadoopCommand(BaseCommand):
 
-    """ Default name of hadoop executable """
+    """ Default name of hadoop executable
+    """
     HADOOPCMD="hadoop"
 
-    """ Name of env. var. which holds name of hadoop executable """
+    """ Name of env. var. which holds name of hadoop executable
+    """
     HADOOPCMDENV="HADOOP"
 
     def __init__(self, jar, main, scriptparam):
@@ -309,7 +314,7 @@ class HadoopCommand(BaseCommand):
                 return 0
             else:
                 return subprocess.call(cmd)
-        except:
+        except Exception:
             print >> sys.stderr, '%s execution failed!' % scmd
             if hconfig.test_mode:
                 print >> sys.stderr, traceback.format_exc()
@@ -326,7 +331,8 @@ class HadoopCommand(BaseCommand):
 class Path:
     
     def __init__(self, loc, filename=None, mask=None, gen=0):
-        """ Private constructor, should never be called directly """
+        """ Private constructor, should never be called directly
+        """
         self.loc = loc
         if filename and mask:
             raise Exception("Both filename and mask specified!")
@@ -424,7 +430,8 @@ class Path:
         return Path(loc, filename, mask, gen)
     
 class BaseTask:
-    """ Base class for all tasks """
+    """ Base class for all tasks
+    """
 
     def __init__(self):
         self.name = None
@@ -480,7 +487,8 @@ class BaseTask:
 
 
 class MapTask(BaseTask):
-    """ map:: Input->[Depenency]->[Outputs] """
+    """ map:: Input->[Depenency]->[Outputs]
+    """
 
     def __init__(self):
         BaseTask.__init__(self)
@@ -526,7 +534,8 @@ class MapTask(BaseTask):
         return res
 
     def execute(self, job_semaphore, exec_context):
-        """ Execute command and return exit code """
+        """ Execute command and return exit code
+        """
         fsclient = exec_context['fsclient']
         if self.xinput.hasFilename():
             #TODO: file to file mapping
@@ -599,7 +608,7 @@ class MapTask(BaseTask):
                 t = CommandThread(self.command, cmdparams, cleanuplist, exec_context, job_semaphore)
                 threads.append(t)
                 t.start()
-            except:
+            except Exception:
                 print >> sys.stderr, "Unexpected exception starting thread!"
                 print >> sys.stderr, traceback.format_exc()
                 job_semaphore.release()
@@ -612,7 +621,8 @@ class MapTask(BaseTask):
         return rc
 
 class ReduceTask(BaseTask):
-    """ map:: [Input]->[Outputs] """
+    """ map:: [Input]->[Outputs]
+    """
     
     def __init__(self):
         BaseTask.__init__(self)
@@ -670,7 +680,8 @@ class ReduceTask(BaseTask):
             
             
     def execute(self, job_semaphore, exec_context):
-        """ Execute command and return exit code """
+        """ Execute command and return exit code
+        """
         fsclient = exec_context['fsclient']
         mits = 0
         mots = 0
