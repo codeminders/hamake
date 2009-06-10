@@ -10,3 +10,4 @@ TODO List for hamake project
   * in schema specify enums for 'pathparam' 'type' attr.
   * Option to limit number of Hadoop jobs running per file simultaneously for MAP tasks. For example MAP on 10K files now will try to spawn 10K tasks at once. Should be limited have no more than certain number running at the same time. The number could be set via command line or 'config' section
   * Allow to specify -j value via config. (Command line overrides it)
+  * integration with Fair Sceduler
