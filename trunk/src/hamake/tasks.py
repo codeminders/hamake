@@ -578,8 +578,9 @@ class MapTask(BaseTask):
                         else:
                             if hconfig.verbose:
                                 print >> sys.stderr, "Output %s is present but not fresh. Removing it." % oname
-                            with fsclient.mutex:
-                                fsclient.rm(oname,True)
+                            if not hconfig.dryrun:
+                                with fsclient.mutex:
+                                    fsclient.rm(output.getHPathName(oname),True)
                     oparams.append(output.getPathWithNewName(iname))
                     cleanuplist.append(output.getHPathName(iname))
                 if len(present)==len(self.outputs):
