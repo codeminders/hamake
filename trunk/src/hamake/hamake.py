@@ -126,7 +126,7 @@ class HMake:
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "Vvntj:f:", ["version", "verbose", "dry-run", "test", "jobs","file"])
+        opts, args = getopt.getopt(sys.argv[1:], "Vvntdj:f:", ["version", "verbose", "dry-run", "test", "nodeps", "jobs","file"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print >> sys.stderr, str(err) # will print something like "option -a not recognized"
@@ -144,6 +144,8 @@ def main():
             hconfig.verbose = True
         elif o in ("-n", "--dry-run"):
             hconfig.dryrun = True
+        elif o in ("-d", "--nodeps"):
+            hconfig.nodeps = True
         elif o in ("-t", "--test"):
             hconfig.test_mode = True
         elif o in ("-j", "--jobs"):

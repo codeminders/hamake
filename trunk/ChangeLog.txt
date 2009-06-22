@@ -1,5 +1,6 @@
-2009-06-22  Vadim Zaliva  <lord@crocodile.org>
+2009-06-22  Vadim Zaliva  <lord@deco.local>
 
+	* src/hamake/execution.py (NoDependencyGraph): Added --nodeps option
 	* src/hamake/hamake.py (main): Use -n for dry run, for compatiblity with SysV make.
 
 2009-06-19  Vadim Zaliva  <lord@crocodile.org>

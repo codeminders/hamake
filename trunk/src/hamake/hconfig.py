@@ -1,9 +1,11 @@
 """ Various config params """
 
-verbose = False
+version = "1.2"
+
+verbose   = False
 
 test_mode = False
 
 dryrun    = False
 
-version = "1.0"
+nodeps    = False
