@@ -1,3 +1,7 @@
+2009-06-22  Vadim Zaliva  <lord@crocodile.org>
+
+	* src/hamake/hamake.py (main): Use -n for dry run, for compatiblity with SysV make.
+
 2009-06-19  Vadim Zaliva  <lord@crocodile.org>
 
 	* src/hamake/tasks.py (MapTask.execute): Fixed problem when some stale files was removed even when invoked with --dry-run option.
