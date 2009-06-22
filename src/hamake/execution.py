@@ -44,7 +44,10 @@ class TaskRunner:
     """
     
     def __init__(self, taskslist, njobs, targets, exec_context):
-        self.graph = DependencyGraph(taskslist, targets)
+        if hconfig.nodeps:
+            self.graph = NoDependencyGraph(taskslist, targets)
+        else:
+            self.graph = DependencyGraph(taskslist, targets)
         self.exec_context = exec_context
         self.tasks={}
         for t in taskslist:
@@ -135,6 +138,38 @@ class DependencyGraph:
                     d.append(ot.name)
             self.tasks[t.name]=d
 
+    def removeTask(self, name):
+        """ Remove task from the graph
+        """
+        del self.tasks[name]
+        for (t,d) in self.tasks.items():
+            self.tasks[t]=[x for x in d if x!=name]
+        
+    def getReadyToRunTasks(self):
+        """ Returns tasks which could be executed
+        """
+        return [t for (t,d) in self.tasks.items() if len(d)==0]
+
+
+    def dump(self):
+        """ Debug method. dumps curent state to stdout
+        """
+        for (t,d) in self.tasks.items():
+            print >> sys.stderr, "%s:%s" % (t, d)
+
+
+class NoDependencyGraph:
+    """ No-dependency graph, which is just return list of given tasks
+    in given order to facilitate --nodeps command line option.
+    """
+    
+    def __init__(self, tasklist, targets):
+        self.tasks = {}
+
+        for t in tasklist:
+            if t.name in targets:
+                self.tasks[t.name]=[]
+    
     def removeTask(self, name):
         """ Remove task from the graph
         """
