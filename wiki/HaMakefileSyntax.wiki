@@ -74,6 +74,7 @@ In its simplest form, 'map' have one input and one output.
 
 Attributes:
   * 'name' - name of the task (mandatory). Used for reporting or could be specified as build target
+  * 'disabled' - boolean flag whenever this task is disabled (optional). Disabled tasks are ignored.
 
 Sub-elements:
   * 'description' - single element which context is textual description of the task. (optional)
@@ -110,6 +111,7 @@ In its simplest form, 'reduce' have one input and one output.
 
 Attributes:
   * 'name' - name of the task (mandatory). Used for reporting or could be specified as build target
+  * 'disabled' - boolean flag whenever this task is disabled (optional). Disabled tasks are ignored.
 
 Sub-elements:
   * 'description' - single element which context is textual description of the task. (optional)
