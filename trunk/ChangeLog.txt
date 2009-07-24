@@ -1,3 +1,8 @@
+2009-07-23  Vadim Zaliva  <lord@deco.local>
+
+	* src/hamake/tasks.py (BaseTask.parseTaskDeps): implicit dependencies via taskdeop/pretask element.
+	(ExecCommand): new command type ('exec')
+
 2009-06-22  Vadim Zaliva  <lord@deco.local>
 
 	* src/hamake/execution.py (NoDependencyGraph): Added --nodeps option
