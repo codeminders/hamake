@@ -327,6 +327,38 @@ class HadoopCommand(BaseCommand):
         scriptparam = BaseCommand.paramsFromDOM(dom, props) 
         return HadoopCommand(jar, main, scriptparam)
 
+class ExecCommand(BaseCommand):
+
+    def __init__(self, binary, scriptparam):
+        BaseCommand.__init__(self)
+        self.binary = binary
+        self.scriptparam = scriptparam
+
+    def execute(self, params_dict, exec_context):
+        fsclient = exec_context['fsclient']
+        cmd = [self.binary]
+        for p in self.scriptparam:
+            cmd = cmd + p.get(params_dict, fsclient)
+        scmd = string.join(cmd)
+        if hconfig.verbose:
+            print >> sys.stderr, "Executing: %s" % scmd
+        try:
+            if hconfig.dryrun:
+                return 0
+            else:
+                return subprocess.call(cmd)
+        except Exception:
+            print >> sys.stderr, '%s execution failed!' % scmd
+            if hconfig.test_mode:
+                print >> sys.stderr, traceback.format_exc()
+            return -1000
+
+    @classmethod
+    def fromDOM(cls, dom, props):
+        binary = getRequiredAttribute(dom, "binary", props)
+        scriptparam = BaseCommand.paramsFromDOM(dom, props) 
+        return ExecCommand(binary, scriptparam)
+
         
 class Path:
     
@@ -437,9 +469,10 @@ class BaseTask:
         self.name = None
         self.outputs = []
         self.command = None
+        self.taskdep = []
 
     def getName(self):
-        return name
+        return self.name
     
     def getInputs(self):
         return None
@@ -448,12 +481,28 @@ class BaseTask:
         return self.outputs
 
     def dependsOn(self, other):
+        if other.getName() in self.taskdep:
+            return True
         for i in self.getInputs():
             for o in other.getOutputs():
                 if i.intersects(o):
                     return True
         return False
 
+    def parseTaskDeps(self, dom, props):
+        i = dom.getElementsByTagName('taskdep')
+        if not i or len(i)==0:
+            return
+        if len(i)>1:
+            path = getElementPath(dom)
+            raise Exception("Multiple elements 'taskdep' in %s are not permitted" % (name, path))
+        
+        tx = i[0].getElementsByTagName("pretask")
+        for t in tx:
+            n = getRequiredAttribute(t, "name", props)
+            if n!=self.name:
+                self.taskdep.append(n)
+        
     @classmethod
     def _parseCommands(cls, dom, props):
         i = dom.getElementsByTagName('task')
@@ -469,6 +518,13 @@ class BaseTask:
             raise Exception("Multiple elements 'pig' in %s are not permitted" % (name, path))
         if len(i)==1:
             return PigCommand.fromDOM(i[0], props)
+
+        i = dom.getElementsByTagName('exec')
+        if len(i)>1:
+            path = getElementPath(dom)
+            raise Exception("Multiple elements 'exec' in %s are not permitted" % (name, path))
+        if len(i)==1:
+            return ExecCommand.fromDOM(i[0], props)
 
     @classmethod
     def _parsePathList(cls, dom, name, props):
@@ -530,6 +586,7 @@ class MapTask(BaseTask):
         res.outputs = outputs
         res.deps = deps
         res.command = command
+        res.parseTaskDeps(dom, props)
 
         return res
 
@@ -647,6 +704,7 @@ class ReduceTask(BaseTask):
         res.outputs = outputs
         res.deps = deps
         res.command = command
+        res.parseTaskDeps(dom, props)
 
         return res
 
