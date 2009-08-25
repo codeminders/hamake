@@ -171,6 +171,12 @@ Example:
 }}}
 
 == {map/reduce}/task  ==
+{{{
+<task jar="%(queries)s/datamining.jar" main="us.imageshack.datamining.A2R">
+	<pathparam type="inputfile" />
+	<pathparam type="outputfile" />
+</task>
+}}}
 TBD
 
 == {map/reduce}/pig  ==
