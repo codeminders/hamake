@@ -255,7 +255,12 @@ class PigCommand(BaseCommand):
             if len(pval)!=1:
                 print >> sys.stderr, "Multiple values for param %s are no supported in PIG scripts" % p.name
                 return -1000
-            cmd = ["-param ", "%s=%s" % (p.name, p.get(params_dict, fsclient))]
+            pvalue = p.get(params_dict, fsclient)
+            if len(pvalue)==1:
+                pvalues=pvalue[0]
+            else:
+                pvalues="'%s'" % str(pvalue) 
+            cmd += ["-param ", "%s=%s" % (p.name, pvalues)]
         cmd.append("-f")
         cmd.append(self.script)
         scmd = string.join(cmd)
@@ -265,7 +270,7 @@ class PigCommand(BaseCommand):
             if hconfig.dryrun:
                 return 0
             else:
-                return subprocess.call(cmd)
+                return subprocess.call(cmd, shell=False)
         except Exception:
             print >> sys.stderr, '%s execution failed!' % scmd
             if hconfig.test_mode:

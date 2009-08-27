@@ -1,6 +1,6 @@
 """ Various config params """
 
-version = "1.2"
+version = "1.3"
 
 verbose   = False
 
