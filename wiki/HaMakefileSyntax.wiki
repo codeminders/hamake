@@ -180,7 +180,17 @@ Example:
 TBD
 
 == {map/reduce}/pig  ==
-TBD
+Execute PIG script. Example:
+
+{{{
+<pig script="%(basedir)s/script.pig">
+  <pathparam type="input" number="0" name="DOMAINS_PATH"/>
+  <pathparam type="input" number="1" mask="keep" name="NP_PATH"/>
+  <pathparam type="output" number="0"  name="DST_PATH"/>
+  <pigparam name="PIGPARALLEL" value="16"/>
+</pig>
+
+}}}
 
 == {map/reduce}/exe  ==
 Execute arbitrary command. Example:
