@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+
+"""
+Hadoop Make Execution script
+
+@author Vadim Zaliva <lord@crocodile.org>
+"""
+
+from hamake import hamake
+
+if __name__ == "__main__":
+   hamake.main()
