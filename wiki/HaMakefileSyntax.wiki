@@ -192,7 +192,7 @@ Execute PIG script. Example:
 
 }}}
 
-== {map/reduce}/exe  ==
+== {map/reduce}/exec  ==
 Execute arbitrary command. Example:
 
 {{{
