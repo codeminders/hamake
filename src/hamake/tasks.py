@@ -367,7 +367,7 @@ class ExecCommand(BaseCommand):
         
 class Path:
     
-    def __init__(self, loc, filename=None, mask=None, gen=0):
+    def __init__(self, loc, filename=None, mask=None, gen=0, validity_period=0):
         """ Private constructor, should never be called directly
         """
         self.loc = loc
@@ -376,6 +376,7 @@ class Path:
         self.filename = filename
         self.mask = mask
         self.gen = gen
+        self.validity_period = validity_period
 
     def __str__(self):
         res = self.loc+"/"
@@ -459,12 +460,35 @@ class Path:
         loc = getRequiredAttribute(dom, 'location', props)
         filename = getOptionalAttribute(dom, 'filename', props)
         mask = getOptionalAttribute(dom, 'mask', props)
+
         gen_s = getOptionalAttribute(dom, 'generation', props)
         if gen_s == None:
             gen = 0
         else:
             gen = int(gen_s)
-        return Path(loc, filename, mask, gen)
+
+        v_s = getOptionalAttribute(dom, 'validity_period', props)
+        if v_s == None:
+            v = 0
+        else:
+            s = v[-1]
+            if s.isdigit():
+                v = int(v_s)
+            else:
+                if s=='s':
+                    m=1
+                elif m=='m':
+                    m=60
+                elif m=='h':
+                    m=60*60
+                elif m=='d':
+                    m=60*60*24
+                elif m=='w':
+                    m=60*60*24*7
+                else:
+                    raise Exception("Unknown suffix in path validity period %s" % v_s)
+                v = int(v_s[:-1])*m
+        return Path(loc, filename, mask, gen, v)
     
 class BaseTask:
     """ Base class for all tasks
@@ -633,7 +657,7 @@ class MapTask(BaseTask):
                 for (output,outputlist) in outputlists:
                     oname = output.getPathName(iname)
                     if outputlist.has_key(iname):
-                        if outputlist[iname].modification_time >= i.modification_time:
+                        if (outputlist[iname].modification_time + output.validity_period) >= i.modification_time:
                             if hconfig.verbose:
                                 print >> sys.stderr, "Output %s is already present and fresh" % oname
                             present.append(oname)
@@ -749,7 +773,7 @@ class ReduceTask(BaseTask):
         fsclient = exec_context['fsclient']
         mits = 0
         mots = 0
-        ots = [self.getTimeStamp(fsclient, d) for d in self.outputs]
+        ots = [self.getTimeStamp(fsclient, d) + d.validity_period for d in self.outputs]
         if len(ots)>0:
             if 0 in ots:
                 mots = -1
