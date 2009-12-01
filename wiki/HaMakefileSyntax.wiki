@@ -155,6 +155,7 @@ Attributes:
   * 'location' - path on DFS  (mandatory)
   * 'mask' - filename glob mask (optional)
   * 'filename' - filename (optional)
+ * 'validity_period' - for now many seconds this output considered valid (optional). In other words, this is max. allowed time difference between inputs and outputs. 
   * 'generation' - "generation" of the file. (see below) 
 
 location usually corresponds to filesystem path. If filename specified, the elements
