@@ -1,3 +1,8 @@
+2009-11-30  Vadim Zaliva  <lord@deco.local>
+
+	* src/hamake/hconfig.py (version): version 1.4
+	* src/hamake/tasks.py (Path.fromDOM): Added 'validity_period' to output paths.
+
 2009-08-27  Vadim Zaliva  <lord@deco.local>
 
 	* src/hamake/hconfig.py (version): version 1.3
