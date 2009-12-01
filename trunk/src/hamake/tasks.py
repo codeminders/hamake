@@ -471,7 +471,7 @@ class Path:
         if v_s == None:
             v = 0
         else:
-            s = v[-1]
+            s = v_s[-1]
             if s.isdigit():
                 v = int(v_s)
             else:
