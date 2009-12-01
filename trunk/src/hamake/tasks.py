@@ -477,13 +477,13 @@ class Path:
             else:
                 if s=='s':
                     m=1
-                elif m=='m':
+                elif s=='m':
                     m=60
-                elif m=='h':
+                elif s=='h':
                     m=60*60
-                elif m=='d':
+                elif s=='d':
                     m=60*60*24
-                elif m=='w':
+                elif s=='w':
                     m=60*60*24*7
                 else:
                     raise Exception("Unknown suffix in path validity period %s" % v_s)
