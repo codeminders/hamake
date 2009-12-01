@@ -649,6 +649,7 @@ class MapTask(BaseTask):
                     return -1
 
             cmdparamsqueue = []
+            have_work = False
             for (iname,i) in inputlist.items():
                 iparams = [self.xinput.getPathWithNewName(iname)]
                 oparams = []
@@ -669,11 +670,12 @@ class MapTask(BaseTask):
                                     fsclient.rm(output.getHPathName(oname),True)
                     oparams.append(output.getPathWithNewName(iname))
                     cleanuplist.append(output.getHPathName(iname))
+                    
                 if len(present)==len(self.outputs):
                     if hconfig.verbose:
                         print >> sys.stderr, "All outputs of %s are fresh" % iname
                     continue # all files are fresh. no need to process this input
-
+                have_work = True
                 for pr in present:
                     print >> sys.stderr, "Removing partial output %s" % pr.pathname
                     if not hconfig.dryrun:
@@ -684,8 +686,10 @@ class MapTask(BaseTask):
                                PathParam.OUTPUTFILE_TYPE : oparams}
 
                 cmdparamsqueue.append((params_dict,cleanuplist))
-
-            return self._execQueue(cmdparamsqueue, job_semaphore, exec_context)
+            if have_work:
+                return self._execQueue(cmdparamsqueue, job_semaphore, exec_context)
+            else:
+                return 0
     
     def _execQueue(self, cmdparamsqueue, job_semaphore, exec_context):
         threads = []
