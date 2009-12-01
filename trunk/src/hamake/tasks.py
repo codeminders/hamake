@@ -473,18 +473,18 @@ class Path:
         else:
             s = v_s[-1]
             if s.isdigit():
-                v = int(v_s)
+                v = int(v_s)*1000l
             else:
                 if s=='s':
-                    m=1
+                    m=1000l
                 elif s=='m':
-                    m=60
+                    m=1000l*60l
                 elif s=='h':
-                    m=60*60
+                    m=1000l*60l*60l
                 elif s=='d':
-                    m=60*60*24
+                    m=1000l*60l*60l*24l
                 elif s=='w':
-                    m=60*60*24*7
+                    m=1000l*60l*60l*24l*7l
                 else:
                     raise Exception("Unknown suffix in path validity period %s" % v_s)
                 v = int(v_s[:-1])*m
@@ -792,12 +792,16 @@ class ReduceTask(BaseTask):
                         return -10
                     mits = max(its)
                 else:
+                    if hconfig.verbose:
+                        print >> sys.stderr, "No inputs, will run always"
                     mits = -1 # no inputs, always run
         else:
             mots = -1 # no outputs, running for side-effects
 
 
         if mits==-1 or mots==-1 or mits>mots:
+            if hconfig.verbose:
+                print >> sys.stderr, "Some outputs are older than inputs. will run"
             params_dict = {PathParam.INPUT_TYPE : self.inputs,
                            PathParam.DEP_TYPE : self.deps,
                            PathParam.OUTPUT_TYPE : self.outputs}
@@ -807,4 +811,6 @@ class ReduceTask(BaseTask):
 
             return self.command.execute(params_dict, exec_context)
         else:
+            if hconfig.verbose:
+                print >> sys.stderr, "All outputs are up to date, will not run"
             return 0 # all fresh
