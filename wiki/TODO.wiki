@@ -10,6 +10,7 @@ Java-related improvements:
   * Allow to specify library JARs for Java tasks.
   * Hamake should be Hadoop tasks itself
   * hamakefiles could be stored on DFS as well as on local file system
+  * Using file system classes will allow us to get rid of thrift server which is currently used to access DFS
 
 Misc improvements:
   * Option to stop MAP task if one or certain number file processing failures (now it tries to process all files)
