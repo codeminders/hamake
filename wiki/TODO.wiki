@@ -1,6 +1,9 @@
 #labels Phase-Requirements
 TODO List for hamake project
 
+The main TODO item is to rewrite whole thing in Java, which Hamake process being Hadoop task itself.
+
+Misc improvements:
   * Option to stop MAP task if one or certain number file processing failures (now it tries to process all files)
   * Implement file-to-file MAP tasks
   * Tasks DFS COPY, MOVE commands
