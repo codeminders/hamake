@@ -3,6 +3,14 @@ TODO List for hamake project
 
 The main TODO item is to rewrite whole thing in Java, which Hamake process being Hadoop task itself.
 
+Java-related improvements:
+
+  * Start hadoop tasks via Java calls, not spawning processes
+  * PIG tasks via Java pig API (embeddable pig)
+  * Allow to specify library JARs for Java tasks.
+  * Hamake should be Hadoop tasks itself
+  * hamakefiles could be stored on DFS as well as on local file system
+
 Misc improvements:
   * Option to stop MAP task if one or certain number file processing failures (now it tries to process all files)
   * Implement file-to-file MAP tasks
