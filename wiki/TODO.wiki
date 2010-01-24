@@ -23,3 +23,4 @@ Misc improvements:
   * Option to limit number of Hadoop jobs running per file simultaneously for MAP tasks. For example MAP on 10K files now will try to spawn 10K tasks at once. Should be limited have no more than certain number running at the same time. The number could be set via command line or 'config' section
   * Allow to specify -j value via config. (Command line overrides it)
   * integration with Fair Sceduler
+  * 'Daemon' mode, where it works as daemon, continuously checking for dependencies and running tasks as necessary. Implies web console for status reporting and control.
