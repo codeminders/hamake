@@ -7,7 +7,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 public abstract class BaseTask implements Task {
 
@@ -19,8 +18,6 @@ public abstract class BaseTask implements Task {
     public String getName() {
         return name;
     }
-
-    public abstract int execute(Object semaphore, Map<String, Object> context);
 
     public abstract Collection<Path> getInputs();
 

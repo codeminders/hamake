@@ -1,6 +1,11 @@
 package com.codeminders.hamake;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.hdfs.DFSClient;
+
+import java.io.IOException;
 
 public class Path {
 
@@ -92,56 +97,50 @@ public class Path {
         return ret.toString();
     }
 
+    public void removeIfExists(DFSClient fsClient) throws IOException {
+        String path = getPathName();
+        if (hasFilename() || getMask() == null) {
+            boolean exists;
+            synchronized (fsClient) {
+                exists = fsClient.exists(path);
+            }
+            if (exists) {
+                if (Config.getInstance().verbose) {
+                    System.err.println("Removing " + path);
+                }
+                if (!Config.getInstance().dryrun) {
+                    synchronized (fsClient) {
+                        fsClient.delete(path, true);
+                    }
+                }
+            }
+        } else {
+            FileStatus status;
+            synchronized (fsClient) {
+                status = fsClient.getFileInfo(path);
+            }
+            if (!status.isDir()) {
+                throw new IOException("Path " + path + " must be dir!");
+            }
+            FileStatus list[];
+            synchronized (fsClient) {
+                list = fsClient.listPaths(path);
+            }
 
-    // TODO
-    /*
-class Path:
-
-    def removeIfExists(self, fsclient):
-        ipath = self.getHPathName()
-        if self.filename!=None or self.mask==None:
-            with fsclient.mutex:
-                iexists = fsclient.exists(ipath)
-            if iexists:
-                if hconfig.verbose:
-                    print >> sys.stderr, "Removing %s" % ipath.pathname
-                if not hconfig.dryrun:
-                    with fsclient.mutex:
-                        fsclient.rm(ipath,True)
-        else:
-            with fsclient.mutex:
-                istat = fsclient.stat(ipath)
-            if not istat.isdir:
-                raise Exception("path %s must be dir!" % ipath.pathname)
-            with fsclient.mutex:
-                inputlist = fsclient.listStatus(ipath)
-            for i in inputlist:
-                pos = i.path.rfind('/')
-                fname = i.path[pos+1:]
-                if fnmatch(fname, self.mask):
-                    fpath = self.getHPathName(fname)
-                    with fsclient.mutex:
-                        fexists = fsclient.exists(fpath)
-                    if fexists:
-                        if hconfig.verbose:
-                            print >> sys.stderr, "Removing %s" % fpath.pathname
-                        if not hconfig.dryrun:
-                            with fsclient.mutex:
-                                fsclient.rm(fpath,True)
-
-    @classmethod
-    def fromDOM(cls, dom, props):
-        loc = getRequiredAttribute(dom, 'location', props)
-        filename = getOptionalAttribute(dom, 'filename', props)
-        mask = getOptionalAttribute(dom, 'mask', props)
-        gen_s = getOptionalAttribute(dom, 'generation', props)
-        if gen_s == None:
-            gen = 0
-        else:
-            gen = int(gen_s)
-        return Path(loc, filename, mask, gen)
-
-     */
+            for (FileStatus stat : list) {
+                if (FilenameUtils.wildcardMatch(stat.getPath().getName(), getMask())) {
+                    if (Config.getInstance().verbose) {
+                        System.err.println("Removing " + stat.getPath());
+                    }
+                    if (!Config.getInstance().dryrun) {
+                        synchronized (fsClient) {
+                            fsClient.delete(stat.getPath().toString(), true);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     public String getLoc() {
         return loc;

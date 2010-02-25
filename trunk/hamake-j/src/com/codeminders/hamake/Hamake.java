@@ -1,9 +1,14 @@
 package com.codeminders.hamake;
 
+import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.conf.Configuration;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.net.InetSocketAddress;
+import java.io.IOException;
 
 public class Hamake {
     enum ExitCode {
@@ -68,35 +73,30 @@ public class Hamake {
     }
 
     public ExitCode run() {
-        // TODO
-        //connectToDFS();
+
+        InetSocketAddress address = new InetSocketAddress(getThriftHost(), getThriftPort());
+        Configuration config = new Configuration();
+
+        DFSClient fsclient;
+
         try {
-            Map<String, Object> context = new HashMap<String, Object>();
-            // TODO
-            //context.put("fsclient", fsclient);
-            TaskRunner runner = new TaskRunner(getTasks(),
-                    getNumJobs(),
-                    getTargets(),
-                    context);
-            runner.run();
-            if (runner.getFailures() > 0)
-                    return ExitCode.FAILED;
-            return ExitCode.OK;
-        } finally {
-            // TODO
-            //if (transport != null)
-            //    transport.close();
+            fsclient = new DFSClient(address, config);
+        } catch (IOException ex) {
+            System.err.println("Unable to connect to DFS: " + ex.getMessage());
+            if (Config.getInstance().test_mode)
+                ex.printStackTrace();
+            return ExitCode.FAILED;
         }
+        Map<String, Object> context = new HashMap<String, Object>();
+        context.put("fsclient", fsclient);
+        TaskRunner runner = new TaskRunner(getTasks(),
+                getNumJobs(),
+                getTargets(),
+                context);
+        runner.run();
+        if (runner.getFailed() > 0)
+            return ExitCode.FAILED;
+        return ExitCode.OK;
     }
 
-// TODO
-    /*
-    def connectToDFS(self):
-        self.socket = TSocket.TSocket(self.thrift_host, self.thrift_port)
-        self.transport = TTransport.TBufferedTransport(self.socket)
-        self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
-        self.fsclient = hadoopfs.ThriftHadoopFileSystem.Client(self.protocol)
-        self.fsclient.mutex = threading.Lock()
-        self.transport.open()
-*/
 }

@@ -1,10 +1,10 @@
 package com.codeminders.hamake.params;
 
 import com.codeminders.hamake.Param;
+import org.apache.hadoop.hdfs.DFSClient;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 public class PigParam implements Param {
@@ -32,7 +32,7 @@ public class PigParam implements Param {
         this.value = value;
     }
 
-    public Collection<String> get(Map<String, List> dict, Object fsClient) {
+    public Collection<String> get(Map<String, Collection> dict, DFSClient fsClient) {
         return Collections.singleton(getValue());
     }
 }

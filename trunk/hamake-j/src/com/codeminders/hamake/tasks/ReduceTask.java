@@ -1,11 +1,16 @@
 package com.codeminders.hamake.tasks;
 
 import com.codeminders.hamake.Path;
+import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.params.PathParam;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.hdfs.DFSClient;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class ReduceTask extends BaseTask {
 
@@ -16,82 +21,85 @@ public class ReduceTask extends BaseTask {
         return new ArrayList<Path>(inputs);
     }
 
-    public int execute(Object semaphore, Map<String, Object> context) {
-        // TODO
-        return -100;
+    public int execute(Semaphore semaphore, Map<String, Object> context) throws IOException {
+        DFSClient fsclient = Utils.getFSClient(context);
+        long mits = -1;
+        long mots = -1;
+
+        int numo = 0;
+        for (Path p : getOutputs()) {
+            long stamp = getTimeStamp(fsclient, p);
+            if (stamp == 0) {
+                mots = -1;
+                break;
+            }
+            if (stamp > mots) {
+                mots = stamp;
+            }
+            numo++;
+        }
+        if (numo > 0 && mots != -1) {
+            Collection<Path> paths = new ArrayList<Path>(getInputs());
+            paths.addAll(getDeps());
+            for (Path p : paths) {
+                long stamp = getTimeStamp(fsclient, p);
+                if (stamp == 0) {
+                    System.err.println("Some of input/dependency files not present!");
+                    return -10;
+                }
+                if (stamp > mits)
+                    mits = stamp;
+            }
+        }
+
+        if (mits == -1 || mots == -1 || mits > mots) {
+            Map<String, Collection> params = new HashMap<String, Collection>();
+            params.put(PathParam.Type.input.name(), getInputs());
+            params.put(PathParam.Type.dependency.name(), getDeps());
+            params.put(PathParam.Type.output.name(), getOutputs());
+
+            for (Path p : getOutputs())
+                p.removeIfExists(fsclient);
+
+            return getCommand().execute(params, context);
+        }
+        // all fresh
+        return 0;
     }
 
+    protected long getTimeStamp(DFSClient client, Path path) throws IOException {
+        String ipath = path.getPathName();
+        synchronized (client) {
+            if (!client.exists(ipath))
+                return 0;
+        }
 
-    // TODO
-    /*
-    def getTimeStamp(self, fsclient, path):
-        ipath = path.getHPathName()
-        with fsclient.mutex:
-            if not fsclient.exists(ipath):
-                return 0
-        if path.hasFilename() or path.mask == None:
-            with fsclient.mutex:
-                istat = fsclient.stat(ipath)
-            return istat.modification_time
-        else:
-            with fsclient.mutex:
-                istat = fsclient.stat(ipath)
-            if not istat.isdir:
-                raise Exception("path %s must be dir!" % ipath.pathname)
-            with fsclient.mutex:
-                inputlist = fsclient.listStatus(ipath)
-            res = 0
-            for i in inputlist:
-                pos = i.path.rfind('/')
-                fname = i.path[pos+1:]
-                if fnmatch(fname, path.mask):
-                    fpath = path.getHPathName(fname)
-                    with fsclient.mutex:
-                        istat = fsclient.stat(fpath)
-                    if istat.modification_time>res:
-                        res = istat.modification_time
-            return res
+        FileStatus stat;
+        synchronized (client) {
+            stat = client.getFileInfo(ipath);
+        }
 
+        if (path.hasFilename() || path.getMask() == null) {
+            return stat.getModificationTime();
+        }
 
-
-    def execute(self, job_semaphore, exec_context):
-        """ Execute command and return exit code
-        """
-        fsclient = exec_context['fsclient']
-        mits = 0
-        mots = 0
-        ots = [self.getTimeStamp(fsclient, d) for d in self.outputs]
-        if len(ots)>0:
-            if 0 in ots:
-                mots = -1
-            else:
-                mots = max(ots)
-                # got output timestamp, check inputs
-                deps = self.inputs + self.deps
-                its = [self.getTimeStamp(fsclient, d) for d in deps]
-                if len(its)>0:
-                    if 0 in its:
-                        print >> sys.stderr, "Some of input/dependency files not present!"
-                        return -10
-                    mits = max(its)
-                else:
-                    mits = -1 # no inputs, always run
-        else:
-            mots = -1 # no outputs, running for side-effects
-
-
-        if mits==-1 or mots==-1 or mits>mots:
-            params_dict = {PathParam.INPUT_TYPE : self.inputs,
-                           PathParam.DEP_TYPE : self.deps,
-                           PathParam.OUTPUT_TYPE : self.outputs}
-
-            for o in self.outputs:
-                o.removeIfExists(fsclient)
-
-            return self.command.execute(params_dict, exec_context)
-        else:
-            return 0 # all fresh
-            */
+        if (!stat.isDir()) {
+            throw new IOException("Path " + ipath + " must be a dir!");
+        }
+        FileStatus list[];
+        synchronized (client) {
+            list = client.listPaths(ipath);
+        }
+        long ret = 0;
+        for (FileStatus s : list) {
+            if (FilenameUtils.wildcardMatch(s.getPath().getName(), path.getMask())) {
+                if (s.getModificationTime() > ret) {
+                    ret = s.getModificationTime();
+                }
+            }
+        }
+        return ret;
+    }
 
     public Collection<Path> getDeps() {
         return deps;
