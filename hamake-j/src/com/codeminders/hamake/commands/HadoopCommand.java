@@ -3,12 +3,12 @@ package com.codeminders.hamake.commands;
 import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.JobConfParam;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.hadoop.hdfs.DFSClient;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 public class HadoopCommand extends BaseCommand {
@@ -27,8 +27,8 @@ public class HadoopCommand extends BaseCommand {
     private String jar;
     private String main;
 
-    public int execute(Map<String, List> parameters, Map<String, Object> context) {
-        Object fsclient = Utils.getFSClient(context);
+    public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
+        DFSClient fsclient = Utils.getFSClient(context);
         Collection<String> args = new ArrayList<String>();
         args.add(Utils.getenv(HADOOPCMDENV, HADOOPCMD));
         args.add("jar");

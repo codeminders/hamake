@@ -3,9 +3,11 @@ package com.codeminders.hamake.tasks;
 import com.codeminders.hamake.Path;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 public class MapTask extends BaseTask {
 
@@ -20,7 +22,7 @@ public class MapTask extends BaseTask {
         return ret;
     }
 
-    public int execute(Object semaphore, Map<String, Object> context) {
+    public int execute(Semaphore semaphore, Map<String, Object> context) throws IOException {
         // TODO
         return -100;
     }

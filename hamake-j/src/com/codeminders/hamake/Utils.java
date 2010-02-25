@@ -1,15 +1,19 @@
 package com.codeminders.hamake;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.hdfs.DFSClient;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.io.IOException;
 
 public class Utils {
 
@@ -96,62 +100,67 @@ public class Utils {
         return s;
     }
 
-    public static Map<String, String> getFileList(Object fsclient, String ipath) {
+    public static Map<String, org.apache.hadoop.fs.Path> getFileList(DFSClient fsclient, String ipath) throws IOException {
         return getFileList(fsclient, ipath, false, null);
     }
 
-    public static Map<String, String> getFileList(Object fsclient, String ipath, String mask) {
+    public static Map<String, org.apache.hadoop.fs.Path> getFileList(DFSClient fsclient, String ipath, String mask) throws IOException {
         return getFileList(fsclient, ipath, false, mask);
     }
 
-    public static Map<String, String> getFileList(Object fsclient, String ipath, boolean create) {
+    public static Map<String, org.apache.hadoop.fs.Path> getFileList(DFSClient fsclient, String ipath, boolean create) throws IOException {
         return getFileList(fsclient, ipath, create, null);
     }
 
-    public static Map<String, String> getFileList(Object fsclient, String ipath, boolean create, String mask) {
-        // TODO
-        return new HashMap<String, String>();
+    public static Map<String, org.apache.hadoop.fs.Path> getFileList(DFSClient fsclient, String ipath, boolean create, String mask)
+        throws IOException {
+        if (Config.getInstance().test_mode)
+            System.err.println("Scanning " + ipath);
+
+        boolean exists;
+
+        synchronized (fsclient) {
+                exists = fsclient.exists(ipath);
+        }
+        if (!exists) {
+            if (create) {
+                System.err.println("Creating " + ipath);
+                synchronized (fsclient) {
+                        fsclient.mkdirs(ipath);
+                }
+                return Collections.emptyMap();
+            } else {
+                System.err.println("Path " + ipath + " does not exist!");
+                return null;
+            }
+        }
+
+        FileStatus fs;
+        synchronized (fsclient) {
+            fs = fsclient.getFileInfo(ipath);
+        }
+        if (!fs.isDir()) {
+            System.err.println("Path " + ipath + " must be dir!");
+            return null;
+        }
+
+        FileStatus list[];
+        synchronized (fsclient) {
+            list = fsclient.listPaths(ipath);
+        }
+
+        Map<String, org.apache.hadoop.fs.Path> ret = new HashMap<String, org.apache.hadoop.fs.Path>();
+        for (FileStatus stat : list) {
+            String name = stat.getPath().getName();
+            if (mask == null || FilenameUtils.wildcardMatch(name, mask)) {
+                ret.put(name, stat.getPath());
+            }
+        }
+        return ret;
     }
-    // TODO
-    /*
-    def _getFileList(fsclient, ipath, create = False, mask=None):
-        """ Utility method to get list of files from DFS
-        """
-        if hconfig.test_mode:
-            print >> sys.stderr, "Scanning %s" % ipath.pathname
 
-        with fsclient.mutex:
-            iexists = fsclient.exists(ipath)
-        if not iexists:
-            if create:
-                print >> sys.stderr, "Creating %s" % ipath.pathname
-                with fsclient.mutex:
-                    fsclient.mkdirs(ipath)
-                return {}
-            else:
-                print >> sys.stderr, "path %s does not exists!" % ipath.pathname
-                return None
-
-        with fsclient.mutex:
-            istat = fsclient.stat(ipath)
-        if not istat.isdir:
-            print >> sys.stderr, "path %s must be dir!" % ipath.pathname
-            return None
-        with fsclient.mutex:
-            inputlist = fsclient.listStatus(ipath)
-        res = {}
-        for i in inputlist:
-            pos = i.path.rfind('/')
-            fname = i.path[pos+1:]
-            if mask==None or fnmatch(fname, mask):
-                res[fname] = i
-        return res
-
-    */
-
-    // TODO: signature, what is the type of fslient..
-    public static Object getFSClient(Map<String, Object> context) {
-        return context.get("fsclient");
+    public static DFSClient getFSClient(Map<String, Object> context) {
+        return (DFSClient) context.get("fsclient");
     }
 
     public static String getenv(String name, String defaultValue) {
@@ -178,7 +187,7 @@ public class Utils {
             if (Config.getInstance().test_mode) {
                 ex.printStackTrace();
             }
-        }  catch (Exception ex) {
+        } catch (Exception ex) {
             System.err.println(command + " execution failed, internal error");
             if (Config.getInstance().test_mode) {
                 ex.printStackTrace();

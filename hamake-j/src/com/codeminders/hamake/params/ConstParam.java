@@ -2,6 +2,7 @@ package com.codeminders.hamake.params;
 
 import com.codeminders.hamake.Param;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.hadoop.hdfs.DFSClient;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +25,7 @@ public class ConstParam implements Param {
         this.value = value;
     }
 
-    public Collection<String> get(Map<String, List> dict, Object fsClient) {
+    public Collection<String> get(Map<String, Collection> dict, DFSClient fsClient) {
         return Collections.singleton(getValue());
     }
 

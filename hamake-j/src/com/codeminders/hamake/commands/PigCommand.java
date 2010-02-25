@@ -5,10 +5,10 @@ import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.PigParam;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.hadoop.hdfs.DFSClient;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 public class PigCommand extends BaseCommand {
@@ -38,8 +38,8 @@ public class PigCommand extends BaseCommand {
         setParameters(parameters);
     }
 
-    public int execute(Map<String, List> parameters, Map<String, Object> context) {
-        Object fsClient = Utils.getFSClient(context);
+    public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
+        DFSClient fsClient = Utils.getFSClient(context);
         Collection<String> args = new ArrayList<String>();
         args.add(Utils.getenv(PIGCMDENV, PIGCMD));
 

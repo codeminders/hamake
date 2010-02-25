@@ -4,8 +4,10 @@ import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Path;
 import com.codeminders.hamake.Utils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.hadoop.hdfs.DFSClient;
 
 import java.util.*;
+import java.io.IOException;
 
 public class PathParam implements Param {
 
@@ -16,18 +18,26 @@ public class PathParam implements Param {
         expand
     }
 
+    public enum Type {
+        input,
+        output,
+        dependency,
+        inputfile,
+        outputfile
+    }
+
     private String name;
-    private String ptype;
+    private String type;
     private int number;
     private Mask maskHandling;
 
-    public PathParam(String name, String ptype, int number) {
-        this(name, ptype, number, Mask.keep);
+    public PathParam(String name, String type, int number) {
+        this(name, type, number, Mask.keep);
     }
 
-    public PathParam(String name, String ptype, int number, Mask maskHandling) {
+    public PathParam(String name, String type, int number, Mask maskHandling) {
         setName(name);
-        setPtype(ptype);
+        setType(type);
         setNumber(number);
         setMaskHandling(maskHandling);
     }
@@ -40,12 +50,12 @@ public class PathParam implements Param {
         this.name = name;
     }
 
-    public String getPtype() {
-        return ptype;
+    public String getType() {
+        return type;
     }
 
-    public void setPtype(String ptype) {
-        this.ptype = ptype;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public int getNumber() {
@@ -64,30 +74,45 @@ public class PathParam implements Param {
         this.maskHandling = maskHandling;
     }
 
-    public Collection<String> get(Map<String, List> dict, Object fsClient) {
+    public Collection<String> get(Map<String, Collection> dict, DFSClient fsClient) {
 
         Collection<String> ret;
 
-        if (getNumber() == -1) {
+        int number = getNumber();
+        if (number == -1) {
             ret = new ArrayList<String>();
             // mitliple inputs, may all be expanded. flatten results
-            Collection params = dict.get(getPtype());
+            Collection params = dict.get(getType());
             if (params != null) {
                 for (Object o : params) {
                     ret.addAll(toStrArr(o, fsClient));
                 }
             }
         } else {
-            ret = toStrArr(dict.get(ptype).get(getNumber()), fsClient);
+            int counter = 0;
+            Collection pcol = dict.get(getType());
+            if (pcol == null)
+                throw new IllegalArgumentException("Not found " + getType() + " parameters");
+            Iterator it = pcol.iterator();
+            Collection params = null;
+            while (counter <= number) {
+                if (it.hasNext()) {
+                    params = (Collection) it.next();
+                    counter++;
+                } else {
+                    throw new IllegalArgumentException("Not found item " + number + " in " + getType() + " parameters");
+                }
+            }
+            ret = toStrArr(params, fsClient);
         }
         return ret;
     }
 
-    protected Collection<String> toStrArr(Object i) {
+    protected Collection<String> toStrArr(DFSClient i) {
         return toStrArr(i, null);
     }
 
-    protected Collection<String> toStrArr(Object i, Object fsClient) {
+    protected Collection<String> toStrArr(Object i, DFSClient fsClient) {
         if (i instanceof Path) {
             Path p = (Path) i;
             Mask m = getMaskHandling();
@@ -102,8 +127,12 @@ public class PathParam implements Param {
                     throw new IllegalArgumentException("Could not expand file " + p);
                 Collection<String> ret = new ArrayList<String>();
 
+                try {
                 for (String key : Utils.getFileList(fsClient, p.getPathName(), false, p.getMask()).keySet())
                     ret.add(p.getPathName(key));
+                } catch (IOException ex) {
+                    // TODO                    
+                }
                 return ret;
             }
         } else
@@ -114,7 +143,7 @@ public class PathParam implements Param {
      public String toString() {
          return new ToStringBuilder(this).
                  append("name", name).
-                 append("ptype", ptype).
+                 append("ptype", type).
                  append("number", number).
                  append("mask", maskHandling).toString();
      }
