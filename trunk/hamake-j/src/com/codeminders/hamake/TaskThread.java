@@ -51,7 +51,7 @@ public class TaskThread extends Thread {
         try {
             this.rc = rc;
             finished = true;
-            cv.notify();
+            cv.signal();
         } finally {
             lock.unlock();
         }

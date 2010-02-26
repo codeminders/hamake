@@ -8,38 +8,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class TaskRunner {
 
-    /*
-
-    def run(self):
-        while True:
-            self.cv.acquire()
-            running_names = [x.name for x in self.running]
-            candidates = [x for x in self.graph.getReadyToRunTasks() if x not in self.failed and x not in running_names]
-            if len(candidates)==0 and len(self.running)==0:
-                break
-
-            self.startTasks(candidates)
-
-            self.cv.wait()
-            just_finished = [x for x in self.running if x.finished]
-            for f in just_finished:
-                if f.rc == 0:
-                    print >> sys.stderr, "Execution of %s is completed" % (f.name)
-                    self.completed.append(f.name)
-                    self.graph.removeTask(f.name)
-                else:
-                    print >> sys.stderr, "Execution of %s is failed with code %d" % (f.name, f.rc)
-                    self.failed.append(f.name)
-            self.running = [x for x in self.running if not x.finished]
-            self.cv.release()
-
-     */
-
     private ExecutionGraph graph;
     private Map<String, Object> context;
     private Map<String, Task> tasks;
 
-    private Collection<String> completed;
     private Collection<String> failed;
     private Collection<TaskThread> running;
 
@@ -59,7 +31,6 @@ public class TaskRunner {
         this.tasks = new HashMap<String, Task>();
         for (Task t : tasks)
             this.tasks.put(t.getName(), t);
-        this.completed = new HashSet<String>();
         this.failed = new HashSet<String>();
         this.running = new HashSet<TaskThread>();
         if (numJobs < 0)
@@ -119,7 +90,8 @@ public class TaskRunner {
             try {
                 condition.await();
             } catch (InterruptedException ex) {
-                // TODO
+                System.err.println("Execution is interrupted");
+                return;
             }
 
             Collection<TaskThread> justFinished = new ArrayList<TaskThread>();
@@ -135,7 +107,6 @@ public class TaskRunner {
             for (TaskThread tt : justFinished) {
                 if (tt.getReturnCode() == 0) {
                     System.err.println("Execution of " + tt.getTaskName() + " is completed");
-                    completed.add(tt.getTaskName());
                     graph.removeTask(tt.getTaskName());
                 } else {
                     System.err.println("Execution of " + tt.getTaskName() + " is failed with code " + tt.getReturnCode());

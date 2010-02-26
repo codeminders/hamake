@@ -2,6 +2,7 @@ package com.codeminders.hamake.commands;
 
 import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.Config;
 import com.codeminders.hamake.params.JobConfParam;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -10,6 +11,7 @@ import org.apache.hadoop.hdfs.DFSClient;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.io.IOException;
 
 public class HadoopCommand extends BaseCommand {
 
@@ -38,13 +40,29 @@ public class HadoopCommand extends BaseCommand {
         if (scriptParams != null) {
             // first add jobconf params
             for (Param p : scriptParams) {
-                if (p instanceof JobConfParam)
-                    args.addAll(p.get(parameters, fsclient));
+                if (p instanceof JobConfParam) {
+                    try {
+                        args.addAll(p.get(parameters, fsclient));
+                    } catch (IOException ex) {
+                        System.err.println("Failed to extract parameter values from parameter: " + ex.getMessage());
+                        if (Config.getInstance().test_mode)
+                            ex.printStackTrace();
+                        return -1000;
+                    }
+                }
             }
             // then the rest
             for (Param p : scriptParams) {
-                if (!(p instanceof JobConfParam))
-                    args.addAll(p.get(parameters, fsclient));
+                if (!(p instanceof JobConfParam)) {
+                    try {
+                        args.addAll(p.get(parameters, fsclient));
+                    } catch (IOException ex) {
+                        System.err.println("Failed to extract parameter values from parameter: " + ex.getMessage());
+                        if (Config.getInstance().test_mode)
+                            ex.printStackTrace();
+                        return -1000;
+                    }
+                }
             }
         }
         String command = StringUtils.join(args, ' ');
@@ -68,9 +86,9 @@ public class HadoopCommand extends BaseCommand {
     }
 
     @Override
-     public String toString() {
-         return new ToStringBuilder(this).append("jar", jar).
-                 append("main", main).appendSuper(super.toString()).toString();
-     }
-     
+    public String toString() {
+        return new ToStringBuilder(this).append("jar", jar).
+                append("main", main).appendSuper(super.toString()).toString();
+    }
+
 }

@@ -66,11 +66,7 @@ public class Path {
     }
 
     public String getPathNameWithMask() {
-        return getPathNameWithMask(null);
-    }
-
-    public String getPathNameWithMask(String newFilename) {
-        String p = getPathName(newFilename);
+        String p = getPathName();
         String mask = getMask();
         if (mask != null)
             return p + '/' + mask;
@@ -119,6 +115,12 @@ public class Path {
             synchronized (fsClient) {
                 status = fsClient.getFileInfo(path);
             }
+
+            if (status == null) {
+                // lyolik: Does not exist
+                return;
+            }
+
             if (!status.isDir()) {
                 throw new IOException("Path " + path + " must be dir!");
             }

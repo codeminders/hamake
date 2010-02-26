@@ -2,6 +2,7 @@ package com.codeminders.hamake.commands;
 
 import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.Config;
 import com.codeminders.hamake.params.PigParam;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -10,6 +11,7 @@ import org.apache.hadoop.hdfs.DFSClient;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.io.IOException;
 
 public class PigCommand extends BaseCommand {
 
@@ -26,13 +28,8 @@ public class PigCommand extends BaseCommand {
     private String script;
 
     public PigCommand() {
-        this(null);
     }
     
-    public PigCommand(String script) {
-        this(script, new ArrayList<Param>());
-    }
-
     public PigCommand(String script, Collection<Param> parameters) {
         setScript(script);
         setParameters(parameters);
@@ -48,7 +45,16 @@ public class PigCommand extends BaseCommand {
             for (Param p : scriptParams) {
                 if (p instanceof PigParam) {
                     PigParam pp = (PigParam) p;
-                    Collection<String> values = p.get(parameters, fsClient);
+                    Collection<String> values;
+                    try {
+                        values = p.get(parameters, fsClient);
+                    } catch (IOException ex) {
+                        System.err.println("Failed to extract parameter values from parameter " +
+                                pp.getName() + ": " +  ex.getMessage());
+                        if (Config.getInstance().test_mode)
+                            ex.printStackTrace();
+                        return -1000;
+                    }
                     if (values.size() != 1) {
                         System.err.println("Multiple values for param are no supported in PIG scripts");
                         return -1000;

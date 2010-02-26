@@ -100,19 +100,19 @@ public class Utils {
         return s;
     }
 
-    public static Map<String, org.apache.hadoop.fs.Path> getFileList(DFSClient fsclient, String ipath) throws IOException {
+    public static Map<String, FileStatus> getFileList(DFSClient fsclient, String ipath) throws IOException {
         return getFileList(fsclient, ipath, false, null);
     }
 
-    public static Map<String, org.apache.hadoop.fs.Path> getFileList(DFSClient fsclient, String ipath, String mask) throws IOException {
+    public static Map<String, FileStatus> getFileList(DFSClient fsclient, String ipath, String mask) throws IOException {
         return getFileList(fsclient, ipath, false, mask);
     }
 
-    public static Map<String, org.apache.hadoop.fs.Path> getFileList(DFSClient fsclient, String ipath, boolean create) throws IOException {
+    public static Map<String, FileStatus> getFileList(DFSClient fsclient, String ipath, boolean create) throws IOException {
         return getFileList(fsclient, ipath, create, null);
     }
 
-    public static Map<String, org.apache.hadoop.fs.Path> getFileList(DFSClient fsclient, String ipath, boolean create, String mask)
+    public static Map<String, FileStatus> getFileList(DFSClient fsclient, String ipath, boolean create, String mask)
         throws IOException {
         if (Config.getInstance().test_mode)
             System.err.println("Scanning " + ipath);
@@ -149,11 +149,11 @@ public class Utils {
             list = fsclient.listPaths(ipath);
         }
 
-        Map<String, org.apache.hadoop.fs.Path> ret = new HashMap<String, org.apache.hadoop.fs.Path>();
+        Map<String, FileStatus> ret = new HashMap<String, FileStatus>();
         for (FileStatus stat : list) {
             String name = stat.getPath().getName();
             if (mask == null || FilenameUtils.wildcardMatch(name, mask)) {
-                ret.put(name, stat.getPath());
+                ret.put(name, stat);
             }
         }
         return ret;
