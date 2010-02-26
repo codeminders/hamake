@@ -5,6 +5,7 @@ import com.codeminders.hamake.Path;
 import com.codeminders.hamake.Utils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.fs.FileStatus;
 
 import java.util.*;
 import java.io.IOException;
@@ -74,7 +75,7 @@ public class PathParam implements Param {
         this.maskHandling = maskHandling;
     }
 
-    public Collection<String> get(Map<String, Collection> dict, DFSClient fsClient) {
+    public Collection<String> get(Map<String, Collection> dict, DFSClient fsClient) throws IOException {
 
         Collection<String> ret;
 
@@ -94,10 +95,10 @@ public class PathParam implements Param {
             if (pcol == null)
                 throw new IllegalArgumentException("Not found " + getType() + " parameters");
             Iterator it = pcol.iterator();
-            Collection params = null;
+            Object params = null;
             while (counter <= number) {
                 if (it.hasNext()) {
-                    params = (Collection) it.next();
+                    params = it.next();
                     counter++;
                 } else {
                     throw new IllegalArgumentException("Not found item " + number + " in " + getType() + " parameters");
@@ -108,11 +109,11 @@ public class PathParam implements Param {
         return ret;
     }
 
-    protected Collection<String> toStrArr(DFSClient i) {
+    protected Collection<String> toStrArr(DFSClient i) throws IOException {
         return toStrArr(i, null);
     }
 
-    protected Collection<String> toStrArr(Object i, DFSClient fsClient) {
+    protected Collection<String> toStrArr(Object i, DFSClient fsClient) throws IOException {
         if (i instanceof Path) {
             Path p = (Path) i;
             Mask m = getMaskHandling();
@@ -127,11 +128,11 @@ public class PathParam implements Param {
                     throw new IllegalArgumentException("Could not expand file " + p);
                 Collection<String> ret = new ArrayList<String>();
 
-                try {
-                for (String key : Utils.getFileList(fsClient, p.getPathName(), false, p.getMask()).keySet())
-                    ret.add(p.getPathName(key));
-                } catch (IOException ex) {
-                    // TODO                    
+                Map<String, FileStatus> list =
+                        Utils.getFileList(fsClient, p.getPathName(), false, p.getMask());
+                if (list != null) {
+                    for (String key : list.keySet())
+                        ret.add(p.getPathName(key));
                 }
                 return ret;
             }
@@ -140,12 +141,12 @@ public class PathParam implements Param {
     }
 
     @Override
-     public String toString() {
-         return new ToStringBuilder(this).
-                 append("name", name).
-                 append("ptype", type).
-                 append("number", number).
-                 append("mask", maskHandling).toString();
-     }
+    public String toString() {
+        return new ToStringBuilder(this).
+                append("name", name).
+                append("ptype", type).
+                append("number", number).
+                append("mask", maskHandling).toString();
+    }
 
 }

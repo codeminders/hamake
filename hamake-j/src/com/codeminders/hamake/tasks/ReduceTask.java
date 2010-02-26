@@ -52,7 +52,7 @@ public class ReduceTask extends BaseTask {
             }
         }
 
-        if (mits == -1 || mots == -1 || mits > mots) {
+        if (mits == -1 || mits > mots) {
             Map<String, Collection> params = new HashMap<String, Collection>();
             params.put(PathParam.Type.input.name(), getInputs());
             params.put(PathParam.Type.dependency.name(), getDeps());

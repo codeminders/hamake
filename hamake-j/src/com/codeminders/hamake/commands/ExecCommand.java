@@ -2,6 +2,7 @@ package com.codeminders.hamake.commands;
 
 import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.Config;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.hdfs.DFSClient;
@@ -9,17 +10,13 @@ import org.apache.hadoop.hdfs.DFSClient;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.io.IOException;
 
 public class ExecCommand extends BaseCommand {
 
     private String binary;
 
     public ExecCommand() {
-        this(null);
-    }
-
-    public ExecCommand(String binary) {
-        this(binary, new ArrayList<Param>());
     }
 
     public ExecCommand(String binary, Collection<Param> parameters) {
@@ -33,8 +30,16 @@ public class ExecCommand extends BaseCommand {
         args.add(getBinary());
         Collection<Param> scriptParams = getParameters();
         if (scriptParams != null) {
-            for (Param p : scriptParams)
-                args.addAll(p.get(parameters, fsclient));
+            for (Param p : scriptParams) {
+                try {
+                    args.addAll(p.get(parameters, fsclient));
+                } catch (IOException ex) {
+                    System.err.println("Failed to extract parameter values: " + ex.getMessage());
+                    if (Config.getInstance().test_mode)
+                        ex.printStackTrace();
+                    return -1000;
+                }
+            }
         }
         String command = StringUtils.join(args, ' ');
         return Utils.execute(command);
