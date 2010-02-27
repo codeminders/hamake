@@ -1,30 +1,20 @@
 package com.codeminders.hamake.commands;
 
+import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Utils;
-import com.codeminders.hamake.Config;
 import com.codeminders.hamake.params.JobConfParam;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.util.RunJar;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.io.IOException;
 
 public class HadoopCommand extends BaseCommand {
 
-
-    /**
-     * Default name of hadoop executable
-     */
-    public static final String HADOOPCMD = "hadoop";
-
-    /**
-     * Name of env. var. which holds name of hadoop executable
-     */
-    public static final String HADOOPCMDENV = "HADOOP";
 
     private String jar;
     private String main;
@@ -32,8 +22,6 @@ public class HadoopCommand extends BaseCommand {
     public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
         DFSClient fsclient = Utils.getFSClient(context);
         Collection<String> args = new ArrayList<String>();
-        args.add(Utils.getenv(HADOOPCMDENV, HADOOPCMD));
-        args.add("jar");
         args.add(getJar());
         args.add(getMain());
         Collection<Param> scriptParams = getParameters();
@@ -65,8 +53,17 @@ public class HadoopCommand extends BaseCommand {
                 }
             }
         }
-        String command = StringUtils.join(args, ' ');
-        return Utils.execute(command);
+        try {
+            String s_args[] = new String[args.size()];
+            args.toArray(s_args);
+            RunJar.main(s_args);
+            return 0;
+        } catch (Throwable ex) {
+            System.err.println("Failed to execute Hadoop command " + getJar() + '/' + getMain() + ": " + ex.getMessage());
+            if (Config.getInstance().test_mode)
+                ex.printStackTrace();
+            return -1000;
+        }
     }
 
     public String getJar() {
