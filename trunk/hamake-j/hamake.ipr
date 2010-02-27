@@ -238,7 +238,12 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$PROJECT_DIR$/javadoc/commons-cli-1.2-javadoc.jar!/" />
+        <root url="file://$PROJECT_DIR$/sourcecode/pig" />
+        <root url="file://$PROJECT_DIR$/sourcecode/hadoop/core" />
+        <root url="file://$PROJECT_DIR$/sourcecode/hadoop/hdfs" />
+        <root url="file://$PROJECT_DIR$/sourcecode/hadoop/native" />
+        <root url="file://$PROJECT_DIR$/sourcecode/hadoop/tools" />
+        <root url="file://$PROJECT_DIR$/sourcecode/hadoop/mapred" />
       </SOURCES>
       <jarDirectory url="file://$PROJECT_DIR$/lib" recursive="false" />
     </library>
