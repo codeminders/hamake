@@ -1,7 +1,6 @@
 package com.codeminders.hamake;
 
 import org.apache.commons.cli.*;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -93,8 +92,6 @@ public class Main {
                 ex.printStackTrace();
             System.exit(ExitCodes.INITERR.ordinal());
         }
-
-        System.out.println(new ToStringBuilder(make).append("tasks", make.getTasks()));
 
         make.setNumJobs(njobs);
 

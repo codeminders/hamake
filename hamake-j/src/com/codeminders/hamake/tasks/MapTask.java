@@ -51,14 +51,14 @@ public class MapTask extends BaseTask {
             return -1;
         }
 
-        Map<Path, Map<String, FileStatus>> outputlists = new HashMap<Path, Map<String, FileStatus>>();
+        Collection<Object[]> outputlists = new ArrayList<Object[]>();
         for (Path output : getOutputs()) {
             String opath = output.getPathName();
             try {
                 Map<String, FileStatus> outputlist = Utils.getFileList(fsclient, opath, true);
                 if (outputlist == null)
                     return -1;
-                outputlists.put(output, outputlist);
+                outputlists.add(new Object[] {output, outputlist});
             } catch (IOException ex) {
                 System.err.println("Error accessing " + output + ": " + ex.getMessage());
                 if (Config.getInstance().test_mode)
@@ -79,11 +79,12 @@ public class MapTask extends BaseTask {
             Collection<String> present = new ArrayList<String>();
             Collection<String> cleanuplist = new ArrayList<String>();
 
-            for (Map.Entry<Path, Map<String, FileStatus>> o : outputlists.entrySet()) {
-                Path output = o.getKey();
-                Map<String, FileStatus> outputlist = o.getValue();
-                String oname = o.getKey().getPathName(iname);
-                if (o.getValue().containsKey(iname)) {
+            for (Object o[] : outputlists) {
+                Path output = (Path) o[0];
+                @SuppressWarnings("unchecked")
+                Map<String, FileStatus> outputlist = (Map<String, FileStatus>) o[1];
+                String oname = output.getPathName(iname);
+                if (outputlist.containsKey(iname)) {
                     FileStatus fs = outputlist.get(iname);
                     if (fs.getModificationTime() >= i.getModificationTime()) {
                         if (Config.getInstance().verbose)
@@ -98,9 +99,9 @@ public class MapTask extends BaseTask {
                             }
                         }
                     }
-                    oparams.add(output.getPathWithNewName(iname));
-                    cleanuplist.add(output.getPathName(iname));
                 }
+                oparams.add(output.getPathWithNewName(iname));
+                cleanuplist.add(output.getPathName(iname));
             }
             if (present.size() == getOutputs().size()) {
                 if (Config.getInstance().verbose)
@@ -148,7 +149,7 @@ public class MapTask extends BaseTask {
                 return -1000;
             }
             try {
-                @SuppressWarnings("Unchecked")
+                @SuppressWarnings("unchecked")
                 CommandThread t = new CommandThread(getCommand(),
                         (Map<String, Collection>) o[0],
                         (Collection<String>) o[1],

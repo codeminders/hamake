@@ -57,6 +57,10 @@
 
   <target name="dist" depends="compile">
     <mkdir dir="${basedir}/dist"/>
+    <mkdir dir="${basedir}/build/lib"/>
+    <copy todir="${basedir}/build/lib">
+        <fileset dir="lib" includes="*.jar" excludes="hadoop*.jar"/>
+    </copy>
     <copy todir="${basedir}/dist">
         <fileset dir="${basedir}/lib">
           <patternset refid="library.patterns"/>
@@ -67,6 +71,7 @@
         <attribute name="Main-Class" value="com.codeminders.hamake.Main"/>
       </manifest>
       <fileset dir="${basedir}/build" includes="**/*.class"/>
+      <fileset dir="${basedir}/build" includes="lib/*.jar"/>
     </jar>
   </target>
   
