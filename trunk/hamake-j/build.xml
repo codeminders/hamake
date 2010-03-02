@@ -13,8 +13,8 @@
 	<property name="test.dir" value="${basedir}/test/java" />
 	<property name="lib.dir" value="${basedir}/lib" />
 	<property name="build.dir" value="${basedir}/build" />
-	<property name="dist.dir" value="${basedir}/build" />
-	<property name="test.build.dir" value="${build.base.dir}/test" />	
+	<property name="dist.dir" value="${basedir}/dist" />
+	<property name="test.build.dir" value="${build.dir}/test" />	
 
     <patternset id="ignored.files">
         <exclude name="**/CVS/**"/>
