@@ -42,6 +42,7 @@
     <target name="clean">
         <delete dir="${basedir}/build"/>
         <delete dir="${basedir}/dist"/>
+        <delete dir="${basedir}/test"/>
     </target>
 
     <target name="compile">
@@ -81,6 +82,19 @@
         <jar destfile="${basedir}/dist/hamake-examples-${hamake.version}.jar"
              basedir= "${basedir}/build"
              includes="com/codeminders/hamake/examples/**"/>
+    </target>
+
+    <!-- TODO: replace it to run hamake -->
+    <target name="test" depends="build-examples">
+        <delete dir="${basedir}/test"/>
+        <mkdir  dir="${basedir}/test"/>
+        <exec executable="hadoop">
+            <arg value="jar"/>
+            <arg value="${basedir}/dist/hamake-examples-${hamake.version}.jar"/>
+            <arg value="com.codeminders.hamake.examples.JarListing"/>
+            <arg value="${basedir}/dist/hamake-examples-${hamake.version}.jar"/>
+            <arg value="${basedir}/test/jar-listings"/>        
+        </exec>
     </target>
 
     <target name="all" depends="dist" description="build all"/>
