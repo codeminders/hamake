@@ -1,24 +1,24 @@
 package com.codeminders.hamake;
 
-import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.fs.FileSystem;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
-import java.io.IOException;
 
 public class CommandThread extends Thread {
 
     private Command command;
     private Map<String, Collection> params;
-    private Collection<String> cleanuplist;
+    private Collection<org.apache.hadoop.fs.Path> cleanuplist;
     private Map<String, Object> exec_context;
     private Semaphore job_semaphore;
     private int rc;
 
     public CommandThread(Command command,
                          Map<String, Collection> params,
-                         Collection<String> cleanuplist,
+                         Collection<org.apache.hadoop.fs.Path> cleanuplist,
                          Map<String, Object> exec_context,
                          Semaphore job_semaphore) {
         super(command.toString());
@@ -58,19 +58,19 @@ public class CommandThread extends Thread {
     }
 
     protected void cleanup() throws IOException {
-        DFSClient fsclient = Utils.getFSClient(exec_context);
+        FileSystem fs = Utils.getFileSystem(exec_context);
         // TODO this would work only for files, not for paths with masks
         //  use removeIfExists() instead
-        for (String c : cleanuplist) {
+        for (org.apache.hadoop.fs.Path p : cleanuplist) {
             boolean exists;
-            synchronized (fsclient) {
-                exists = fsclient.exists(c);
+            synchronized (fs) {
+                exists = fs.exists(p);
                 if (exists)
                     if (Config.getInstance().verbose)
-                        System.err.println("Removing " + c);
+                        System.err.println("Removing " + p.toUri());
                 if (!Config.getInstance().dryrun) {
-                    synchronized (fsclient) {
-                        fsclient.delete(c, true);
+                    synchronized (fs) {
+                        fs.delete(p, true);
                     }
                 }
             }

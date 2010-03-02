@@ -1,10 +1,14 @@
 package com.codeminders.hamake;
 
 import org.apache.commons.cli.*;
+import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class Main {
 
@@ -34,7 +38,7 @@ public class Main {
 
         try {
             // parse the command line arguments
-            line = parser.parse(options, args, true);
+            line = parser.parse(options, args, false);
         }
         catch (ParseException ex) {
             new HelpFormatter().printHelp("hamake", options);
@@ -69,8 +73,14 @@ public class Main {
 
         Hamake make = null;
 
+        InputStream is = null;
         try {
-            make = makefileParser.parse(mname, config.verbose);
+            Configuration hadoopCfg = new Configuration();
+            org.apache.hadoop.fs.Path makefilePath = new org.apache.hadoop.fs.Path(mname);
+            FileSystem fs = makefilePath.getFileSystem(hadoopCfg);
+            is = fs.open(makefilePath);
+            make = makefileParser.parse(is, config.verbose);
+            make.setFileSystem(fs);
         } catch (IOException ex) {
             System.err.println("Cannot load makefile " + mname + ": " + ex.getMessage());
             if (config.test_mode)
@@ -91,6 +101,8 @@ public class Main {
             if (config.test_mode)
                 ex.printStackTrace();
             System.exit(ExitCodes.INITERR.ordinal());
+        } finally {
+            IOUtils.closeQuietly(is);
         }
 
         make.setNumJobs(njobs);

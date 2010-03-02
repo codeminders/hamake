@@ -2,7 +2,7 @@ package com.codeminders.hamake.params;
 
 import com.codeminders.hamake.Param;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.fs.FileSystem;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +33,7 @@ public class JobConfParam implements Param {
         this.value = value;
     }
 
-    public Collection<String> get(Map<String, Collection> dict, DFSClient fsClient) {
+    public Collection<String> get(Map<String, Collection> dict, FileSystem fs) {
         Collection<String> ret = new ArrayList<String>();
         ret.add("-jobconf");
         ret.add(getName() + '=' + getValue());

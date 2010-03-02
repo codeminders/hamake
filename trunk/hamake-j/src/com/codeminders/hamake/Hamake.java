@@ -1,16 +1,14 @@
 package com.codeminders.hamake;
 
-import org.apache.hadoop.hdfs.DFSClient;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.net.InetSocketAddress;
-import java.io.IOException;
 
 public class Hamake {
+
     enum ExitCode {
         OK,
         BADOPT,
@@ -21,11 +19,10 @@ public class Hamake {
     private Collection<String> targets;
     private Collection<Task> tasks;
 
-    private String thriftHost;
-    private int thriftPort;
+    private FileSystem fileSystem;
 
     public Hamake() {
-        tasks = new ArrayList<Task>();
+        this.tasks = new ArrayList<Task>();
     }
 
     public int getNumJobs() {
@@ -56,39 +53,18 @@ public class Hamake {
         this.tasks = tasks;
     }
 
-    public String getThriftHost() {
-        return thriftHost;
+    public FileSystem getFileSystem() {
+        return fileSystem;
     }
 
-    public void setThriftHost(String thriftHost) {
-        this.thriftHost = thriftHost;
-    }
-
-    public int getThriftPort() {
-        return thriftPort;
-    }
-
-    public void setThriftPort(int thriftPort) {
-        this.thriftPort = thriftPort;
+    public void setFileSystem(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
 
     public ExitCode run() {
 
-        InetSocketAddress address = new InetSocketAddress(getThriftHost(), getThriftPort());
-        Configuration config = new Configuration();
-
-        DFSClient fsclient;
-
-        try {
-            fsclient = new DFSClient(address, config);
-        } catch (IOException ex) {
-            System.err.println("Unable to connect to DFS: " + ex.getMessage());
-            if (Config.getInstance().test_mode)
-                ex.printStackTrace();
-            return ExitCode.FAILED;
-        }
         Map<String, Object> context = new HashMap<String, Object>();
-        context.put("fsclient", fsclient);
+        context.put("filesystem", getFileSystem());
         TaskRunner runner = new TaskRunner(getTasks(),
                 getNumJobs(),
                 getTargets(),

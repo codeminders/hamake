@@ -50,13 +50,6 @@ public class MakefileParser {
         Map<String, String> properties = parseProperties(config);
 
         Hamake ret = new Hamake();
-
-        Element dfs = Utils.getMandatory(config, "dfs");
-        Element api = Utils.getMandatory(dfs, "thriftAPI");
-
-        ret.setThriftHost(Utils.getRequiredAttribute(api, "host", properties));
-        ret.setThriftPort(Integer.parseInt(Utils.getRequiredAttribute(api, "port", properties)));
-
         parseTasks(ret, dom.getDocumentElement(), properties, verbose);
         return ret;
     }
