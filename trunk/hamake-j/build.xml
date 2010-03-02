@@ -12,7 +12,7 @@
 	<property name="src.dir" value="${basedir}/src/java" />
 	<property name="test.dir" value="${basedir}/test/java" />
 	<property name="lib.dir" value="${basedir}/lib" />
-	<property name="build.dir" value="${basedir}/build" />
+	<property name="build.dir" value="${basedir}/build" />	
 	<property name="dist.dir" value="${basedir}/dist" />
 	<property name="test.build.dir" value="${build.dir}/test" />	
 
@@ -65,12 +65,12 @@
 
     <target name="dist" depends="compile, build-examples">
         <mkdir dir="${dist.dir}"/>
-        <mkdir dir="${lib.dir}"/>
-        <copy todir="${lib.dir}">
+        <mkdir dir="${build.dir}/lib"/>
+        <copy todir="${build.dir}/lib">
             <fileset dir="lib" includes="*.jar" excludes="hadoop*.jar"/>
         </copy>
         <copy todir="${dist.dir}">
-            <fileset dir="${lib.dir}">
+            <fileset dir="${build.dir}/lib">
                 <patternset refid="library.patterns"/>
             </fileset>
         </copy>
