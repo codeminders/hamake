@@ -4,8 +4,9 @@ import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.JobConfParam;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.util.RunJar;
 
 import java.io.IOException;
@@ -20,9 +21,16 @@ public class HadoopCommand extends BaseCommand {
     private String main;
 
     public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
-        DFSClient fsclient = Utils.getFSClient(context);
+        FileSystem fs = Utils.getFileSystem(context);
         Collection<String> args = new ArrayList<String>();
-        args.add(getJar());
+        try {
+            args.add(Utils.copyToTemporaryLocal(getJar(), fs).getAbsolutePath());
+        } catch (IOException ex) {
+            System.err.println("Can't download JAR file: " + getJar());
+            if (Config.getInstance().test_mode)
+                ex.printStackTrace();
+            return -1000;
+        }
         args.add(getMain());
         Collection<Param> scriptParams = getParameters();
         if (scriptParams != null) {
@@ -30,7 +38,7 @@ public class HadoopCommand extends BaseCommand {
             for (Param p : scriptParams) {
                 if (p instanceof JobConfParam) {
                     try {
-                        args.addAll(p.get(parameters, fsclient));
+                        args.addAll(p.get(parameters, fs));
                     } catch (IOException ex) {
                         System.err.println("Failed to extract parameter values from parameter: " + ex.getMessage());
                         if (Config.getInstance().test_mode)
@@ -43,7 +51,7 @@ public class HadoopCommand extends BaseCommand {
             for (Param p : scriptParams) {
                 if (!(p instanceof JobConfParam)) {
                     try {
-                        args.addAll(p.get(parameters, fsclient));
+                        args.addAll(p.get(parameters, fs));
                     } catch (IOException ex) {
                         System.err.println("Failed to extract parameter values from parameter: " + ex.getMessage());
                         if (Config.getInstance().test_mode)
@@ -56,6 +64,8 @@ public class HadoopCommand extends BaseCommand {
         try {
             String s_args[] = new String[args.size()];
             args.toArray(s_args);
+            if (Config.getInstance().verbose)
+                System.err.println("Executing Hadoop task " + StringUtils.join(s_args, ' '));
             RunJar.main(s_args);
             return 0;
         } catch (Throwable ex) {

@@ -3,13 +3,15 @@ package com.codeminders.hamake.tasks;
 import com.codeminders.hamake.Path;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.PathParam;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.fs.FileSystem;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 public class ReduceTask extends BaseTask {
@@ -22,13 +24,13 @@ public class ReduceTask extends BaseTask {
     }
 
     public int execute(Semaphore semaphore, Map<String, Object> context) throws IOException {
-        DFSClient fsclient = Utils.getFSClient(context);
+        FileSystem fs = Utils.getFileSystem(context);
         long mits = -1;
         long mots = -1;
 
         int numo = 0;
         for (Path p : getOutputs()) {
-            long stamp = getTimeStamp(fsclient, p);
+            long stamp = getTimeStamp(fs, p);
             if (stamp == 0) {
                 mots = -1;
                 break;
@@ -42,7 +44,7 @@ public class ReduceTask extends BaseTask {
             Collection<Path> paths = new ArrayList<Path>(getInputs());
             paths.addAll(getDeps());
             for (Path p : paths) {
-                long stamp = getTimeStamp(fsclient, p);
+                long stamp = getTimeStamp(fs, p);
                 if (stamp == 0) {
                     System.err.println("Some of input/dependency files not present!");
                     return -10;
@@ -59,7 +61,7 @@ public class ReduceTask extends BaseTask {
             params.put(PathParam.Type.output.name(), getOutputs());
 
             for (Path p : getOutputs())
-                p.removeIfExists(fsclient);
+                p.removeIfExists(fs);
 
             return getCommand().execute(params, context);
         }
@@ -67,16 +69,16 @@ public class ReduceTask extends BaseTask {
         return 0;
     }
 
-    protected long getTimeStamp(DFSClient client, Path path) throws IOException {
-        String ipath = path.getPathName();
-        synchronized (client) {
-            if (!client.exists(ipath))
+    protected long getTimeStamp(FileSystem fs, Path path) throws IOException {
+        org.apache.hadoop.fs.Path ipath = path.getPathName(fs);
+        synchronized (fs) {
+            if (!fs.exists(ipath))
                 return 0;
         }
 
         FileStatus stat;
-        synchronized (client) {
-            stat = client.getFileInfo(ipath);
+        synchronized (fs) {
+            stat = fs.getFileStatus(ipath);
         }
 
         if (path.hasFilename() || path.getMask() == null) {
@@ -87,12 +89,12 @@ public class ReduceTask extends BaseTask {
             throw new IOException("Path " + ipath + " must be a dir!");
         }
         FileStatus list[];
-        synchronized (client) {
-            list = client.listPaths(ipath);
+        synchronized (fs) {
+            list = fs.listStatus(ipath);
         }
         long ret = 0;
         for (FileStatus s : list) {
-            if (FilenameUtils.wildcardMatch(s.getPath().getName(), path.getMask())) {
+            if (Utils.matches(s.getPath(), path.getMask())) {
                 if (s.getModificationTime() > ret) {
                     ret = s.getModificationTime();
                 }

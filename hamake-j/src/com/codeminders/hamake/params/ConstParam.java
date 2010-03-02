@@ -2,11 +2,10 @@ package com.codeminders.hamake.params;
 
 import com.codeminders.hamake.Param;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.fs.FileSystem;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 public class ConstParam implements Param {
@@ -25,7 +24,7 @@ public class ConstParam implements Param {
         this.value = value;
     }
 
-    public Collection<String> get(Map<String, Collection> dict, DFSClient fsClient) {
+    public Collection<String> get(Map<String, Collection> dict, FileSystem fs) {
         return Collections.singleton(getValue());
     }
 

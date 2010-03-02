@@ -1,14 +1,14 @@
 package com.codeminders.hamake;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.fs.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,8 @@ public class Utils {
         return getRequiredAttribute(root, name, null);
     }
 
-    public static String getRequiredAttribute(Element root, String name, Map<String, String> properties) throws InvalidMakefileException {
+    public static String getRequiredAttribute(Element root, String name, Map<String, String> properties)
+            throws InvalidMakefileException {
         if (root.hasAttribute(name)) {
             String ret = root.getAttribute(name);
             if (properties != null) {
@@ -100,33 +101,39 @@ public class Utils {
         return s;
     }
 
-    public static Map<String, FileStatus> getFileList(DFSClient fsclient, String ipath) throws IOException {
-        return getFileList(fsclient, ipath, false, null);
+    public static Map<String, FileStatus> getFileList(FileSystem fs, org.apache.hadoop.fs.Path ipath)
+            throws IOException {
+        return getFileList(fs, ipath, false, null);
     }
 
-    public static Map<String, FileStatus> getFileList(DFSClient fsclient, String ipath, String mask) throws IOException {
-        return getFileList(fsclient, ipath, false, mask);
+    public static Map<String, FileStatus> getFileList(FileSystem fs, org.apache.hadoop.fs.Path ipath, String mask)
+            throws IOException {
+        return getFileList(fs, ipath, false, mask);
     }
 
-    public static Map<String, FileStatus> getFileList(DFSClient fsclient, String ipath, boolean create) throws IOException {
-        return getFileList(fsclient, ipath, create, null);
+    public static Map<String, FileStatus> getFileList(FileSystem fs, org.apache.hadoop.fs.Path ipath, boolean create)
+            throws IOException {
+        return getFileList(fs, ipath, create, null);
     }
 
-    public static Map<String, FileStatus> getFileList(DFSClient fsclient, String ipath, boolean create, String mask)
-        throws IOException {
+    public static Map<String, FileStatus> getFileList(FileSystem fs,
+                                                      org.apache.hadoop.fs.Path ipath,
+                                                      boolean create,
+                                                      String mask)
+            throws IOException {
         if (Config.getInstance().test_mode)
             System.err.println("Scanning " + ipath);
 
         boolean exists;
 
-        synchronized (fsclient) {
-                exists = fsclient.exists(ipath);
+        synchronized (fs) {
+            exists = fs.exists(ipath);
         }
         if (!exists) {
             if (create) {
                 System.err.println("Creating " + ipath);
-                synchronized (fsclient) {
-                        fsclient.mkdirs(ipath);
+                synchronized (fs) {
+                    fs.mkdirs(ipath);
                 }
                 return Collections.emptyMap();
             } else {
@@ -135,32 +142,31 @@ public class Utils {
             }
         }
 
-        FileStatus fs;
-        synchronized (fsclient) {
-            fs = fsclient.getFileInfo(ipath);
+        FileStatus stat;
+        synchronized (fs) {
+            stat = fs.getFileStatus(ipath);
         }
-        if (!fs.isDir()) {
+        if (!stat.isDir()) {
             System.err.println("Path " + ipath + " must be dir!");
             return null;
         }
 
         FileStatus list[];
-        synchronized (fsclient) {
-            list = fsclient.listPaths(ipath);
+        synchronized (fs) {
+            list = fs.listStatus(ipath);
         }
 
         Map<String, FileStatus> ret = new HashMap<String, FileStatus>();
-        for (FileStatus stat : list) {
-            String name = stat.getPath().getName();
-            if (mask == null || FilenameUtils.wildcardMatch(name, mask)) {
-                ret.put(name, stat);
-            }
+        for (FileStatus s : list) {
+            org.apache.hadoop.fs.Path p = s.getPath();
+            if (matches(p, mask))
+                ret.put(p.getName(), s);
         }
         return ret;
     }
 
-    public static DFSClient getFSClient(Map<String, Object> context) {
-        return (DFSClient) context.get("fsclient");
+    public static FileSystem getFileSystem(Map<String, Object> context) {
+        return (FileSystem) context.get("filesystem");
     }
 
     public static String getenv(String name, String defaultValue) {
@@ -196,4 +202,40 @@ public class Utils {
         return -1000;
     }
 
+    public static File copyToTemporaryLocal(String path, FileSystem fs)
+            throws IOException {
+        File local = File.createTempFile("hamake", ".tmp");
+        if (Config.getInstance().verbose) {
+            System.err.println("Downloading " + path + " to " + local.getAbsolutePath());
+        }
+        System.out.println();
+        local.deleteOnExit();
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = fs.open(fs.makeQualified(new org.apache.hadoop.fs.Path(path)));
+            os = new BufferedOutputStream(new FileOutputStream(local));
+            IOUtils.copy(is, os);
+        } finally {
+            IOUtils.closeQuietly(is);
+            IOUtils.closeQuietly(os);
+        }
+        return local;
+    }
+
+    public static boolean matches(org.apache.hadoop.fs.Path p, String mask) {
+        String name = p.getName();
+        return mask == null || FilenameUtils.wildcardMatch(name, mask);
+    }
+
+    public static String getPath(org.apache.hadoop.fs.Path p) {
+        StringBuilder buf = new StringBuilder(p.getName());
+        p = p.getParent();
+        while (p != null) {
+            buf.insert(0, org.apache.hadoop.fs.Path.SEPARATOR_CHAR);
+            buf.insert(0, p.getName());
+            p = p.getParent();
+        }
+        return buf.toString();
+    }
 }

@@ -4,11 +4,11 @@ import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Path;
 import com.codeminders.hamake.Utils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 
-import java.util.*;
 import java.io.IOException;
+import java.util.*;
 
 public class PathParam implements Param {
 
@@ -75,7 +75,7 @@ public class PathParam implements Param {
         this.maskHandling = maskHandling;
     }
 
-    public Collection<String> get(Map<String, Collection> dict, DFSClient fsClient) throws IOException {
+    public Collection<String> get(Map<String, Collection> dict, FileSystem fs) throws IOException {
 
         Collection<String> ret;
 
@@ -86,7 +86,7 @@ public class PathParam implements Param {
             Collection params = dict.get(getType());
             if (params != null) {
                 for (Object o : params) {
-                    ret.addAll(toStrArr(o, fsClient));
+                    ret.addAll(toStrArr(o, fs));
                 }
             }
         } else {
@@ -104,35 +104,37 @@ public class PathParam implements Param {
                     throw new IllegalArgumentException("Not found item " + number + " in " + getType() + " parameters");
                 }
             }
-            ret = toStrArr(params, fsClient);
+            ret = toStrArr(params, fs);
         }
         return ret;
     }
 
-    protected Collection<String> toStrArr(DFSClient i) throws IOException {
+    protected Collection<String> toStrArr(Object i) throws IOException {
         return toStrArr(i, null);
     }
 
-    protected Collection<String> toStrArr(Object i, DFSClient fsClient) throws IOException {
+    protected Collection<String> toStrArr(Object i, FileSystem fs) throws IOException {
         if (i instanceof Path) {
             Path p = (Path) i;
             Mask m = getMaskHandling();
             if (m == Mask.keep) {
-                return Collections.singleton(p.getPathNameWithMask());
+                return Collections.singleton(p.getPathNameWithMask(fs));
             } else if (m == Mask.suppress) {
-                return Collections.singleton(p.getPathName());
+                if (fs == null)
+                    throw new IllegalArgumentException("Could not expand path, no filesystem");
+                return Collections.singleton(Utils.getPath(p.getPathName(fs)));
             } else {
-                if (fsClient == null)
-                    throw new IllegalArgumentException("Could not expand path, no fsclient");
+                if (fs == null)
+                    throw new IllegalArgumentException("Could not expand path, no filesystem");
                 if (p.hasFilename())
                     throw new IllegalArgumentException("Could not expand file " + p);
                 Collection<String> ret = new ArrayList<String>();
 
                 Map<String, FileStatus> list =
-                        Utils.getFileList(fsClient, p.getPathName(), false, p.getMask());
+                        Utils.getFileList(fs, p.getPathName(fs), false, p.getMask());
                 if (list != null) {
                     for (String key : list.keySet())
-                        ret.add(p.getPathName(key));
+                        ret.add(Utils.getPath(p.getPathName(fs, key)));
                 }
                 return ret;
             }

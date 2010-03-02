@@ -4,8 +4,10 @@ import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.PigParam;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.pig.ExecType;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.impl.PigContext;
@@ -32,7 +34,7 @@ public class PigCommand extends BaseCommand {
     }
 
     public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
-        DFSClient fsClient = Utils.getFSClient(context);
+        FileSystem fs = Utils.getFileSystem(context);
         Collection<String> args = new ArrayList<String>();
 
         Collection<Param> scriptParams = getParameters();
@@ -42,7 +44,7 @@ public class PigCommand extends BaseCommand {
                     PigParam pp = (PigParam) p;
                     Collection<String> values;
                     try {
-                        values = p.get(parameters, fsClient);
+                        values = p.get(parameters, fs);
                     } catch (IOException ex) {
                         System.err.println("Failed to extract parameter values from parameter " +
                                 pp.getName() + ": " + ex.getMessage());
@@ -63,9 +65,11 @@ public class PigCommand extends BaseCommand {
         Properties pigProps = new Properties();
         PigContext ctx = new PigContext(ExecType.MAPREDUCE, pigProps);
 
+        BufferedReader in = null;
         try {
             // Run, using the provided file as a pig file
-            BufferedReader in = new BufferedReader(new FileReader(getScript()));
+            Path p = fs.makeQualified(new Path(getScript()));
+            in = new BufferedReader(new InputStreamReader(fs.open(p)));
             // run parameter substitution preprocessor first
             File substFile = File.createTempFile("subst", ".pig");
             BufferedReader pin = preprocessPigScript(in, args, substFile, Config.getInstance().dryrun);
@@ -107,6 +111,8 @@ public class PigCommand extends BaseCommand {
             if (Config.getInstance().test_mode)
                 ex.printStackTrace();
             return -1000;
+        } finally {
+            IOUtils.closeQuietly(in);
         }
     }
 

@@ -1,9 +1,8 @@
 package com.codeminders.hamake;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.fs.FileSystem;
 
 import java.io.IOException;
 
@@ -52,24 +51,24 @@ public class Path {
         return new Path(getLoc(), newFilename, mask, getGen());
     }
 
-    public String getPathName() {
-        return getPathName(null);
+    public org.apache.hadoop.fs.Path getPathName(FileSystem fs) {
+        return getPathName(fs, null);
     }
 
-    public String getPathName(String newFilename) {
+    public org.apache.hadoop.fs.Path getPathName(FileSystem fs, String newFilename) {
         if (newFilename == null)
             newFilename = getFilename();
         if (newFilename != null)
-            return getLoc() + '/' + newFilename;
+            return fs.makeQualified(new org.apache.hadoop.fs.Path(getLoc() + '/' + newFilename));
         else
-            return getLoc();
+            return fs.makeQualified(new org.apache.hadoop.fs.Path(getLoc()));
     }
 
-    public String getPathNameWithMask() {
-        String p = getPathName();
+    public String getPathNameWithMask(FileSystem fs) {
+        String p = Utils.getPath(getPathName(fs));
         String mask = getMask();
         if (mask != null)
-            return p + '/' + mask;
+            return p + org.apache.hadoop.fs.Path.SEPARATOR_CHAR + mask;
         else
             return p;
     }
@@ -93,27 +92,28 @@ public class Path {
         return ret.toString();
     }
 
-    public void removeIfExists(DFSClient fsClient) throws IOException {
-        String path = getPathName();
+    public void removeIfExists(FileSystem fs) throws IOException {
+        org.apache.hadoop.fs.Path p = getPathName(fs);
+
         if (hasFilename() || getMask() == null) {
             boolean exists;
-            synchronized (fsClient) {
-                exists = fsClient.exists(path);
+            synchronized (fs) {
+                exists = fs.exists(p);
             }
             if (exists) {
                 if (Config.getInstance().verbose) {
-                    System.err.println("Removing " + path);
+                    System.err.println("Removing " + p.toUri());
                 }
                 if (!Config.getInstance().dryrun) {
-                    synchronized (fsClient) {
-                        fsClient.delete(path, true);
+                    synchronized (fs) {
+                        fs.delete(p, true);
                     }
                 }
             }
         } else {
             FileStatus status;
-            synchronized (fsClient) {
-                status = fsClient.getFileInfo(path);
+            synchronized (fs) {
+                status = fs.getFileStatus(p);
             }
 
             if (status == null) {
@@ -122,21 +122,21 @@ public class Path {
             }
 
             if (!status.isDir()) {
-                throw new IOException("Path " + path + " must be dir!");
+                throw new IOException("Path " + p.toUri() + " must be dir!");
             }
             FileStatus list[];
-            synchronized (fsClient) {
-                list = fsClient.listPaths(path);
+            synchronized (fs) {
+                list = fs.listStatus(p);
             }
 
             for (FileStatus stat : list) {
-                if (FilenameUtils.wildcardMatch(stat.getPath().getName(), getMask())) {
+                if (Utils.matches(stat.getPath(), getMask())) {
                     if (Config.getInstance().verbose) {
                         System.err.println("Removing " + stat.getPath());
                     }
                     if (!Config.getInstance().dryrun) {
-                        synchronized (fsClient) {
-                            fsClient.delete(stat.getPath().toString(), true);
+                        synchronized (fs) {
+                            fs.delete(stat.getPath(), true);
                         }
                     }
                 }
