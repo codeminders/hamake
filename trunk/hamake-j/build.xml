@@ -1,79 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="hamake" default="all">
-  
-  
-  <property file="build.properties"/>
-  
-  <!-- Compiler options -->
-  <property name="compiler.debug" value="on"/>
-  <property name="compiler.generate.no.warnings" value="off"/>
-  <property name="compiler.max.memory" value="128m"/>
 
-  <patternset id="ignored.files">
-    <exclude name="**/CVS/**"/>
-    <exclude name="**/SCCS/**"/>
-    <exclude name="**/RCS/**"/>
-    <exclude name="**/rcs/**"/>
-    <exclude name="**/.DS_Store/**"/>
-    <exclude name="**/.svn/**"/>
-    <exclude name="**/.pyc/**"/>
-    <exclude name="**/.pyo/**"/>
-    <exclude name="**/*.pyc/**"/>
-    <exclude name="**/*.pyo/**"/>
-    <exclude name="**/.git/**"/>
-  </patternset>
-  <patternset id="library.patterns">
-    <include name="*.jar"/>
-  </patternset>
-  
-  
-  <!-- Project Libraries -->
-  
-  <path id="library.commons.classpath">
-    <fileset dir="${basedir}/lib">
-      <patternset refid="library.patterns"/>
-    </fileset>
-  </path>
-  
-  <target name="init" description="Build initialization">
-  </target>
-  
-  <target name="clean">
-    <delete dir="${basedir}/build"/>
-    <delete dir="${basedir}/dist"/>
-  </target>
 
-  <target name="compile">
-    <mkdir dir="${basedir}/build"/>
-    <javac classpathref="library.commons.classpath"
-           destdir="${basedir}/build"
-           debug="${compiler.debug}"
-           deprecation="${compiler.deprecation}"
-           nowarn="${compiler.generate.no.warnings}"
-           memoryMaximumSize="${compiler.max.memory}">
-        <src path="${basedir}/src"/>
-    </javac>
-  </target>
+    <property file="build.properties"/>
 
-  <target name="dist" depends="compile">
-    <mkdir dir="${basedir}/dist"/>
-    <mkdir dir="${basedir}/build/lib"/>
-    <copy todir="${basedir}/build/lib">
-        <fileset dir="lib" includes="*.jar" excludes="hadoop*.jar"/>
-    </copy>
-    <copy todir="${basedir}/dist">
+    <!-- Compiler options -->
+    <property name="compiler.debug" value="on"/>
+    <property name="compiler.deprecation" value="off"/>
+    <property name="compiler.generate.no.warnings" value="off"/>
+    <property name="compiler.max.memory" value="128m"/>
+
+    <patternset id="ignored.files">
+        <exclude name="**/CVS/**"/>
+        <exclude name="**/SCCS/**"/>
+        <exclude name="**/RCS/**"/>
+        <exclude name="**/rcs/**"/>
+        <exclude name="**/.DS_Store/**"/>
+        <exclude name="**/.svn/**"/>
+        <exclude name="**/.pyc/**"/>
+        <exclude name="**/.pyo/**"/>
+        <exclude name="**/*.pyc/**"/>
+        <exclude name="**/*.pyo/**"/>
+        <exclude name="**/.git/**"/>
+    </patternset>
+    <patternset id="library.patterns">
+        <include name="*.jar"/>
+    </patternset>
+
+
+    <!-- Project Libraries -->
+
+    <path id="library.commons.classpath">
         <fileset dir="${basedir}/lib">
-          <patternset refid="library.patterns"/>
+            <patternset refid="library.patterns"/>
         </fileset>
-    </copy>
-    <jar destfile="${basedir}/dist/hamake-j-${hamake.version}.jar">
-      <manifest>
-        <attribute name="Main-Class" value="com.codeminders.hamake.Main"/>
-      </manifest>
-      <fileset dir="${basedir}/build" includes="**/*.class"/>
-      <fileset dir="${basedir}/build" includes="lib/*.jar"/>
-    </jar>
-  </target>
-  
-  <target name="all" depends="dist" description="build all"/>
+    </path>
+
+    <target name="init" description="Build initialization">
+    </target>
+
+    <target name="clean">
+        <delete dir="${basedir}/build"/>
+        <delete dir="${basedir}/dist"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${basedir}/build"/>
+        <javac classpathref="library.commons.classpath"
+               destdir="${basedir}/build"
+               debug="${compiler.debug}"
+               deprecation="${compiler.deprecation}"
+               nowarn="${compiler.generate.no.warnings}"
+               memoryMaximumSize="${compiler.max.memory}">
+            <src path="${basedir}/src"/>
+        </javac>
+    </target>
+
+    <target name="dist" depends="compile, build-examples">
+        <mkdir dir="${basedir}/dist"/>
+        <mkdir dir="${basedir}/build/lib"/>
+        <copy todir="${basedir}/build/lib">
+            <fileset dir="lib" includes="*.jar" excludes="hadoop*.jar"/>
+        </copy>
+        <copy todir="${basedir}/dist">
+            <fileset dir="${basedir}/lib">
+                <patternset refid="library.patterns"/>
+            </fileset>
+        </copy>
+        <jar destfile="${basedir}/dist/hamake-j-${hamake.version}.jar">
+            <manifest>
+                <attribute name="Main-Class" value="com.codeminders.hamake.Main"/>
+            </manifest>
+            <fileset dir="${basedir}/build" includes="**/*.class"/>
+            <fileset dir="${basedir}/build" includes="lib/*.jar"/>
+        </jar>
+    </target>
+
+
+    <target name="build-examples" depends="compile">
+        <jar destfile="${basedir}/dist/hamake-examples-${hamake.version}.jar"
+             basedir= "${basedir}/build"
+             includes="com/codeminders/hamake/examples/**"/>
+    </target>
+
+    <target name="all" depends="dist" description="build all"/>
 </project>
