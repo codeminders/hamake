@@ -30,9 +30,7 @@ import java.util.jar.JarInputStream;
  * Date: Mar 1, 2010
  * Time: 3:43:30 PM
  */
-public class JarListing
-    extends Configured
-    implements Tool
+public class JarListing extends Configured implements Tool
 {
 
     /**
@@ -95,7 +93,7 @@ public class JarListing
                 return;
             
             Text k = new Text(value.getEntry().getName());
-            Text v  = new Text("" + value.getEntry().getSize() + "\t" + value.getEntry().getTime());
+            Text v = new Text("" + value.getEntry().getSize() + "\t" + value.getEntry().getTime());
             context.write(k, v);
         }
     }
