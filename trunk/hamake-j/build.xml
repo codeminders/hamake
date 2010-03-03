@@ -58,6 +58,7 @@
                debug="${compiler.debug}"
                deprecation="${compiler.deprecation}"
                nowarn="${compiler.generate.no.warnings}"
+               fork="yes"
                memoryMaximumSize="${compiler.max.memory}">
             <src path="${src.dir}"/>
         </javac>
@@ -100,7 +101,21 @@
             <arg value="${dist.dir}/hamake-examples-${hamake.version}.jar"/>
             <arg value="com.codeminders.hamake.examples.JarListing"/>
             <arg value="${dist.dir}/hamake-examples-${hamake.version}.jar"/>
-            <arg value="${test.build.dir}/jar-listings"/>        
+            <arg value="${test.build.dir}/jar-listings"/>
+        </exec>
+        <exec executable="hadoop">
+            <arg value="jar"/>
+            <arg value="${dist.dir}/hamake-examples-${hamake.version}.jar"/>
+            <arg value="com.codeminders.hamake.examples.JarListingFilter"/>
+            <arg value="${test.build.dir}/jar-listings"/>
+            <arg value="${test.build.dir}/jar-listings-filtered"/>
+        </exec>
+        <exec executable="hadoop">
+            <arg value="jar"/>
+            <arg value="${dist.dir}/hamake-examples-${hamake.version}.jar"/>
+            <arg value="com.codeminders.hamake.examples.ClassSizeHistogram"/>
+            <arg value="${test.build.dir}/jar-listings-filtered"/>
+            <arg value="${test.build.dir}/class-size-histogram"/>
         </exec>
     </target>
 

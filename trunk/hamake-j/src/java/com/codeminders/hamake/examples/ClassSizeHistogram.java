@@ -3,10 +3,12 @@ package com.codeminders.hamake.examples;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -19,13 +21,15 @@ import java.io.IOException;
 /**
  * User: Alexander Sova (bird@codeminders.com)
  */
-public class JarListingFilter extends Configured implements Tool
+public class ClassSizeHistogram extends Configured implements Tool
 {
+    private static final int BIN_SIZE = 1024; // exclusive
+    
     @SuppressWarnings("unchecked")
     public static void main(String[] args)
         throws Exception
     {
-        int ret = ToolRunner.run(new JarListingFilter(), args);
+        int ret = ToolRunner.run(new ClassSizeHistogram(), args);
         System.exit(ret);
     }
 
@@ -43,17 +47,19 @@ public class JarListingFilter extends Configured implements Tool
           return 1;
         }
 
-        Job job = new Job(config, "JarListingFilter");
+        Job job = new Job(config, "ClassSizeHistogram");
 
-        //set the InputFormat of the job to our InputFormat
+        // set the InputFormat of the job to our InputFormat
         job.setInputFormatClass(TextInputFormat.class);
 
-        // the keys are words (strings)
         job.setOutputKeyClass(LongWritable.class);
-        job.setOutputValueClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
 
-        //use the defined mapper
+        // use the defined mapper
         job.setMapperClass(MapClass.class);
+
+        job.setCombinerClass(IntSumReducer.class);
+        job.setReducerClass(IntSumReducer.class);
 
         FileInputFormat.addInputPaths(job, args[0]);
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
@@ -62,19 +68,40 @@ public class JarListingFilter extends Configured implements Tool
     }
 
     public static class MapClass
-        extends Mapper<LongWritable, Text, LongWritable, Text>
+        extends Mapper<LongWritable, Text, LongWritable, IntWritable>
     {
+        private              LongWritable histogramBin = new LongWritable();
+        private final static IntWritable  one          = new IntWritable(1);
+
         @Override
         protected void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException
         {
             String[] words = StringUtils.split(value.toString(), '\\', '\t');
-            if(words.length < 3)
+            if(words.length < 2)
                 throw new IOException("Invalid input line format");
+            long size = Long.parseLong(words[0]);
 
-            LongWritable k = new LongWritable(Long.parseLong(words[1]));
-            Text        v = new Text(words[0]);
-            context.write(k, v);
+            histogramBin.set(BIN_SIZE*((long)Math.floor(size/BIN_SIZE)+1));
+
+            context.write(histogramBin, one);
         }
+    }
+
+    public static class IntSumReducer
+         extends Reducer<LongWritable, IntWritable, LongWritable, IntWritable>
+    {
+      private IntWritable result = new IntWritable();
+
+      public void reduce(LongWritable key, Iterable<IntWritable> values, Context context)
+          throws IOException, InterruptedException
+      {
+        int sum = 0;
+        for (IntWritable val : values)
+          sum += val.get();
+
+        result.set(sum);
+        context.write(key, result);
+      }
     }
 }
