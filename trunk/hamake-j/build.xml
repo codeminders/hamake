@@ -10,7 +10,7 @@
     <property name="compiler.generate.no.warnings" value="off"/>
     <property name="compiler.max.memory" value="128m"/>
 	<property name="src.dir" value="${basedir}/src/java" />
-	<property name="test.dir" value="${basedir}/test/java" />
+	<property name="test.dir" value="${basedir}/test" />
 	<property name="lib.dir" value="${basedir}/lib" />
 	<property name="build.dir" value="${basedir}/build" />	
 	<property name="dist.dir" value="${basedir}/dist" />
@@ -79,7 +79,7 @@
             <manifest>
                 <attribute name="Main-Class" value="com.codeminders.hamake.Main"/>
             </manifest>
-            <fileset dir="${build.dir}" includes="**/*.class"/>
+            <fileset dir="${build.dir}" includes="**/*.class" excludes="com/codeminders/hamake/examples/**"/>
             <fileset dir="${build.dir}" includes="lib/*.jar"/>
         </jar>
     </target>
@@ -93,29 +93,16 @@
     </target>
 
     <!-- TODO: replace it to run hamake -->
-    <target name="test" depends="build-examples">
-        <delete dir="${test.build.dir}"/>
+    <target name="test" depends="dist">
+        <!--<delete dir="${test.build.dir}"/>-->
         <mkdir  dir="${test.build.dir}"/>
         <exec executable="hadoop">
             <arg value="jar"/>
-            <arg value="${dist.dir}/hamake-examples-${hamake.version}.jar"/>
-            <arg value="com.codeminders.hamake.examples.JarListing"/>
-            <arg value="${dist.dir}/hamake-examples-${hamake.version}.jar"/>
-            <arg value="${test.build.dir}/jar-listings"/>
-        </exec>
-        <exec executable="hadoop">
-            <arg value="jar"/>
-            <arg value="${dist.dir}/hamake-examples-${hamake.version}.jar"/>
-            <arg value="com.codeminders.hamake.examples.JarListingFilter"/>
-            <arg value="${test.build.dir}/jar-listings"/>
-            <arg value="${test.build.dir}/jar-listings-filtered"/>
-        </exec>
-        <exec executable="hadoop">
-            <arg value="jar"/>
-            <arg value="${dist.dir}/hamake-examples-${hamake.version}.jar"/>
-            <arg value="com.codeminders.hamake.examples.ClassSizeHistogram"/>
-            <arg value="${test.build.dir}/jar-listings-filtered"/>
-            <arg value="${test.build.dir}/class-size-histogram"/>
+            <arg value="${dist.dir}/hamake-j-${hamake.version}.jar"/>
+            <arg value="-f"/>
+            <arg value="${test.dir}/resources/class-size.xml"/>
+            <arg value="-v"/>
+            <arg value="-t"/>
         </exec>
     </target>
 
