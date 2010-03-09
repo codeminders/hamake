@@ -80,7 +80,7 @@ public class Main {
             FileSystem fs = makefilePath.getFileSystem(hadoopCfg);
             is = fs.open(makefilePath);
             make = makefileParser.parse(is, config.verbose);
-            make.setFileSystem(fs);
+            make.setFileSystem(FileSystem.get(hadoopCfg));
         } catch (IOException ex) {
             System.err.println("Cannot load makefile " + mname + ": " + ex.getMessage());
             if (config.test_mode)
