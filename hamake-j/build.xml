@@ -100,7 +100,7 @@
             <arg value="jar"/>
             <arg value="${dist.dir}/hamake-j-${hamake.version}.jar"/>
             <arg value="-f"/>
-            <arg value="${test.dir}/resources/class-size.xml"/>
+            <arg value="file://${test.dir}/resources/class-size.xml"/>
             <arg value="-v"/>
             <arg value="-t"/>
         </exec>

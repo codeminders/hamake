@@ -1,10 +1,6 @@
 <project default="build" name="recommendations">
 
   <config>
-	<dfs>
-	  <namenode host="localhost" port="9000" />
-	</dfs>
-    
 	<property name="tempdir" value="/tmp" />
 	<property name="basedir" value="/tmp" />
 	<property name="numreducers" value="2" />

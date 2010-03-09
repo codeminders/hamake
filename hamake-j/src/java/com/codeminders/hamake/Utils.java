@@ -204,23 +204,31 @@ public class Utils {
 
     public static File copyToTemporaryLocal(String path, FileSystem fs)
             throws IOException {
-        File local = File.createTempFile("hamake", ".tmp");
+    	File srcFile = new File(path);
+    	org.apache.hadoop.fs.Path srcPath = new org.apache.hadoop.fs.Path(path);
+    	File dstFile = File.createTempFile("hamake", ".tmp");
+    	dstFile.deleteOnExit();
         if (Config.getInstance().verbose) {
-            System.err.println("Downloading " + path + " to " + local.getAbsolutePath());
+            System.err.println("Downloading " + path + " to " + dstFile.getAbsolutePath());
         }
         System.out.println();
-        local.deleteOnExit();
-        InputStream is = null;
-        OutputStream os = null;
-        try {
-            is = fs.open(fs.makeQualified(new org.apache.hadoop.fs.Path(path)));
-            os = new BufferedOutputStream(new FileOutputStream(local));
-            IOUtils.copy(is, os);
-        } finally {
-            IOUtils.closeQuietly(is);
-            IOUtils.closeQuietly(os);
-        }
-        return local;
+    	if(srcFile.exists()){
+    		InputStream src = null;
+    		OutputStream dst = null;
+    		try{
+    			src = new FileInputStream(srcFile);
+    			dst = new FileOutputStream(dstFile);
+    			IOUtils.copy(src, dst);
+    		} finally{
+    			if(src != null)IOUtils.closeQuietly(src);
+    			if(dst != null)IOUtils.closeQuietly(dst);
+    		}
+    	}
+    	else if(fs.exists(srcPath)){       		
+            fs.copyToLocalFile(srcPath, new org.apache.hadoop.fs.Path(dstFile.getAbsolutePath()));
+    	}
+        
+        return dstFile;
     }
 
     public static boolean matches(org.apache.hadoop.fs.Path p, String mask) {
