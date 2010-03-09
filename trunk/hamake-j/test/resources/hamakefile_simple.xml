@@ -1,0 +1,30 @@
+<project default="build" name="recommendations">
+
+  <config>
+	<dfs>
+	  <namenode host="localhost" port="9000" />
+	</dfs>
+    
+	<property name="tempdir" value="/tmp" />
+	<property name="basedir" value="/tmp" />
+	<property name="numreducers" value="2" />
+  </config>
+
+
+  <map name="randomtextwriter">
+	<description>
+      Random text generator
+    </description>
+	<dependencies />
+	<input>
+	  <path location="%(tempdir)s/in/" />
+	</input>
+	<output>
+	  <path location="%(tempdir)s/rtw1/" />
+	</output>
+	<task jar="%(basedir)s/hadoop-0.20.1-examples.jar" main="randomtextwriter">
+	  <pathparam type="outputfile" />	  
+	</task>
+  </map>
+
+ </project>
