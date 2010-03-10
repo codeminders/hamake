@@ -63,7 +63,7 @@ public class MakefileParser {
 
     protected Element parseConfig(Document dom) throws InvalidMakefileException {
         return Utils.getMandatory(dom.getDocumentElement(), "config");
-    }
+    }        
 
     protected Map<String, String> parseProperties(Element root) throws InvalidMakefileException {
         NodeList c = root.getElementsByTagName("property");
@@ -78,7 +78,7 @@ public class MakefileParser {
             Element e = (Element) c.item(i);
             ret.put(Utils.getRequiredAttribute(e, "name", ret),
                     Utils.getRequiredAttribute(e, "value", ret));
-        }
+        }                  
         return ret;
     }
 
