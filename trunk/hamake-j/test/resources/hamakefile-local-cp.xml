@@ -1,0 +1,47 @@
+<project default="build" name="local-cp">
+
+	<config>
+		<property name="tempdir" value="/tmp" />
+		<property name="basedir" value="/tmp" />
+		<property name="numreducers" value="2" />
+	</config>
+
+
+	<map name="map1">
+		<description>
+      first map
+    </description>
+		<dependencies />
+		<input>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="%(tempdir)s/in/" />
+		</input>
+		<output>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="%(tempdir)s/out/" />
+		</output>
+		<exec binary="cp">
+			<pathparam type="inputfile" />
+			<pathparam type="outputfile" />
+		</exec>
+	</map>
+	<map name="map2">
+		<description>
+	      second map
+	    </description>
+		<dependencies />
+		<input>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="%(tempdir)s/in/" />
+		</input>
+		<output>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="%(tempdir)s/out/" />
+		</output>
+		<exec binary="cp">
+			<pathparam type="inputfile" />
+			<pathparam type="outputfile" />
+		</exec>
+	</map>
+
+</project>
