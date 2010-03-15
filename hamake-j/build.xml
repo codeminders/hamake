@@ -65,14 +65,26 @@
 
 	<target name="compile">
 		<mkdir dir="${build.dir}/classes" />
-		<javac classpathref="library.commons.classpath" destdir="${build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
+		<javac classpathref="library.commons.classpath"
+               destdir="${build.dir}/classes"
+               debug="${compiler.debug}"
+               deprecation="${compiler.deprecation}"
+               nowarn="${compiler.generate.no.warnings}"
+               fork="yes"
+               memoryMaximumSize="${compiler.max.memory}">
 			<src path="${src.dir}" />
 		</javac>
 	</target>
 
 	<target name="compile-test" depends="compile">
 		<mkdir dir="${test.build.dir}/classes" />
-		<javac classpathref="test.classpath" destdir="${test.build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
+		<javac classpathref="test.classpath"
+               destdir="${test.build.dir}/classes"
+               debug="${compiler.debug}"
+               deprecation="${compiler.deprecation}"
+               nowarn="${compiler.generate.no.warnings}"
+               fork="yes"
+               memoryMaximumSize="${compiler.max.memory}">
 			<src path="${test.src.dir}" />
 		</javac>
 	</target>
@@ -92,7 +104,9 @@
 			<manifest>
 				<attribute name="Main-Class" value="com.codeminders.hamake.Main" />
 			</manifest>
-			<fileset dir="${build.dir}/classes" includes="**/*.class" excludes="com/codeminders/hamake/examples/**" />
+			<fileset dir="${build.dir}/classes"
+                     includes="**/*.class"
+                     excludes="com/codeminders/hamake/examples/**" />
 			<fileset dir="${build.dir}" includes="lib/*.jar" />
 		</jar>
 	</target>
@@ -100,17 +114,28 @@
 
 	<target name="build-examples" depends="compile">
 		<mkdir dir="${dist.dir}" />
-		<jar destfile="${dist.dir}/hamake-examples-${hamake.version}.jar" basedir="${build.dir}" includes="com/codeminders/hamake/examples/**" />
+		<jar destfile="${dist.dir}/hamake-examples-${hamake.version}.jar"
+             basedir="${build.dir}/classes"
+             includes="com/codeminders/hamake/examples/**" />
 	</target>
 
 	<target name="junit" description="runs hamake-j JUnit tests" depends="compile-test">
 		<mkdir dir="${test.build.dir}/test_report" />
-		<junit showoutput="yes" haltonfailure="yes" fork="yes" dir="${test.resources.dir}" maxmemory="256M" printsummary="withOutAndErr">
+		<junit showoutput="yes"
+               haltonfailure="yes"
+               fork="yes"
+               dir="${test.resources.dir}"
+               maxmemory="256M"
+               printsummary="withOutAndErr">
 			<classpath>
 				<path refid="test.runtime.classpath" />
 			</classpath>
 
-			<test name="com.codeminders.hamake.AllHamakeTests" haltonfailure="no" outfile="nutch" todir="${test.build.dir}/test_report" fork="yes">
+			<test name="com.codeminders.hamake.AllHamakeTests"
+                  haltonfailure="no"
+                  outfile="hamake"
+                  todir="${test.build.dir}/test_report"
+                  fork="yes">
 				<formatter type="xml" />
 			</test>
 
