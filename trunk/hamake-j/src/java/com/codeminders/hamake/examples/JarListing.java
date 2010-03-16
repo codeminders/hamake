@@ -18,6 +18,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.mapred.JobConf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -46,7 +47,10 @@ public class JarListing extends Configured implements Tool
     public static void main(String[] args)
         throws Exception
     {
-        int ret = ToolRunner.run(new JarListing(), args);
+        JobConf config = new JobConf();
+        config.setJarByClass(JarListing.class);
+
+        int ret = ToolRunner.run(config, new JarListing(), args);
         System.exit(ret);
     }
 
