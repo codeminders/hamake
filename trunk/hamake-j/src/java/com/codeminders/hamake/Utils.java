@@ -227,6 +227,8 @@ public class Utils {
     	else if(fs.exists(srcPath)){       		
             fs.copyToLocalFile(srcPath, new org.apache.hadoop.fs.Path(dstFile.getAbsolutePath()));
     	}
+        else
+            throw new IOException("Path not found: " + path);
         
         return dstFile;
     }
