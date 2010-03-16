@@ -13,7 +13,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.hadoop.mapred.JobConf;
 
 import java.io.IOException;
 
@@ -26,10 +25,7 @@ public class JarListingFilter extends Configured implements Tool
     public static void main(String[] args)
         throws Exception
     {
-        JobConf config = new JobConf();
-        config.setJarByClass(JarListingFilter.class);
-
-        int ret = ToolRunner.run(config, new JarListingFilter(), args);
+        int ret = ToolRunner.run(new JarListingFilter(), args);
         System.exit(ret);
     }
 
@@ -48,6 +44,7 @@ public class JarListingFilter extends Configured implements Tool
         }
 
         Job job = new Job(config, "JarListingFilter");
+        job.setJarByClass(JarListingFilter.class);
 
         //set the InputFormat of the job to our InputFormat
         job.setInputFormatClass(TextInputFormat.class);
