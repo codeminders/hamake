@@ -1,7 +1,6 @@
 <project default="build" name="local-cp">
 
 	<config>
-		<property name="tempdir" value="/tmp" />
 		<property name="basedir" value="/tmp" />
 		<property name="numreducers" value="2" />
 	</config>
@@ -14,11 +13,11 @@
 		<dependencies />
 		<input>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="%(tempdir)s/in/" />
+			<path location="is_set_by_test" />
 		</input>
 		<output>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="%(tempdir)s/out/" />
+			<path location="is_set_by_test" />
 		</output>
 		<exec binary="cp">
 			<pathparam type="inputfile" />
@@ -32,16 +31,35 @@
 		<dependencies />
 		<input>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="%(tempdir)s/in/" />
+			<path location="is_set_by_test" />
 		</input>
 		<output>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="%(tempdir)s/out/" />
+			<path location="is_set_by_test" />
 		</output>
 		<exec binary="cp">
 			<pathparam type="inputfile" />
 			<pathparam type="outputfile" />
 		</exec>
 	</map>
+	<reduce name="reduce1">
+		<description>
+	      first reduce
+	    </description>
+		<dependencies />
+		<input>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</input>
+		<output>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</output>
+		<exec binary="is_set_by_test">
+			<pathparam type="input" />
+			<constparam value=">"/>
+			<pathparam type="output" />
+		</exec>
+	</reduce>
 
 </project>
