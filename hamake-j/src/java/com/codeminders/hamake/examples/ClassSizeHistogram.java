@@ -2,6 +2,7 @@ package com.codeminders.hamake.examples;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -61,7 +62,11 @@ public class ClassSizeHistogram extends Configured implements Tool
         job.setCombinerClass(IntSumReducer.class);
         job.setReducerClass(IntSumReducer.class);
 
-        FileInputFormat.addInputPaths(job, args[0]);
+        Path p = new Path(args[0]);
+        FileStatus[] list = p.getFileSystem(config).listStatus(p);
+        for(FileStatus f : list)
+            FileInputFormat.addInputPath(job, f.getPath());
+
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
         return job.waitForCompletion(true) ? 0 : 1;
