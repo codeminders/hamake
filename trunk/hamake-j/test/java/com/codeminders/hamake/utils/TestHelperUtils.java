@@ -21,14 +21,15 @@ public class TestHelperUtils {
 	public static File generateTemporaryDirectory(String folder){					
 		File f = new File(generateTemporaryPath(folder));
 		f.mkdirs();
-		f.deleteOnExit();
 		return f;
 	}
 	
-	public static File generateTemporaryFile(String folder) throws IOException{			
+	public static File generateTemporaryFile(String folder) throws IOException{
+		if(!new File(folder).exists()){
+			new File(folder).mkdirs();
+		}
 		File f = new File(generateTemporaryPath(folder));
 		f.createNewFile();
-		f.deleteOnExit();
 		return f;
 	}
 

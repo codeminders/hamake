@@ -181,7 +181,17 @@ public class Utils {
             if (Config.getInstance().dryrun)
                 return 0;
             else {
-                return Runtime.getRuntime().exec(command).waitFor();
+            	String[] cmd = null;
+            	if(OS.isLinux()){
+            		cmd = new String[] {"/bin/sh", "-c", command};
+            	}
+            	else if(OS.isWindows()){
+            		cmd = new String[] {"cmd", "/C", command};
+            	}
+            	else{
+            		cmd = new String[] {command};
+            	}
+            	return Runtime.getRuntime().exec(cmd).waitFor();
             }
         } catch (IOException ex) {
             System.err.println(command + " execution failed, I/O error");
