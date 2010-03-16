@@ -16,6 +16,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.mapred.JobConf;
 
 import java.io.IOException;
 
@@ -30,7 +31,10 @@ public class ClassSizeHistogram extends Configured implements Tool
     public static void main(String[] args)
         throws Exception
     {
-        int ret = ToolRunner.run(new ClassSizeHistogram(), args);
+        JobConf config = new JobConf();
+        config.setJarByClass(ClassSizeHistogram.class);
+
+        int ret = ToolRunner.run(config, new ClassSizeHistogram(), args);
         System.exit(ret);
     }
 
