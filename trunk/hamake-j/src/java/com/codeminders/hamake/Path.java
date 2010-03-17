@@ -16,6 +16,10 @@ public class Path {
     public Path(String loc) {
         this(loc, null, null, 0);
     }
+    
+    public Path(String loc, int gen) {
+        this(loc, null, null, gen);
+    }
 
     public Path(String loc, String filename) {
         this(loc, filename, null, 0);

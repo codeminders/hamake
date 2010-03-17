@@ -3,6 +3,7 @@ package com.codeminders.hamake.tasks;
 import com.codeminders.hamake.CommandThread;
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Path;
+import com.codeminders.hamake.Task;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.PathParam;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -13,16 +14,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
-public class MapTask extends BaseTask {
+public class MapTask extends Task {
 
     private Collection<Path> deps = new ArrayList<Path>();
     private Path xinput;
 
-    public Collection<Path> getInputs() {
-        Collection<Path> ret = new ArrayList<Path>(getDeps());
+    public List<Path> getInputs() {
+        List<Path> ret = new ArrayList<Path>(getDeps());
         if (getXinput() != null) {
             ret.add(getXinput());
         }

@@ -19,12 +19,12 @@ public class TaskRunner {
     private Lock lock;
     private Condition condition;
 
-    public TaskRunner(Collection<Task> tasks,
+    public TaskRunner(List<Task> tasks,
                       int numJobs,
                       Collection<String> targets,
                       Map<String, Object> context) {
         if (Config.getInstance().nodeps)
-            graph = new NoDepsExecutionGraph(tasks, targets);
+            graph = new NoDepsExecutionGraph(tasks);
         else
             graph = new DependencyExecutionGraph(tasks, targets);
         this.context = context;

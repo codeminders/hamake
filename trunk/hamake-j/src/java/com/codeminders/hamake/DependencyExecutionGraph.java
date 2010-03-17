@@ -69,8 +69,8 @@ class DependencyExecutionGraph implements ExecutionGraph {
         this.tasks = newtasks;
     }
 
-    public Collection<String> getReadyForRunTasks() {
-        Collection<String> ret = new ArrayList<String>();
+    public List<String> getReadyForRunTasks() {
+        List<String> ret = new ArrayList<String>();
         for (Map.Entry<String, Set<String>> entry : tasks.entrySet()) {
             if (entry.getValue().isEmpty()) {
                 ret.add(entry.getKey());
