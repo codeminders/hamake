@@ -1,6 +1,7 @@
 package com.codeminders.hamake.tasks;
 
 import com.codeminders.hamake.Path;
+import com.codeminders.hamake.Task;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.PathParam;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -11,15 +12,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
-public class ReduceTask extends BaseTask {
+public class ReduceTask extends Task {
 
     private Collection<Path> deps = new ArrayList<Path>();
     private Collection<Path> inputs = new ArrayList<Path>();
 
-    public Collection<Path> getInputs() {
+    public List<Path> getInputs() {
         return new ArrayList<Path>(inputs);
     }
 
@@ -111,7 +113,7 @@ public class ReduceTask extends BaseTask {
         this.deps = deps;
     }
 
-    public void setInputs(Collection<Path> inputs) {
+    public void setInputs(List<Path> inputs) {
         this.inputs = inputs;
     }
 

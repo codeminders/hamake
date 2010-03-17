@@ -5,11 +5,10 @@
 		<property name="numreducers" value="2" />
 	</config>
 
-
-	<map name="map1">
+	<reduce name="reduce1">
 		<description>
-      first map
-    </description>
+		      first reduce
+		    </description>
 		<dependencies />
 		<input>
 			<!-- this parameter is set by JUnit test programmatically-->
@@ -19,11 +18,12 @@
 			<!-- this parameter is set by JUnit test programmatically-->
 			<path location="is_set_by_test" />
 		</output>
-		<exec binary="cp">
-			<pathparam type="inputfile" />
-			<pathparam type="outputfile" />
+		<exec binary="is_set_by_test">
+			<pathparam type="input" />
+			<constparam value=">" />
+			<pathparam type="output" />
 		</exec>
-	</map>
+	</reduce>
 	<map name="map2">
 		<description>
 	      second map
@@ -37,14 +37,14 @@
 			<!-- this parameter is set by JUnit test programmatically-->
 			<path location="is_set_by_test" />
 		</output>
-		<exec binary="cp">
+		<exec binary="is_set_by_test">
 			<pathparam type="inputfile" />
 			<pathparam type="outputfile" />
 		</exec>
 	</map>
-	<reduce name="reduce1">
+	<map name="map1">
 		<description>
-	      first reduce
+	      first map
 	    </description>
 		<dependencies />
 		<input>
@@ -55,11 +55,10 @@
 			<!-- this parameter is set by JUnit test programmatically-->
 			<path location="is_set_by_test" />
 		</output>
-		<exec binary="is_set_by_test">
-			<pathparam type="input" />
-			<constparam value=">"/>
-			<pathparam type="output" />
+		<exec binary="cp">
+			<pathparam type="inputfile" />
+			<pathparam type="outputfile" />
 		</exec>
-	</reduce>
+	</map>
 
 </project>

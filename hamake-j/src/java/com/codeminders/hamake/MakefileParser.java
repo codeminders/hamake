@@ -7,7 +7,6 @@ import com.codeminders.hamake.params.ConstParam;
 import com.codeminders.hamake.params.JobConfParam;
 import com.codeminders.hamake.params.PathParam;
 import com.codeminders.hamake.params.PigParam;
-import com.codeminders.hamake.tasks.BaseTask;
 import com.codeminders.hamake.tasks.MapTask;
 import com.codeminders.hamake.tasks.ReduceTask;
 import org.w3c.dom.Document;
@@ -122,8 +121,8 @@ public class MakefileParser {
         else
             throw new InvalidMakefileException("Multiple 'input' elements in MAP task '%s' are not permitted" + name);
 
-        Collection<Path> outputs = parsePathList(root, "output", properties);
-        Collection<Path> deps = parsePathList(root, "dependencies", properties);
+        List<Path> outputs = parsePathList(root, "output", properties);
+        List<Path> deps = parsePathList(root, "dependencies", properties);
 
         Command command = parseCommand(root, properties);
 
@@ -195,8 +194,8 @@ public class MakefileParser {
     protected Task parseReduceTask(Element root, Map<String, String> properties) throws InvalidMakefileException {
         String name = Utils.getRequiredAttribute(root, "name", properties);
 
-        Collection<Path> inputs = parsePathList(root, "input", properties);
-        Collection<Path> outputs = parsePathList(root, "output", properties);
+        List<Path> inputs = parsePathList(root, "input", properties);
+        List<Path> outputs = parsePathList(root, "output", properties);
         Collection<Path> deps = parsePathList(root, "dependencies", properties);
 
         Command command = parseCommand(root, properties);
@@ -279,7 +278,7 @@ public class MakefileParser {
                 Utils.getRequiredAttribute(root, "value", properties));
     }
 
-    protected void parseTaskDeps(Element root, BaseTask res, Map<String, String> properties)
+    protected void parseTaskDeps(Element root, Task res, Map<String, String> properties)
             throws InvalidMakefileException {
         NodeList list = root.getElementsByTagName("taskdep");
         int size = list.getLength();
@@ -299,17 +298,17 @@ public class MakefileParser {
         res.setTaskDeps(deps);
     }
 
-    protected Collection<Path> parsePathList(Element root, String name, Map<String, String> properties)
+    protected List<Path> parsePathList(Element root, String name, Map<String, String> properties)
             throws InvalidMakefileException {
         NodeList list = root.getElementsByTagName(name);
         int len = list.getLength();
         if (len == 0)
-            return Collections.emptySet();
+            return Collections.EMPTY_LIST;
         if (len != 1)
             throw new InvalidMakefileException("Multiple elements '" + name + "' in " + Utils.getPath(root) +
                     " are not permitted");
         NodeList path = ((Element) list.item(0)).getElementsByTagName("path");
-        Collection<Path> ret = new ArrayList<Path>();
+        List<Path> ret = new ArrayList<Path>();
         for (int i = 0, sz = path.getLength(); i < sz; i++) {
             ret.add(parsePath((Element) path.item(i), properties));
         }

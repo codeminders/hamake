@@ -5,6 +5,7 @@ import org.apache.hadoop.fs.FileSystem;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Hamake {
@@ -17,7 +18,7 @@ public class Hamake {
     }
     private int numJobs;
     private Collection<String> targets;
-    private Collection<Task> tasks;
+    private List<Task> tasks;
 
     private FileSystem fileSystem;
 
@@ -45,11 +46,11 @@ public class Hamake {
         this.targets = targets;
     }
 
-    public Collection<Task> getTasks() {
+    public List<Task> getTasks() {
         return tasks;
     }
 
-    public void setTasks(Collection<Task> tasks) {
+    public void setTasks(List<Task> tasks) {
         this.tasks = tasks;
     }
 
