@@ -4,6 +4,9 @@
 
 	<property file="build.properties" />
 
+    <property name="hadoop.version" value="0.20" />
+
+
 	<!-- Compiler options -->
 	<property name="compiler.debug" value="on" />
 	<property name="compiler.deprecation" value="off" />
@@ -31,16 +34,18 @@
 		<exclude name="**/*.pyo/**" />
 		<exclude name="**/.git/**" />
 	</patternset>
-	<patternset id="library.patterns">
-		<include name="*.jar" />
-	</patternset>
+
+    <patternset id="library.patterns">
+        <include name="*.jar" />
+        <include name="hadoop-${hadoop.version}/*.jar"/>
+    </patternset>
 
 
 	<!-- Project Libraries -->
 
 	<path id="library.commons.classpath">
 		<fileset dir="${lib.dir}">
-			<patternset refid="library.patterns" />
+            <patternset refid="library.patterns" />
 		</fileset>
 	</path>
 
