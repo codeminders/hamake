@@ -80,7 +80,7 @@ Sub-elements:
   * 'description' - single element which context is textual description of the task. (optional)
   * 'input' - this element must contain one and only one 'path' element (mandatory)
   * 'dependencies' - this element may contain zero or more path elements (optional)
-  * 'output' - this element must one or more 'path' elements (mandatory)
+  * 'output' - this element must contain one or more 'path' elements (mandatory)
   * 'taskdep' - optional list of 'pretask' elements specifying on what tasks this task depends on (optional)
   * Exactly one either 'task', 'pig' or 'exec' element (mandatory)
 
@@ -120,7 +120,7 @@ Attributes:
 Sub-elements:
   * 'description' - single element which context is textual description of the task. (optional)
   * 'input' - this element must contain one ore more 'path' elements (mandatory)
-  * 'output' - this element must one or more 'path' elements (mandatory)
+  * 'output' - this element must contain one or more 'path' elements (mandatory)
   * 'taskdep' - optional list of 'pretask' elements specifying on what tasks this task depends on (optional)
   * Exactly one either 'task', 'pig' or 'exec' element (mandatory)
 
