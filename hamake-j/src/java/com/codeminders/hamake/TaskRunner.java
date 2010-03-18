@@ -67,56 +67,71 @@ public class TaskRunner {
     }
 
     void run() {
-        while (true) {
-            lock.lock();
-
-            Set<String> runningNames = new HashSet<String>();
-            for (TaskThread tt : running) {
-                runningNames.add(tt.getTaskName());
+        Thread shutdownHook = new Thread() {
+            @Override
+            public void run() {
+                System.out.println("Program was terminated unexpectedly. Make sure HaMake task dosn't call System.exit()");
             }
-            Collection<String> candidates = new ArrayList<String>();
-            for (String task : graph.getReadyForRunTasks()) {
-                if (!runningNames.contains(task) &&
-                        !failed.contains(task)) {
-                    candidates.add(task);
+        };
+
+        Runtime.getRuntime().addShutdownHook( shutdownHook );
+        try
+        {
+            while (true) {
+                lock.lock();
+
+                Set<String> runningNames = new HashSet<String>();
+                for (TaskThread tt : running) {
+                    runningNames.add(tt.getTaskName());
                 }
-            }
-            if (candidates.isEmpty() && running.isEmpty()) {
-                break;
-            }
-
-            startTasks(candidates);
-
-            try {
-                condition.await();
-            } catch (InterruptedException ex) {
-                System.err.println("Execution is interrupted");
-                return;
-            }
-
-            Collection<TaskThread> justFinished = new ArrayList<TaskThread>();
-            Collection<TaskThread> stillRunning = new ArrayList<TaskThread>();            
-
-            for (TaskThread t : running) {
-                if (t.isFinished()) {
-                    justFinished.add(t);
-                } else {
-                    stillRunning.add(t);
+                Collection<String> candidates = new ArrayList<String>();
+                for (String task : graph.getReadyForRunTasks()) {
+                    if (!runningNames.contains(task) &&
+                            !failed.contains(task)) {
+                        candidates.add(task);
+                    }
                 }
-            }
-            for (TaskThread tt : justFinished) {
-                if (tt.getReturnCode() == 0) {
-                    System.err.println("Execution of " + tt.getTaskName() + " is completed");
-                    graph.removeTask(tt.getTaskName());
-                } else {
-                    System.err.println("Execution of " + tt.getTaskName() + " is failed with code " + tt.getReturnCode());
-                    failed.add(tt.getTaskName());
-                    graph.removeTask(tt.getTaskName());
-
+                if (candidates.isEmpty() && running.isEmpty()) {
+                    break;
                 }
+
+                startTasks(candidates);
+
+                try {
+                    condition.await();
+                } catch (InterruptedException ex) {
+                    System.err.println("Execution is interrupted");
+                    return;
+                }
+
+                Collection<TaskThread> justFinished = new ArrayList<TaskThread>();
+                Collection<TaskThread> stillRunning = new ArrayList<TaskThread>();
+
+                for (TaskThread t : running) {
+                    if (t.isFinished()) {
+                        justFinished.add(t);
+                    } else {
+                        stillRunning.add(t);
+                    }
+                }
+                for (TaskThread tt : justFinished) {
+                    if (tt.getReturnCode() == 0) {
+                        System.err.println("Execution of " + tt.getTaskName() + " is completed");
+                        graph.removeTask(tt.getTaskName());
+                    } else {
+                        System.err.println("Execution of " + tt.getTaskName() + " is failed with code " + tt.getReturnCode());
+                        failed.add(tt.getTaskName());
+                        graph.removeTask(tt.getTaskName());
+
+                    }
+                }
+                running = stillRunning;
+                lock.unlock();
             }
-            running = stillRunning;
-            lock.unlock();
         }
+        finally {
+            Runtime.getRuntime().removeShutdownHook( shutdownHook );
+        }
+
     }
 }

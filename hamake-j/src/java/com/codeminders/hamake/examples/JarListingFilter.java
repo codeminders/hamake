@@ -26,8 +26,7 @@ public class JarListingFilter extends Configured implements Tool
     public static void main(String[] args)
         throws Exception
     {
-        int ret = ToolRunner.run(new JarListingFilter(), args);
-        //System.exit(ret);
+        ToolRunner.run(new JarListingFilter(), args);
     }
 
     private void printUsage()
