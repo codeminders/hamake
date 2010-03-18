@@ -23,10 +23,10 @@ public class TaskRunner {
                       int numJobs,
                       Collection<String> targets,
                       Map<String, Object> context) {
-//        if (Config.getInstance().nodeps)
+        if (Config.getInstance().nodeps)
             graph = new NoDepsExecutionGraph(tasks);
-//        else
-//            graph = new DependencyExecutionGraph(tasks, targets);
+        else
+            graph = new DependencyExecutionGraph(tasks);
         this.context = context;
         this.tasks = new HashMap<String, Task>();
         for (Task t : tasks)

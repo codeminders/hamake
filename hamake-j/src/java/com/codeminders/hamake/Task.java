@@ -26,9 +26,7 @@ public abstract class Task {
 		return outputs;
 	}
 
-	public boolean dependsOn(Task t) {
-		if (getTaskDeps().contains(t.getName()))
-			return true;
+	public boolean dependsOn(Task t) {		
 		for (Path i : getInputs()) {
 			for (Path o : t.getOutputs()) {
 				if (i.intersects(o))

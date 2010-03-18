@@ -3,6 +3,7 @@ package com.codeminders.hamake.utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -119,5 +120,30 @@ public class TestHelperUtils {
 				}				
 			}
 		}
+	}
+	
+	public static MapTask createMapTask(String name, Path input, Path[] outputs){
+		MapTask map = new MapTask();
+		map.setName(name);
+		map.setXinput(input);
+		map.setOutputs(Arrays.asList(outputs));
+		return map;
+	}
+	
+	public static ReduceTask createReduceTask(String name, Path[] inputs, Path[] outputs){
+		ReduceTask reduce = new ReduceTask();
+		reduce.setName(name);
+		reduce.setInputs(Arrays.asList(inputs));
+		reduce.setOutputs(Arrays.asList(outputs));
+		return reduce;
+	}
+	
+	public static MapTask createMapTaskWithTaskDeps(String name, Path input, Path[] outputs, String[] dependsOns){
+		MapTask map = new MapTask();
+		map.setName(name);
+		map.setXinput(input);
+		map.setOutputs(Arrays.asList(outputs));
+		map.setTaskDeps(Arrays.asList(dependsOns));
+		return map;
 	}
 }
