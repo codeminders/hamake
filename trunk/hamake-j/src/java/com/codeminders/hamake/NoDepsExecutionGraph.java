@@ -114,7 +114,7 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		for (Task ti : tasks) {
 			boolean rootNode = true;
 			for (Task tj : tasks) {
-				rootNode = ti.dependsOn(tj) ? false : rootNode;
+				rootNode = dependsOn(ti,tj) ? false : rootNode;
 			}
 			if (rootNode) {
 				if (!hash.containsKey(ti.getName())) {
@@ -131,10 +131,9 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 	private void fetchChildren(List<GraphNode> nodes, List<Task> tasks) {
 		// find all dependent nodes in this level
 		List<GraphNode> nextLevelNodes = new ArrayList<GraphNode>();
-		int tasksFound = 0;
 		for (GraphNode node : nodes) {
 			for (Task task : tasks) {
-				if (task.dependsOn(node.getTask())) {
+				if (dependsOn(task,node.getTask())) {
 					if (!hash.containsKey(task.getName())) {
 						// add new node
 						GraphNode newNode = new GraphNode(task,
@@ -143,7 +142,6 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 						node.addChild(newNode);
 						hash.put(task.getName(), newNode);
 						nextLevelNodes.add(newNode);
-						tasksFound++;
 					}
 					else{
 						node.addChild(hash.get(task.getName()));
@@ -152,9 +150,13 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 				}
 			}
 		}
-		if (tasksFound > 0) {
+		if (nextLevelNodes.size() > 0) {
 			// fire this method for the next level
 			fetchChildren(nextLevelNodes, tasks);
 		}
-	}	
+	}
+	
+	protected boolean dependsOn(Task a, Task b){
+		return a.dependsOn(b);
+	}
 }
