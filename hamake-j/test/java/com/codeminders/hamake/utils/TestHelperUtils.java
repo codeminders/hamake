@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.codeminders.hamake.Hamake;
@@ -89,10 +90,10 @@ public class TestHelperUtils {
 				if(task.getName().equals(taskName)){
 					List<Path> inputs = r.getInputs();
 					inputs.clear();
-					inputs.add(outputFolder);
+					inputs.add(inputFolder);
 					r.setInputs(inputs);
 					r.getOutputs().clear();
-					r.getOutputs().add(inputFolder);
+					r.getOutputs().add(outputFolder);
 				}				
 			}
 		}

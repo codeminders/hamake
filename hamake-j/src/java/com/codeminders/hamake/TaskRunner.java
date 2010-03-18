@@ -23,10 +23,10 @@ public class TaskRunner {
                       int numJobs,
                       Collection<String> targets,
                       Map<String, Object> context) {
-        if (Config.getInstance().nodeps)
+//        if (Config.getInstance().nodeps)
             graph = new NoDepsExecutionGraph(tasks);
-        else
-            graph = new DependencyExecutionGraph(tasks, targets);
+//        else
+//            graph = new DependencyExecutionGraph(tasks, targets);
         this.context = context;
         this.tasks = new HashMap<String, Task>();
         for (Task t : tasks)
@@ -95,7 +95,7 @@ public class TaskRunner {
             }
 
             Collection<TaskThread> justFinished = new ArrayList<TaskThread>();
-            Collection<TaskThread> stillRunning = new ArrayList<TaskThread>();
+            Collection<TaskThread> stillRunning = new ArrayList<TaskThread>();            
 
             for (TaskThread t : running) {
                 if (t.isFinished()) {

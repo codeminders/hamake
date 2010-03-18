@@ -5,7 +5,7 @@
 		<property name="numreducers" value="2" />
 	</config>
 
-	<reduce name="reduce1">
+	<reduce name="reduce">
 		<description>
 		      first reduce
 		    </description>
