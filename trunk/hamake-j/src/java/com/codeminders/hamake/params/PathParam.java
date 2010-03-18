@@ -3,6 +3,7 @@ package com.codeminders.hamake.params;
 import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Path;
 import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.NamedParam;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -10,7 +11,7 @@ import org.apache.hadoop.fs.FileSystem;
 import java.io.IOException;
 import java.util.*;
 
-public class PathParam implements Param {
+public class PathParam implements NamedParam {
 
     public enum Mask {
 

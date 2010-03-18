@@ -1,13 +1,14 @@
 package com.codeminders.hamake.params;
 
 import com.codeminders.hamake.Param;
+import com.codeminders.hamake.NamedParam;
 import org.apache.hadoop.fs.FileSystem;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public class PigParam implements Param {
+public class PigParam implements NamedParam {
     private String name;
     private String value;
 

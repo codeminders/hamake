@@ -3,7 +3,9 @@ package com.codeminders.hamake.commands;
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.NamedParam;
 import com.codeminders.hamake.params.PigParam;
+import com.codeminders.hamake.params.PathParam;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileSystem;
@@ -40,23 +42,10 @@ public class PigCommand extends BaseCommand {
         Collection<Param> scriptParams = getParameters();
         if (scriptParams != null) {
             for (Param p : scriptParams) {
-                if (p instanceof PigParam) {
-                    PigParam pp = (PigParam) p;
-                    Collection<String> values;
-                    try {
-                        values = p.get(parameters, fs);
-                    } catch (IOException ex) {
-                        System.err.println("Failed to extract parameter values from parameter " +
-                                pp.getName() + ": " + ex.getMessage());
-                        if (Config.getInstance().test_mode)
-                            ex.printStackTrace();
-                        return -1000;
-                    }
-                    if (values.size() != 1) {
-                        System.err.println("Multiple values for param are no supported in PIG scripts");
-                        return -1000;
-                    }
-                    args.add(pp.getName() + '=' + values.iterator().next());
+                if (p instanceof PigParam || p instanceof PathParam) {
+                    Collection<String> values = getValues((NamedParam)p, parameters, fs);
+                    if (values == null) return -1000;
+                    args.add(((NamedParam)p).getName() + '=' + values.iterator().next());
                 }
             }
         }
@@ -149,6 +138,26 @@ public class PigCommand extends BaseCommand {
                     null);
             return new BufferedReader(new StringReader(writer.toString()));
         }
+    }
+
+    protected Collection<String> getValues(NamedParam p, Map<String, Collection> parameters, FileSystem fs)
+    {
+        Collection<String> values;
+        try {
+            values = p.get(parameters, fs);
+        } catch (IOException ex) {
+            System.err.println("Failed to extract parameter values from parameter " +
+                    p.getName() + ": " + ex.getMessage());
+            if (Config.getInstance().test_mode)
+                ex.printStackTrace();
+            return null;
+        }
+        if (values.size() != 1) {
+            System.err.println("Multiple values for param are no supported in PIG scripts");
+            return null;
+        }
+
+        return values;
     }
 
 }

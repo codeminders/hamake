@@ -9,37 +9,37 @@
         <property name="scripts" value="src/scripts"/>
     </config>
 
-    <!--<map name="jar-listings">-->
-        <!--<input>-->
-            <!--<path location="lib" mask="*.jar"/>-->
-        <!--</input>-->
-        <!--<dependencies/>-->
+    <map name="jar-listings">
+        <input>
+            <path location="lib" mask="*.jar"/>
+        </input>
+        <dependencies/>
 
-        <!--<output>-->
-            <!--<path location="%(output)s/jar-listings"/>-->
-        <!--</output>-->
+        <output>
+            <path location="%(output)s/jar-listings"/>
+        </output>
 
-        <!--<task jar="%(dist)s/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListing">-->
-            <!--<pathparam type="inputfile"/>-->
-            <!--<pathparam type="outputfile"/>-->
-        <!--</task>-->
-    <!--</map>-->
+        <task jar="%(dist)s/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListing">
+            <pathparam type="inputfile"/>
+            <pathparam type="outputfile"/>
+        </task>
+    </map>
 
-    <!--<map name="filter-listing">-->
-        <!--<input>-->
-            <!--<path location="%(output)s/jar-listings"/>-->
-        <!--</input>-->
-        <!--<dependencies/>-->
+    <map name="filter-listing">
+        <input>
+            <path location="%(output)s/jar-listings"/>
+        </input>
+        <dependencies/>
 
-        <!--<output>-->
-            <!--<path location="%(output)s/jar-listings-filtered"/>-->
-        <!--</output>-->
+        <output>
+            <path location="%(output)s/jar-listings-filtered"/>
+        </output>
 
-        <!--<task jar="%(dist)s/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">-->
-            <!--<pathparam type="inputfile"/>-->
-            <!--<pathparam type="outputfile"/>-->
-        <!--</task>-->
-    <!--</map>-->
+        <task jar="%(dist)s/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
+            <pathparam type="inputfile"/>
+            <pathparam type="outputfile"/>
+        </task>
+    </map>
 
     <reduce name="histogram">
 
@@ -58,21 +58,25 @@
         
     </reduce>
 
-    <!--<map name="map">-->
-        <!--<input>-->
-            <!--<path location="%(output)s/class-size-histogram"/>-->
-        <!--</input>-->
-        <!--<dependencies/>-->
+    <map name="map">
+        <input>
+            <path location="%(output)s/class-size-histogram"/>
+        </input>
+        <dependencies/>
 
-        <!--<output>-->
-            <!--<path location="%(output)s/class-size-median-bin"/>-->
-        <!--</output>-->
+        <output>
+            <path location="%(output)s/class-size-median-bin"/>
+        </output>
 
-        <!--<pig script="%(scripts)s/median.pig">-->
-            <!--<pigparam name="infile" value="%(dfsroot)s/input/ulanov.fb2"/>-->
-            <!--<pigparam name="outfile" value="%(dfsroot)s/output/xxx.dat"/>-->
-        <!--</pig>-->
-    <!--</map>-->
+        <pig script="%(scripts)s/median.pig">
+        <!--
+            <pigparam name="infile" value="%(output)s/class-size-histogram"/>
+            <pigparam name="outfile" value="%(output)s/class-size-median-bin"/>
+            -->
+            <pathparam type="inputfile" name="infile" />
+            <pathparam type="outputfile" name="outfile" />
+        </pig>
+    </map>
 
 
 
