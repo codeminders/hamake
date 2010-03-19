@@ -3,6 +3,7 @@ package com.codeminders.hamake;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -101,23 +102,22 @@ public class Utils {
         return s;
     }
 
-    public static Map<String, FileStatus> getFileList(FileSystem fs, org.apache.hadoop.fs.Path ipath)
+    public static Map<String, FileStatus> getFileList(HamakePath ipath)
             throws IOException {
-        return getFileList(fs, ipath, false, null);
+        return getFileList(ipath, false, null);
     }
 
-    public static Map<String, FileStatus> getFileList(FileSystem fs, org.apache.hadoop.fs.Path ipath, String mask)
+    public static Map<String, FileStatus> getFileList(HamakePath ipath, String mask)
             throws IOException {
-        return getFileList(fs, ipath, false, mask);
+        return getFileList(ipath, false, mask);
     }
 
-    public static Map<String, FileStatus> getFileList(FileSystem fs, org.apache.hadoop.fs.Path ipath, boolean create)
+    public static Map<String, FileStatus> getFileList(HamakePath ipath, boolean create)
             throws IOException {
-        return getFileList(fs, ipath, create, null);
+        return getFileList(ipath, create, null);
     }
 
-    public static Map<String, FileStatus> getFileList(FileSystem fs,
-                                                      org.apache.hadoop.fs.Path ipath,
+    public static Map<String, FileStatus> getFileList(HamakePath ipath,
                                                       boolean create,
                                                       String mask)
             throws IOException {
@@ -126,14 +126,14 @@ public class Utils {
 
         boolean exists;
 
-        synchronized (fs) {
-            exists = fs.exists(ipath);
+        synchronized (ipath.getFileSystem()) {
+            exists = ipath.getFileSystem().exists(ipath.getPathName());
         }
         if (!exists) {
             if (create) {
                 System.err.println("Creating " + ipath);
-                synchronized (fs) {
-                    fs.mkdirs(ipath);
+                synchronized (ipath.getFileSystem()) {
+                	ipath.getFileSystem().mkdirs(ipath.getPathName());
                 }
                 return Collections.emptyMap();
             } else {
@@ -143,8 +143,8 @@ public class Utils {
         }
 
         FileStatus stat;
-        synchronized (fs) {
-            stat = fs.getFileStatus(ipath);
+        synchronized (ipath.getFileSystem()) {
+            stat = ipath.getFileSystem().getFileStatus(ipath.getPathName());
         }
         if (!stat.isDir()) {
             System.err.println("Path " + ipath + " must be dir!");
@@ -152,13 +152,13 @@ public class Utils {
         }
 
         FileStatus list[];
-        synchronized (fs) {
-            list = fs.listStatus(ipath);
+        synchronized (ipath.getFileSystem()) {
+            list = ipath.getFileSystem().listStatus(ipath.getPathName());
         }
 
         Map<String, FileStatus> ret = new HashMap<String, FileStatus>();
         for (FileStatus s : list) {
-            org.apache.hadoop.fs.Path p = s.getPath();
+            Path p = s.getPath();
             if (matches(p, mask))
                 ret.put(p.getName(), s);
         }
@@ -167,7 +167,7 @@ public class Utils {
 
     public static FileSystem getFileSystem(Map<String, Object> context) {
         return (FileSystem) context.get("filesystem");
-    }
+    }        
 
     public static String getenv(String name, String defaultValue) {
         String ret = System.getenv(name);
@@ -215,47 +215,27 @@ public class Utils {
     public static File copyToTemporaryLocal(String path, FileSystem fs)
             throws IOException {
     	File srcFile = new File(path);
-    	org.apache.hadoop.fs.Path srcPath = new org.apache.hadoop.fs.Path(path);
-    	File dstFile = File.createTempFile("hamake", ".tmp");
-    	dstFile.deleteOnExit();
-        if (Config.getInstance().verbose) {
-            System.err.println("Downloading " + path + " to " + dstFile.getAbsolutePath());
-        }
-        System.out.println();
+    	Path srcPath = new Path(path);    	    	      
     	if(srcFile.exists()){
-    		InputStream src = null;
-    		OutputStream dst = null;
-    		try{
-    			src = new FileInputStream(srcFile);
-    			dst = new FileOutputStream(dstFile);
-    			IOUtils.copy(src, dst);
-    		} finally{
-    			if(src != null)IOUtils.closeQuietly(src);
-    			if(dst != null)IOUtils.closeQuietly(dst);
-    		}
+    		return srcFile;
     	}
-    	else if(fs.exists(srcPath)){       		
-            fs.copyToLocalFile(srcPath, new org.apache.hadoop.fs.Path(dstFile.getAbsolutePath()));
+    	else if(fs.exists(srcPath)){
+    		File dstFile = File.createTempFile("hamake", ".tmp");
+    		if (Config.getInstance().verbose) {
+                System.err.println("Downloading " + path + " to " + dstFile.getAbsolutePath());
+                System.out.println();
+            }
+            fs.copyToLocalFile(srcPath, new Path(dstFile.getAbsolutePath()));
+            dstFile.deleteOnExit();
+            return dstFile;
     	}
         else
             throw new IOException("Path not found: " + path);
         
-        return dstFile;
     }
 
-    public static boolean matches(org.apache.hadoop.fs.Path p, String mask) {
+    public static boolean matches(Path p, String mask) {
         String name = p.getName();
         return mask == null || FilenameUtils.wildcardMatch(name, mask);
-    }
-
-    public static String getPath(org.apache.hadoop.fs.Path p) {
-        StringBuilder buf = new StringBuilder(p.getName());
-        p = p.getParent();
-        while (p != null) {
-            buf.insert(0, org.apache.hadoop.fs.Path.SEPARATOR_CHAR);
-            buf.insert(0, p.getName());
-            p = p.getParent();
-        }
-        return buf.toString();
-    }
+    }   
 }

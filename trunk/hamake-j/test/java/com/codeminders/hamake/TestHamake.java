@@ -63,14 +63,14 @@ public class TestHamake {
 			TestHelperUtils.setTaskExecBinary(make, "map2", "copy");
 			TestHelperUtils.setTaskExecBinary(make, "reduce", "dir");
 		}
-		TestHelperUtils.setMapTaskInputOutputFolders(make, "map1", new Path(
-				tempInDir.getAbsolutePath()), new Path(tempMap1OutDir
+		TestHelperUtils.setMapTaskInputOutputFolders(make, "map1", new HamakePath(
+				tempInDir.getAbsolutePath()), new HamakePath(tempMap1OutDir
 				.getAbsolutePath()));
-		TestHelperUtils.setMapTaskInputOutputFolders(make, "map2", new Path(
-				tempMap1OutDir.getAbsolutePath()), new Path(tempMap2OutDir
+		TestHelperUtils.setMapTaskInputOutputFolders(make, "map2", new HamakePath(
+				tempMap1OutDir.getAbsolutePath()), new HamakePath(tempMap2OutDir
 				.getAbsolutePath()));
 		TestHelperUtils.setReduceTaskInputOutputFolders(make, "reduce",
-				new Path(tempMap2OutDir.getAbsolutePath()), new Path(
+				new HamakePath(tempMap2OutDir.getAbsolutePath()), new HamakePath(
 						tempReduce1OutFile.getAbsolutePath()));
 		make.setFileSystem(FileSystem.get(new Configuration()));
 		make.setNumJobs(2);
@@ -129,23 +129,23 @@ public class TestHamake {
 			TestHelperUtils.setTaskExecBinary(make, "reduce1", "dir");
 			TestHelperUtils.setTaskExecBinary(make, "reduce2", "dir");
 		}
-		TestHelperUtils.setMapTaskInputOutputFolders(make, "map11", new Path(
-				tempInDir.getAbsolutePath()), new Path(tempMap11OutDir
+		TestHelperUtils.setMapTaskInputOutputFolders(make, "map11", new HamakePath(
+				tempInDir.getAbsolutePath()), new HamakePath(tempMap11OutDir
 				.getAbsolutePath()));
-		TestHelperUtils.setMapTaskInputOutputFolders(make, "map12", new Path(
-				tempInDir.getAbsolutePath()), new Path(tempMap12OutDir
+		TestHelperUtils.setMapTaskInputOutputFolders(make, "map12", new HamakePath(
+				tempInDir.getAbsolutePath()), new HamakePath(tempMap12OutDir
 				.getAbsolutePath()));
-		TestHelperUtils.setMapTaskInputOutputFolders(make, "map21", new Path(
-				tempMap11OutDir.getAbsolutePath()), new Path(tempMap21OutDir
+		TestHelperUtils.setMapTaskInputOutputFolders(make, "map21", new HamakePath(
+				tempMap11OutDir.getAbsolutePath()), new HamakePath(tempMap21OutDir
 				.getAbsolutePath()));
-		TestHelperUtils.setMapTaskInputOutputFolders(make, "map22", new Path(
-				tempMap12OutDir.getAbsolutePath()), new Path(tempMap22OutDir
+		TestHelperUtils.setMapTaskInputOutputFolders(make, "map22", new HamakePath(
+				tempMap12OutDir.getAbsolutePath()), new HamakePath(tempMap22OutDir
 				.getAbsolutePath()));
 		TestHelperUtils.setReduceTaskInputOutputFolders(make, "reduce1",
-				new Path(tempMap21OutDir.getAbsolutePath()), new Path(
+				new HamakePath(tempMap21OutDir.getAbsolutePath()), new HamakePath(
 						tempReduce1OutFile.getAbsolutePath()));
 		TestHelperUtils.setReduceTaskInputOutputFolders(make, "reduce2",
-				new Path(tempMap22OutDir.getAbsolutePath()), new Path(
+				new HamakePath(tempMap22OutDir.getAbsolutePath()), new HamakePath(
 						tempReduce2OutFile.getAbsolutePath()));
 		make.setFileSystem(FileSystem.get(new Configuration()));
 		make.setNumJobs(2);

@@ -1,7 +1,7 @@
 package com.codeminders.hamake.params;
 
 import com.codeminders.hamake.Param;
-import com.codeminders.hamake.Path;
+import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.NamedParam;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -115,15 +115,15 @@ public class PathParam implements NamedParam {
     }
 
     protected Collection<String> toStrArr(Object i, FileSystem fs) throws IOException {
-        if (i instanceof Path) {
-            Path p = (Path) i;
+        if (i instanceof HamakePath) {
+            HamakePath p = (HamakePath) i;
             Mask m = getMaskHandling();
             if (m == Mask.keep) {
-                return Collections.singleton(p.getPathNameWithMask(fs));
+                return Collections.singleton(p.getPathNameWithMask());
             } else if (m == Mask.suppress) {
                 if (fs == null)
                     throw new IllegalArgumentException("Could not expand path, no filesystem");
-                return Collections.singleton(Utils.getPath(p.getPathName(fs)));
+                return Collections.singleton(p.getPathName().toString());
             } else {
                 if (fs == null)
                     throw new IllegalArgumentException("Could not expand path, no filesystem");
@@ -132,10 +132,10 @@ public class PathParam implements NamedParam {
                 Collection<String> ret = new ArrayList<String>();
 
                 Map<String, FileStatus> list =
-                        Utils.getFileList(fs, p.getPathName(fs), false, p.getMask());
+                        Utils.getFileList(p, false, p.getMask());
                 if (list != null) {
                     for (String key : list.keySet())
-                        ret.add(Utils.getPath(p.getPathName(fs, key)));
+                        ret.add(p.getPathName(key).toString());
                 }
                 return ret;
             }

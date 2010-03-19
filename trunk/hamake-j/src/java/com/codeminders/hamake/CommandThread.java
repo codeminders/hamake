@@ -1,6 +1,7 @@
 package com.codeminders.hamake;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -11,14 +12,14 @@ public class CommandThread extends Thread {
 
     private Command command;
     private Map<String, Collection> params;
-    private Collection<org.apache.hadoop.fs.Path> cleanuplist;
+    private Collection<Path> cleanuplist;
     private Map<String, Object> exec_context;
     private Semaphore job_semaphore;
     private int rc;
 
     public CommandThread(Command command,
                          Map<String, Collection> params,
-                         Collection<org.apache.hadoop.fs.Path> cleanuplist,
+                         Collection<Path> cleanuplist,
                          Map<String, Object> exec_context,
                          Semaphore job_semaphore) {
         super(command.toString());
@@ -61,7 +62,7 @@ public class CommandThread extends Thread {
         FileSystem fs = Utils.getFileSystem(exec_context);
         // TODO this would work only for files, not for paths with masks
         //  use removeIfExists() instead
-        for (org.apache.hadoop.fs.Path p : cleanuplist) {
+        for (Path p : cleanuplist) {
             boolean exists;
             synchronized (fs) {
                 exists = fs.exists(p);

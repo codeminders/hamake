@@ -4,6 +4,7 @@ import org.apache.commons.cli.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -76,7 +77,7 @@ public class Main {
         InputStream is = null;
         try {
             Configuration hadoopCfg = new Configuration();
-            org.apache.hadoop.fs.Path makefilePath = new org.apache.hadoop.fs.Path(mname);
+            Path makefilePath = new Path(mname);
             FileSystem fs = makefilePath.getFileSystem(hadoopCfg);
             is = fs.open(makefilePath);
             make = makefileParser.parse(is, config.verbose);

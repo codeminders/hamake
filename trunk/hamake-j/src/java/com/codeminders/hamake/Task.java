@@ -14,21 +14,21 @@ public abstract class Task {
 	private String name;
 	private Collection<String> taskDeps = new ArrayList<String>();
 	private Command command;
-	private List<Path> outputs = new ArrayList<Path>();
+	private List<HamakePath> outputs = new ArrayList<HamakePath>();
 
 	public String getName() {
 		return name;
 	}
 
-	public abstract List<Path> getInputs();
+	public abstract List<HamakePath> getInputs();
 
-	public List<Path> getOutputs() {
+	public List<HamakePath> getOutputs() {
 		return outputs;
 	}
 
 	public boolean dependsOn(Task t) {		
-		for (Path i : getInputs()) {
-			for (Path o : t.getOutputs()) {
+		for (HamakePath i : getInputs()) {
+			for (HamakePath o : t.getOutputs()) {
 				if (i.intersects(o))
 					return true;
 			}
@@ -49,7 +49,7 @@ public abstract class Task {
 		this.command = command;
 	}
 
-	public void setOutputs(List<Path> outputs) {
+	public void setOutputs(List<HamakePath> outputs) {
 		this.outputs = outputs;
 	}
 

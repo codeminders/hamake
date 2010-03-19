@@ -2,13 +2,14 @@ package com.codeminders.hamake.tasks;
 
 import com.codeminders.hamake.CommandThread;
 import com.codeminders.hamake.Config;
-import com.codeminders.hamake.Path;
+import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Task;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.PathParam;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,11 +21,11 @@ import java.util.concurrent.Semaphore;
 
 public class MapTask extends Task {
 
-    private Collection<Path> deps = new ArrayList<Path>();
-    private Path xinput;
+    private Collection<HamakePath> deps = new ArrayList<HamakePath>();
+    private HamakePath xinput;
 
-    public List<Path> getInputs() {
-        List<Path> ret = new ArrayList<Path>(getDeps());
+    public List<HamakePath> getInputs() {
+        List<HamakePath> ret = new ArrayList<HamakePath>(getDeps());
         if (getXinput() != null) {
             ret.add(getXinput());
         }
@@ -40,9 +41,8 @@ public class MapTask extends Task {
 
         Map<String, FileStatus> inputlist;
 
-        org.apache.hadoop.fs.Path ipath = xinput.getPathName(fs);
         try {
-            inputlist = Utils.getFileList(fs, ipath, false, xinput.getMask());
+            inputlist = Utils.getFileList(xinput, false, xinput.getMask());
             if (inputlist == null)
                 return -1;
         } catch (IOException ex) {
@@ -53,10 +53,9 @@ public class MapTask extends Task {
         }
 
         Collection<Object[]> outputlists = new ArrayList<Object[]>();
-        for (Path output : getOutputs()) {
-            org.apache.hadoop.fs.Path opath = output.getPathName(fs);
+        for (HamakePath output : getOutputs()) {
             try {
-                Map<String, FileStatus> outputlist = Utils.getFileList(fs, opath, true);
+                Map<String, FileStatus> outputlist = Utils.getFileList(output, true);
                 if (outputlist == null)
                     return -1;
                 outputlists.add(new Object[] {output, outputlist});
@@ -74,17 +73,17 @@ public class MapTask extends Task {
         for (Map.Entry<String, FileStatus> entry : inputlist.entrySet()) {
             String iname = entry.getKey();
             FileStatus i = entry.getValue();
-            Collection<Path> iparams = new ArrayList<Path>();
+            Collection<HamakePath> iparams = new ArrayList<HamakePath>();
             iparams.add(xinput.getPathWithNewName(iname));
-            Collection<Path> oparams = new ArrayList<Path>();
-            Collection<org.apache.hadoop.fs.Path> present = new ArrayList<org.apache.hadoop.fs.Path>();
-            Collection<org.apache.hadoop.fs.Path> cleanuplist = new ArrayList<org.apache.hadoop.fs.Path>();
+            Collection<HamakePath> oparams = new ArrayList<HamakePath>();
+            Collection<Path> present = new ArrayList<Path>();
+            Collection<Path> cleanuplist = new ArrayList<Path>();
 
             for (Object o[] : outputlists) {
-                Path output = (Path) o[0];
+                HamakePath output = (HamakePath) o[0];
                 @SuppressWarnings("unchecked")
                 Map<String, FileStatus> outputlist = (Map<String, FileStatus>) o[1];
-                org.apache.hadoop.fs.Path oname = output.getPathName(fs, iname);
+                Path oname = output.getPathName();
                 if (outputlist.containsKey(iname)) {
                     FileStatus stat = outputlist.get(iname);
                     if (stat.getModificationTime() >= i.getModificationTime()) {
@@ -102,7 +101,7 @@ public class MapTask extends Task {
                     }
                 }
                 oparams.add(output.getPathWithNewName(iname));
-                cleanuplist.add(output.getPathName(fs, iname));
+                cleanuplist.add(output.getPathName());
             }
             if (present.size() == getOutputs().size()) {
                 if (Config.getInstance().verbose)
@@ -113,7 +112,7 @@ public class MapTask extends Task {
 
             have_work = true;
 
-            for (org.apache.hadoop.fs.Path pr : present) {
+            for (Path pr : present) {
                 System.err.println("Removing partial output " + pr);
                 if (!Config.getInstance().dryrun) {
                     synchronized (fs) {
@@ -153,7 +152,7 @@ public class MapTask extends Task {
                 @SuppressWarnings("unchecked")
                 CommandThread t = new CommandThread(getCommand(),
                         (Map<String, Collection>) o[0],
-                        (Collection<org.apache.hadoop.fs.Path>) o[1],
+                        (Collection<Path>) o[1],
                         exec_context,
                         job_semaphore);
                 threads.add(t);
@@ -181,19 +180,19 @@ public class MapTask extends Task {
 
     }
 
-    public Collection<Path> getDeps() {
+    public Collection<HamakePath> getDeps() {
         return deps;
     }
 
-    public void setDeps(Collection<Path> deps) {
+    public void setDeps(Collection<HamakePath> deps) {
         this.deps = deps;
     }
 
-    public Path getXinput() {
+    public HamakePath getXinput() {
         return xinput;
     }
 
-    public void setXinput(Path xinput) {
+    public void setXinput(HamakePath xinput) {
         this.xinput = xinput;
     }
 

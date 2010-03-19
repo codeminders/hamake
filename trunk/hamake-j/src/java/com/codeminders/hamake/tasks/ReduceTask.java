@@ -1,12 +1,13 @@
 package com.codeminders.hamake.tasks;
 
-import com.codeminders.hamake.Path;
+import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Task;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.PathParam;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,21 +19,20 @@ import java.util.concurrent.Semaphore;
 
 public class ReduceTask extends Task {
 
-    private Collection<Path> deps = new ArrayList<Path>();
-    private Collection<Path> inputs = new ArrayList<Path>();
+    private Collection<HamakePath> deps = new ArrayList<HamakePath>();
+    private Collection<HamakePath> inputs = new ArrayList<HamakePath>();
 
-    public List<Path> getInputs() {
-        return new ArrayList<Path>(inputs);
+    public List<HamakePath> getInputs() {
+        return new ArrayList<HamakePath>(inputs);
     }
 
     public int execute(Semaphore semaphore, Map<String, Object> context) throws IOException {
-        FileSystem fs = Utils.getFileSystem(context);
         long mits = -1;
         long mots = -1;
 
         int numo = 0;
-        for (Path p : getOutputs()) {
-            long stamp = getTimeStamp(fs, p);
+        for (HamakePath p : getOutputs()) {
+            long stamp = getTimeStamp(p.getFileSystem(), p);
             if (stamp == 0) {
                 mots = -1;
                 break;
@@ -43,10 +43,10 @@ public class ReduceTask extends Task {
             numo++;
         }
         if (numo > 0 && mots != -1) {
-            Collection<Path> paths = new ArrayList<Path>(getInputs());
+            Collection<HamakePath> paths = new ArrayList<HamakePath>(getInputs());
             paths.addAll(getDeps());
-            for (Path p : paths) {
-                long stamp = getTimeStamp(fs, p);
+            for (HamakePath p : paths) {
+                long stamp = getTimeStamp(p.getFileSystem(), p);
                 if (stamp == 0) {
                     System.err.println("Some of input/dependency files not present!");
                     return -10;
@@ -62,8 +62,8 @@ public class ReduceTask extends Task {
             params.put(PathParam.Type.dependency.name(), getDeps());
             params.put(PathParam.Type.output.name(), getOutputs());
 
-            for (Path p : getOutputs())
-                p.removeIfExists(fs);
+            for (HamakePath p : getOutputs())
+                p.removeIfExists(p.getFileSystem());
 
             return getCommand().execute(params, context);
         }
@@ -71,8 +71,8 @@ public class ReduceTask extends Task {
         return 0;
     }
 
-    protected long getTimeStamp(FileSystem fs, Path path) throws IOException {
-        org.apache.hadoop.fs.Path ipath = path.getPathName(fs);
+    protected long getTimeStamp(FileSystem fs, HamakePath path) throws IOException {
+        Path ipath = path.getPathName();
         synchronized (fs) {
             if (!fs.exists(ipath))
                 return 0;
@@ -105,15 +105,15 @@ public class ReduceTask extends Task {
         return ret;
     }
 
-    public Collection<Path> getDeps() {
+    public Collection<HamakePath> getDeps() {
         return deps;
     }
 
-    public void setDeps(Collection<Path> deps) {
+    public void setDeps(Collection<HamakePath> deps) {
         this.deps = deps;
     }
 
-    public void setInputs(List<Path> inputs) {
+    public void setInputs(List<HamakePath> inputs) {
         this.inputs = inputs;
     }
 

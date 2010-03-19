@@ -84,7 +84,7 @@ public class MakefileParser {
     protected void parseTasks(Hamake hamake,
                               Element config,
                               Map<String, String> properties,
-                              boolean verbose) throws InvalidMakefileException {
+                              boolean verbose) throws InvalidMakefileException, IOException {
         NodeList tx = config.getElementsByTagName("map");
         for (int i = 0, sz = tx.getLength(); i < sz; i++) {
             Element t = (Element) tx.item(i);
@@ -109,11 +109,11 @@ public class MakefileParser {
         }
     }
 
-    protected Task parseMapTask(Element root, Map<String, String> properties) throws InvalidMakefileException {
+    protected Task parseMapTask(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
         String name = Utils.getRequiredAttribute(root, "name", properties);
 
-        Collection<Path> inputs = parsePathList(root, "input", properties);
-        Path input;
+        Collection<HamakePath> inputs = parsePathList(root, "input", properties);
+        HamakePath input;
         if (inputs.size() == 0)
             input = null;
         else if (inputs.size() == 1)
@@ -121,15 +121,15 @@ public class MakefileParser {
         else
             throw new InvalidMakefileException("Multiple 'input' elements in MAP task '%s' are not permitted" + name);
 
-        List<Path> outputs = parsePathList(root, "output", properties);
-        List<Path> deps = parsePathList(root, "dependencies", properties);
+        List<HamakePath> outputs = parsePathList(root, "output", properties);
+        List<HamakePath> deps = parsePathList(root, "dependencies", properties);
 
         Command command = parseCommand(root, properties);
 
         // Sanity checks
         if (input != null) {
             boolean itype = input.hasFilename();
-            for (Path p : outputs)
+            for (HamakePath p : outputs)
                 if (p.hasFilename() != itype)
                     throw new InvalidMakefileException("Input/Output type/file mismatch for MAP task " + name);
         }
@@ -191,12 +191,12 @@ public class MakefileParser {
         return res;
     }
 
-    protected Task parseReduceTask(Element root, Map<String, String> properties) throws InvalidMakefileException {
+    protected Task parseReduceTask(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
         String name = Utils.getRequiredAttribute(root, "name", properties);
 
-        List<Path> inputs = parsePathList(root, "input", properties);
-        List<Path> outputs = parsePathList(root, "output", properties);
-        Collection<Path> deps = parsePathList(root, "dependencies", properties);
+        List<HamakePath> inputs = parsePathList(root, "input", properties);
+        List<HamakePath> outputs = parsePathList(root, "output", properties);
+        Collection<HamakePath> deps = parsePathList(root, "dependencies", properties);
 
         Command command = parseCommand(root, properties);
 
@@ -298,8 +298,8 @@ public class MakefileParser {
         res.setTaskDeps(deps);
     }
 
-    protected List<Path> parsePathList(Element root, String name, Map<String, String> properties)
-            throws InvalidMakefileException {
+    protected List<HamakePath> parsePathList(Element root, String name, Map<String, String> properties)
+            throws InvalidMakefileException, IOException {
         NodeList list = root.getElementsByTagName(name);
         int len = list.getLength();
         if (len == 0)
@@ -308,14 +308,14 @@ public class MakefileParser {
             throw new InvalidMakefileException("Multiple elements '" + name + "' in " + Utils.getPath(root) +
                     " are not permitted");
         NodeList path = ((Element) list.item(0)).getElementsByTagName("path");
-        List<Path> ret = new ArrayList<Path>();
+        List<HamakePath> ret = new ArrayList<HamakePath>();
         for (int i = 0, sz = path.getLength(); i < sz; i++) {
             ret.add(parsePath((Element) path.item(i), properties));
         }
         return ret;
     }
 
-    protected Path parsePath(Element root, Map<String, String> properties) throws InvalidMakefileException {
+    protected HamakePath parsePath(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
 
         String location = Utils.getRequiredAttribute(root, "location", properties);
         String filename = Utils.getOptionalAttribute(root, "filename", properties);
@@ -326,7 +326,7 @@ public class MakefileParser {
             gen = 0;
         else
             gen = Integer.parseInt(gen_s);
-        return new Path(location, filename, mask, gen);
+        return new HamakePath(location, filename, mask, gen);
     }
 
 }
