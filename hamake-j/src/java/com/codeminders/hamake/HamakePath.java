@@ -1,35 +1,41 @@
 package com.codeminders.hamake;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
+import java.io.File;
 import java.io.IOException;
 
-public class Path {
+public class HamakePath {
 
     private String loc;
     private String filename;
     private String mask;
     private int gen;
+    private FileSystem fs;
 
-    public Path(String loc) {
+    public HamakePath(String loc) throws IOException {
         this(loc, null, null, 0);
     }
     
-    public Path(String loc, int gen) {
+    public HamakePath(String loc, int gen) throws IOException {
         this(loc, null, null, gen);
     }
 
-    public Path(String loc, String filename) {
+    public HamakePath(String loc, String filename) throws IOException {
         this(loc, filename, null, 0);
     }
 
-    public Path(String loc, String filename, String mask) {
+    public HamakePath(String loc, String filename, String mask) throws IOException {
         this(loc, filename, mask, 0);
     }
 
-    public Path(String loc, String filename, String mask, int gen) {
+    public HamakePath(String loc, String filename, String mask, int gen) throws IOException {
+    	Configuration conf = new Configuration();
+    	fs = new Path(loc).getFileSystem(conf);
         setLoc(loc);
         if (filename != null && mask != null)
             throw new IllegalArgumentException("Both filename and mask specified!");
@@ -38,7 +44,7 @@ public class Path {
         setGen(gen);
     }
 
-    public boolean intersects(Path other) {
+    public boolean intersects(HamakePath other) {
         return StringUtils.equals(this.getLoc(), other.getLoc()) &&
                 getGen() >= other.getGen() &&
                 (getFilename() == null ||
@@ -46,33 +52,33 @@ public class Path {
                         StringUtils.equals(this.getFilename(), other.getFilename()));
     }
 
-    public Path getPathWithNewName(String newFilename) {
+    public HamakePath getPathWithNewName(String newFilename) throws IOException {
         String mask;
         if (newFilename != null)
             mask = null;
         else
             mask = getMask();
-        return new Path(getLoc(), newFilename, mask, getGen());
+        return new HamakePath(getLoc(), newFilename, mask, getGen());
     }
 
-    public org.apache.hadoop.fs.Path getPathName(FileSystem fs) {
-        return getPathName(fs, null);
+    public Path getPathName() {
+        return getPathName(null);
     }
 
-    public org.apache.hadoop.fs.Path getPathName(FileSystem fs, String newFilename) {
+    public Path getPathName(String newFilename) {
         if (newFilename == null)
             newFilename = getFilename();
         if (newFilename != null)
-            return fs.makeQualified(new org.apache.hadoop.fs.Path(getLoc() + '/' + newFilename));
+            return new Path(getLoc(), newFilename);
         else
-            return fs.makeQualified(new org.apache.hadoop.fs.Path(getLoc()));
+            return new Path(getLoc());
     }
 
-    public String getPathNameWithMask(FileSystem fs) {
-        String p = Utils.getPath(getPathName(fs));
+    public String getPathNameWithMask() {
+        String p = getPathName().toString();
         String mask = getMask();
         if (mask != null)
-            return p + org.apache.hadoop.fs.Path.SEPARATOR_CHAR + mask;
+            return p + Path.SEPARATOR_CHAR + mask;
         else
             return p;
     }
@@ -97,7 +103,7 @@ public class Path {
     }
 
     public void removeIfExists(FileSystem fs) throws IOException {
-        org.apache.hadoop.fs.Path p = getPathName(fs);
+        Path p = getPathName();
 
         if (hasFilename() || getMask() == null) {
             boolean exists;
@@ -147,18 +153,22 @@ public class Path {
             }
         }
     }
+    
+    public FileSystem getFileSystem() throws IOException {
+        return fs;
+    }
 
-    public String getLoc() {
+    public String getLoc() {    	
         return loc;
     }
 
-    public void setLoc(String loc) {
+    public void setLoc(String loc){
         this.loc = loc;
     }
 
     public String getFilename() {
         return filename;
-    }
+    }    
 
     public void setFilename(String filename) {
         this.filename = filename;

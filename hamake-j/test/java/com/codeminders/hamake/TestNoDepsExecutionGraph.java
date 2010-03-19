@@ -1,5 +1,6 @@
 package com.codeminders.hamake;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,16 +15,16 @@ import com.codeminders.hamake.utils.TestHelperUtils;
 public class TestNoDepsExecutionGraph {		
 
 	@Test
-	public void testSimpleGraph(){		
-		MapTask task1 = TestHelperUtils.createMapTask("M1", new Path("I1"), new Path[] {new Path("O1")});
-		MapTask task2 = TestHelperUtils.createMapTask("M2", new Path("I2"), new Path[] {new Path("O2")});
-		MapTask task3 = TestHelperUtils.createMapTask("M3", new Path("O1"), new Path[] {new Path("O3"), new Path("O4")});
-		MapTask task4 = TestHelperUtils.createMapTask("M4", new Path("O2"), new Path[] {new Path("O5")});
-		MapTask task5 = TestHelperUtils.createMapTask("M5", new Path("O3"), new Path[] {new Path("O6")});
-		MapTask task6 = TestHelperUtils.createMapTask("M6", new Path("O4"), new Path[] {new Path("O7")});
-		MapTask task7 = TestHelperUtils.createMapTask("M7", new Path("O5"), new Path[] {new Path("O8")});
-		ReduceTask task8 = TestHelperUtils.createReduceTask("R1", new Path[] {new Path("O6")}, new Path[] {new Path("O9")});
-		ReduceTask task9 = TestHelperUtils.createReduceTask("R2", new Path[] {new Path("O7"), new Path("O8")}, new Path[] {new Path("O9")});
+	public void testSimpleGraph() throws IOException{		
+		MapTask task1 = TestHelperUtils.createMapTask("M1", new HamakePath("I1"), new HamakePath[] {new HamakePath("O1")});
+		MapTask task2 = TestHelperUtils.createMapTask("M2", new HamakePath("I2"), new HamakePath[] {new HamakePath("O2")});
+		MapTask task3 = TestHelperUtils.createMapTask("M3", new HamakePath("O1"), new HamakePath[] {new HamakePath("O3"), new HamakePath("O4")});
+		MapTask task4 = TestHelperUtils.createMapTask("M4", new HamakePath("O2"), new HamakePath[] {new HamakePath("O5")});
+		MapTask task5 = TestHelperUtils.createMapTask("M5", new HamakePath("O3"), new HamakePath[] {new HamakePath("O6")});
+		MapTask task6 = TestHelperUtils.createMapTask("M6", new HamakePath("O4"), new HamakePath[] {new HamakePath("O7")});
+		MapTask task7 = TestHelperUtils.createMapTask("M7", new HamakePath("O5"), new HamakePath[] {new HamakePath("O8")});
+		ReduceTask task8 = TestHelperUtils.createReduceTask("R1", new HamakePath[] {new HamakePath("O6")}, new HamakePath[] {new HamakePath("O9")});
+		ReduceTask task9 = TestHelperUtils.createReduceTask("R2", new HamakePath[] {new HamakePath("O7"), new HamakePath("O8")}, new HamakePath[] {new HamakePath("O9")});
 		ArrayList<Task> tasks = new ArrayList<Task>(Arrays.asList(new Task[] {task1, task2, task3, task4, task5, task6, task7, task8, task9}));
 		NoDepsExecutionGraph graph = new NoDepsExecutionGraph(tasks);
 		Assert.assertEquals(2, graph.getReadyForRunTasks().size());
@@ -33,11 +34,11 @@ public class TestNoDepsExecutionGraph {
 	}
 	
 	@Test
-	public void testSimpleCyclicGraph(){		
-		MapTask task1 = TestHelperUtils.createMapTask("M1", new Path("I1"), new Path[] {new Path("O1")});
-		MapTask task2 = TestHelperUtils.createMapTask("M2", new Path("O1"), new Path[] {new Path("O2")});
-		ReduceTask task3 = TestHelperUtils.createReduceTask("R1", new Path[] {new Path("O2")}, new Path[] {new Path("I1")});
-		ReduceTask task4 = TestHelperUtils.createReduceTask("R1", new Path[] {new Path("O2")}, new Path[] {new Path("I1", 1)});
+	public void testSimpleCyclicGraph() throws IOException{		
+		MapTask task1 = TestHelperUtils.createMapTask("M1", new HamakePath("I1"), new HamakePath[] {new HamakePath("O1")});
+		MapTask task2 = TestHelperUtils.createMapTask("M2", new HamakePath("O1"), new HamakePath[] {new HamakePath("O2")});
+		ReduceTask task3 = TestHelperUtils.createReduceTask("R1", new HamakePath[] {new HamakePath("O2")}, new HamakePath[] {new HamakePath("I1")});
+		ReduceTask task4 = TestHelperUtils.createReduceTask("R1", new HamakePath[] {new HamakePath("O2")}, new HamakePath[] {new HamakePath("I1", 1)});
 		NoDepsExecutionGraph graph1 = new NoDepsExecutionGraph(new ArrayList<Task>(Arrays.asList(new Task[] {task1, task2, task3})));
 		//assert that cycle has been detected
 		Assert.assertEquals(0, graph1.getReadyForRunTasks().size());
@@ -50,11 +51,11 @@ public class TestNoDepsExecutionGraph {
 	}	
 		
 	@Test
-	public void testComplexCyclicGraph(){		
-		MapTask task1 = TestHelperUtils.createMapTask("M1", new Path("I"), new Path[] {new Path("O1")});
-		MapTask task2 = TestHelperUtils.createMapTask("M2", new Path("O2"), new Path[] {new Path("O3"), new Path("O")});
-		MapTask task3 = TestHelperUtils.createMapTask("M3", new Path("O3"), new Path[] {new Path("O4")});
-		ReduceTask task4 = TestHelperUtils.createReduceTask("R1", new Path[] {new Path("O1"), new Path("O4")}, new Path[] {new Path("O2")});
+	public void testComplexCyclicGraph() throws IOException{		
+		MapTask task1 = TestHelperUtils.createMapTask("M1", new HamakePath("I"), new HamakePath[] {new HamakePath("O1")});
+		MapTask task2 = TestHelperUtils.createMapTask("M2", new HamakePath("O2"), new HamakePath[] {new HamakePath("O3"), new HamakePath("O")});
+		MapTask task3 = TestHelperUtils.createMapTask("M3", new HamakePath("O3"), new HamakePath[] {new HamakePath("O4")});
+		ReduceTask task4 = TestHelperUtils.createReduceTask("R1", new HamakePath[] {new HamakePath("O1"), new HamakePath("O4")}, new HamakePath[] {new HamakePath("O2")});
 		NoDepsExecutionGraph graph = new NoDepsExecutionGraph(new ArrayList<Task>(Arrays.asList(new Task[] {task1, task2, task3, task4})));
 		Assert.assertEquals(1, graph.getReadyForRunTasks().size());		
 		graph.removeTask("M1");
@@ -63,11 +64,11 @@ public class TestNoDepsExecutionGraph {
 	}
 	
 	@Test
-	public void testCrossDependentGraph(){		
-		MapTask task1 = TestHelperUtils.createMapTask("M1", new Path("I1"), new Path[] {new Path("O1"), new Path("O3")});
-		MapTask task2 = TestHelperUtils.createMapTask("M2", new Path("I2"), new Path[] {new Path("O2"), new Path("O4")});
-		ReduceTask task3 = TestHelperUtils.createReduceTask("R1", new Path[] {new Path("O1"), new Path("O4")}, new Path[] {new Path("O5"), new Path("O7")});
-		ReduceTask task4 = TestHelperUtils.createReduceTask("R2", new Path[] {new Path("O2"), new Path("O3"), new Path("O7")}, new Path[] {new Path("O6")});
+	public void testCrossDependentGraph() throws IOException{		
+		MapTask task1 = TestHelperUtils.createMapTask("M1", new HamakePath("I1"), new HamakePath[] {new HamakePath("O1"), new HamakePath("O3")});
+		MapTask task2 = TestHelperUtils.createMapTask("M2", new HamakePath("I2"), new HamakePath[] {new HamakePath("O2"), new HamakePath("O4")});
+		ReduceTask task3 = TestHelperUtils.createReduceTask("R1", new HamakePath[] {new HamakePath("O1"), new HamakePath("O4")}, new HamakePath[] {new HamakePath("O5"), new HamakePath("O7")});
+		ReduceTask task4 = TestHelperUtils.createReduceTask("R2", new HamakePath[] {new HamakePath("O2"), new HamakePath("O3"), new HamakePath("O7")}, new HamakePath[] {new HamakePath("O6")});
 		NoDepsExecutionGraph graph = new NoDepsExecutionGraph(new ArrayList<Task>(Arrays.asList(new Task[] {task1, task2, task3, task4})));
 		Assert.assertEquals(2, graph.getReadyForRunTasks().size());
 		graph.removeTask("M1");		

@@ -14,7 +14,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.OS;
-import com.codeminders.hamake.Path;
+import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Task;
 import com.codeminders.hamake.commands.ExecCommand;
 import com.codeminders.hamake.tasks.MapTask;
@@ -65,7 +65,7 @@ public class TestHelperUtils {
 		return files.toArray(new File[] {});
 	}
 	
-	public static void setMapTaskInputOutputFolders(Hamake make, String taskName, Path inputFolder, Path outputFolder){
+	public static void setMapTaskInputOutputFolders(Hamake make, String taskName, HamakePath inputFolder, HamakePath outputFolder){
 		Collection<Task> tasks = make.getTasks();
 		Iterator<Task> i = tasks.iterator();
 		while(i.hasNext()){
@@ -81,7 +81,7 @@ public class TestHelperUtils {
 		}
 	}
 	
-	public static void setReduceTaskInputOutputFolders(Hamake make, String taskName, Path inputFolder, Path outputFolder){
+	public static void setReduceTaskInputOutputFolders(Hamake make, String taskName, HamakePath inputFolder, HamakePath outputFolder){
 		Collection<Task> tasks = make.getTasks();
 		Iterator<Task> i = tasks.iterator();
 		while(i.hasNext()){
@@ -89,7 +89,7 @@ public class TestHelperUtils {
 			if(task instanceof ReduceTask){
 				ReduceTask r = (ReduceTask)task;
 				if(task.getName().equals(taskName)){
-					List<Path> inputs = r.getInputs();
+					List<HamakePath> inputs = r.getInputs();
 					inputs.clear();
 					inputs.add(inputFolder);
 					r.setInputs(inputs);
@@ -122,7 +122,7 @@ public class TestHelperUtils {
 		}
 	}
 	
-	public static MapTask createMapTask(String name, Path input, Path[] outputs){
+	public static MapTask createMapTask(String name, HamakePath input, HamakePath[] outputs){
 		MapTask map = new MapTask();
 		map.setName(name);
 		map.setXinput(input);
@@ -130,7 +130,7 @@ public class TestHelperUtils {
 		return map;
 	}
 	
-	public static ReduceTask createReduceTask(String name, Path[] inputs, Path[] outputs){
+	public static ReduceTask createReduceTask(String name, HamakePath[] inputs, HamakePath[] outputs){
 		ReduceTask reduce = new ReduceTask();
 		reduce.setName(name);
 		reduce.setInputs(Arrays.asList(inputs));
@@ -138,7 +138,7 @@ public class TestHelperUtils {
 		return reduce;
 	}
 	
-	public static MapTask createMapTaskWithTaskDeps(String name, Path input, Path[] outputs, String[] dependsOns){
+	public static MapTask createMapTaskWithTaskDeps(String name, HamakePath input, HamakePath[] outputs, String[] dependsOns){
 		MapTask map = new MapTask();
 		map.setName(name);
 		map.setXinput(input);
