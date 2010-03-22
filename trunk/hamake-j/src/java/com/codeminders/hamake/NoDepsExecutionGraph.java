@@ -52,6 +52,12 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 			}
 			return true;
 		}
+		
+		public void makeRoot(){
+			for(GraphNode node : parents){
+				node.done();
+			}
+		}
 
 	}
 
@@ -68,6 +74,19 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		}
 	}
 
+	public List<String> getReadyForRunTasks(String rootTask) {		
+		if(hash.containsKey(rootTask)){
+			List<String> ret = new ArrayList<String>();
+			GraphNode task = hash.get(rootTask);
+			task.makeRoot();
+			getReadyForRunTasks(task, ret);
+			return ret;
+		}
+		else{
+			return getReadyForRunTasks();
+		}
+	}
+	
 	public List<String> getReadyForRunTasks() {
 		List<String> ret = new ArrayList<String>();		
 		for (GraphNode node : rootNodes) {

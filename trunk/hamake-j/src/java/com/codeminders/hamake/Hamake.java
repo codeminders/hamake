@@ -1,5 +1,6 @@
 package com.codeminders.hamake;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class Hamake {
     private int numJobs;
     private Collection<String> targets;
     private List<Task> tasks;
+    private String startTask;
 
     private FileSystem fileSystem;
 
@@ -26,7 +28,17 @@ public class Hamake {
         this.tasks = new ArrayList<Task>();
     }
 
-    public int getNumJobs() {
+    public String getStartTask() {
+		return startTask;
+	}
+
+	public void setStartTask(String startTask) {
+		if(StringUtils.isEmpty(this.startTask)){
+			this.startTask = startTask;
+		}
+	}
+
+	public int getNumJobs() {
         return numJobs;
     }
 
@@ -69,7 +81,7 @@ public class Hamake {
         TaskRunner runner = new TaskRunner(getTasks(),
                 getNumJobs(),
                 getTargets(),
-                context);
+                context, startTask);
         runner.run();
         if (runner.getFailed() > 0)
             return ExitCode.FAILED;

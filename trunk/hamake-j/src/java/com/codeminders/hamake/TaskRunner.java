@@ -11,6 +11,7 @@ public class TaskRunner {
     private ExecutionGraph graph;
     private Map<String, Object> context;
     private Map<String, Task> tasks;
+    private String startTask;
 
     private Collection<String> failed;
     private Collection<TaskThread> running;
@@ -22,7 +23,7 @@ public class TaskRunner {
     public TaskRunner(List<Task> tasks,
                       int numJobs,
                       Collection<String> targets,
-                      Map<String, Object> context) {
+                      Map<String, Object> context, String startTask) {
         if (Config.getInstance().nodeps)
             graph = new NoDepsExecutionGraph(tasks);
         else
@@ -50,6 +51,7 @@ public class TaskRunner {
             job_semaphore = new Semaphore(numJobs);
         lock = new ReentrantLock();
         condition = lock.newCondition();
+        this.startTask = startTask; 
     }
 
     public void startTasks(Collection<String> tasks) {
@@ -84,8 +86,8 @@ public class TaskRunner {
                 for (TaskThread tt : running) {
                     runningNames.add(tt.getTaskName());
                 }
-                Collection<String> candidates = new ArrayList<String>();
-                for (String task : graph.getReadyForRunTasks()) {
+                Collection<String> candidates = new ArrayList<String>();                
+                for (String task : graph.getReadyForRunTasks(startTask)) {
                     if (!runningNames.contains(task) &&
                             !failed.contains(task)) {
                         candidates.add(task);

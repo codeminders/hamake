@@ -2,6 +2,7 @@ package com.codeminders.hamake;
 
 import org.apache.commons.cli.*;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -68,11 +69,15 @@ public class Main {
         if (line.hasOption('j'))
             njobs = Integer.parseInt(line.getOptionValue('j'));
         if (line.hasOption('f'))
-            mname = line.getOptionValue('f');
+            mname = line.getOptionValue('f');        
+        String defaultTask = null;
+        if(line.getArgs().length > 0){
+        	defaultTask = line.getArgs()[0];
+        }
 
-        MakefileParser makefileParser = new MakefileParser();
+        MakefileParser makefileParser = new MakefileParser();        
 
-        Hamake make = null;
+        Hamake make = null;        
 
         InputStream is = null;
         try {
@@ -82,6 +87,9 @@ public class Main {
             is = fs.open(makefilePath);
             make = makefileParser.parse(is, config.verbose);
             make.setFileSystem(FileSystem.get(hadoopCfg));
+            if(!StringUtils.isEmpty(defaultTask)){
+            	make.setStartTask(defaultTask);
+            }
         } catch (IOException ex) {
             System.err.println("Cannot load makefile " + mname + ": " + ex.getMessage());
             if (config.test_mode)

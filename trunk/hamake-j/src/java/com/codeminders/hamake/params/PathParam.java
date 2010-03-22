@@ -1,6 +1,5 @@
 package com.codeminders.hamake.params;
 
-import com.codeminders.hamake.Param;
 import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.NamedParam;
