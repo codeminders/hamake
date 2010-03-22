@@ -9,6 +9,9 @@ import com.codeminders.hamake.params.PathParam;
 import com.codeminders.hamake.params.PigParam;
 import com.codeminders.hamake.tasks.MapTask;
 import com.codeminders.hamake.tasks.ReduceTask;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -44,12 +47,16 @@ public class MakefileParser {
             SAXException,
             InvalidMakefileException {
         Document dom = loadMakefile(is);
-
+        
         Element config = parseConfig(dom);
         Map<String, String> properties = parseProperties(config);
 
-        Hamake ret = new Hamake();
+        Hamake ret = new Hamake();               
         parseTasks(ret, dom.getDocumentElement(), properties, verbose);
+        String defaultTask = dom.getDocumentElement().getAttribute("default");
+        if(!StringUtils.isEmpty(defaultTask)){        	
+        	ret.setStartTask(defaultTask);
+        }
         return ret;
     }
 

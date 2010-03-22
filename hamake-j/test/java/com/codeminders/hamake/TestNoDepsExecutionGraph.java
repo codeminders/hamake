@@ -34,6 +34,27 @@ public class TestNoDepsExecutionGraph {
 	}
 	
 	@Test
+	public void testSimpleGraphWithDefaultTarget() throws IOException{		
+		MapTask task1 = TestHelperUtils.createMapTask("M1", new HamakePath("I1"), new HamakePath[] {new HamakePath("O1")});
+		MapTask task2 = TestHelperUtils.createMapTask("M2", new HamakePath("I2"), new HamakePath[] {new HamakePath("O2")});
+		MapTask task3 = TestHelperUtils.createMapTask("M3", new HamakePath("O1"), new HamakePath[] {new HamakePath("O3")});
+		MapTask task4 = TestHelperUtils.createMapTask("M4", new HamakePath("O2"), new HamakePath[] {new HamakePath("O4")});
+		ReduceTask task5 = TestHelperUtils.createReduceTask("R1", new HamakePath[] {new HamakePath("O3")}, new HamakePath[] {new HamakePath("O5")});
+		ReduceTask task6 = TestHelperUtils.createReduceTask("R2", new HamakePath[] {new HamakePath("O4")}, new HamakePath[] {new HamakePath("O6")});
+		ArrayList<Task> tasks = new ArrayList<Task>(Arrays.asList(new Task[] {task1, task2, task3, task4, task5, task6}));
+		NoDepsExecutionGraph graph = new NoDepsExecutionGraph(tasks);
+		//Assert that with no default task 2 maps are ready
+		Assert.assertEquals(2, graph.getReadyForRunTasks().size());
+		//Assert that 2 maps are ready
+		Assert.assertEquals(2, graph.getReadyForRunTasks("NOM").size());
+		//Assert that with default task 1 map is ready
+		Assert.assertEquals(1, graph.getReadyForRunTasks("M2").size());
+		assertGraphHasLevels(graph, 3);
+		//assert no elements left
+		Assert.assertEquals(0, graph.getReadyForRunTasks().size());
+	}
+	
+	@Test
 	public void testSimpleCyclicGraph() throws IOException{		
 		MapTask task1 = TestHelperUtils.createMapTask("M1", new HamakePath("I1"), new HamakePath[] {new HamakePath("O1")});
 		MapTask task2 = TestHelperUtils.createMapTask("M2", new HamakePath("O1"), new HamakePath[] {new HamakePath("O2")});
