@@ -11,6 +11,7 @@ import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.ranges.RangeException;
 
 import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.OS;
@@ -145,5 +146,14 @@ public class TestHelperUtils {
 		map.setOutputs(Arrays.asList(outputs));
 		map.setTaskDeps(Arrays.asList(dependsOns));
 		return map;
+	}		
+	
+	public static File getExamplesJar() throws IOException{
+		String examplesJar = System.getProperty("examples.jar");
+		File f = new File(examplesJar);
+		if(StringUtils.isEmpty(examplesJar) || !f.exists() || !f.isFile()){
+			throw new IOException("examples jar " + examplesJar + " is not found or is not a file");
+		}
+		return f;
 	}
 }

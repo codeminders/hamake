@@ -47,7 +47,7 @@ public class JarListing extends Configured implements Tool
     public static void main(String[] args)
         throws Exception
     {
-        ToolRunner.run(new JarListing(), args);
+        ToolRunner.run(new JarListing(), args);        
     }
 
     private void printUsage()

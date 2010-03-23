@@ -164,4 +164,5 @@ public class TestHamake {
 		Assert.assertTrue("File size of output is 0 ",
 				FileUtils.sizeOfDirectory(tempReduce2OutDir) > 0);
 	}
+		
 }

@@ -11,13 +11,42 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.RunJar;
 
 import java.io.IOException;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.net.URI;
 
 public class HadoopCommand extends BaseCommand {
+	
+	protected static class ExitException extends SecurityException {
+	    private static final long serialVersionUID = -1982617086752946683L;
+	    public final int status;
 
+	    public ExitException(int status) {
+	        super();
+	        this.status = status;
+	    }
+	}
+
+	
+	private static class NoExitSecurityManager extends SecurityManager {
+		@Override
+		public void checkPermission(Permission perm) {
+			// allow anything.
+		}
+
+		@Override
+		public void checkPermission(Permission perm, Object context) {
+			// allow anything.
+		}
+
+		@Override
+		public void checkExit(int status) {
+			super.checkExit(status);
+			throw new ExitException(status);
+		}
+	}
 
     private String jar;
     private String main;
@@ -65,19 +94,26 @@ public class HadoopCommand extends BaseCommand {
                 }
             }
         }
+        SecurityManager securityManager = System.getSecurityManager();
         try {
             String s_args[] = new String[args.size()];
             args.toArray(s_args);
             if (Config.getInstance().verbose)
                 System.err.println("Executing Hadoop task " + StringUtils.join(s_args, ' '));
-            RunJar.main(s_args);
-            return 0;
+    		System.setSecurityManager(new NoExitSecurityManager());
+            RunJar.main(s_args);            
+        } catch (ExitException e){
+        	System.out.println("System.exit(" + e.status + ") has been called from " + main + " It is reccommended not to call this method whithin Hadoop Jobs");        	
         } catch (Throwable ex) {
             System.err.println("Failed to execute Hadoop command " + getJar() + '/' + getMain() + ": " + ex.getMessage());
             if (Config.getInstance().test_mode)
                 ex.printStackTrace();
             return -1000;
         }
+        finally{
+        	System.setSecurityManager(securityManager);
+        }
+        return 0;
     }
 
     public String getJar() {
