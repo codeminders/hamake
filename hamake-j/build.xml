@@ -124,7 +124,7 @@
              includes="com/codeminders/hamake/examples/**" />
 	</target>
 
-	<target name="junit" description="runs hamake-j JUnit tests" depends="compile-test">
+	<target name="test" description="runs hamake-j JUnit tests" depends="compile-test">
 		<mkdir dir="${test.build.dir}/test_report" />
 		<junit showoutput="yes"
                haltonfailure="yes"
@@ -156,7 +156,7 @@
 	</target>
 
 	<!-- TODO: replace it to run hamake -->
-	<target name="test" depends="dist">
+	<target name="examples" depends="dist">
 		<!--<delete dir="${test.build.dir}"/>-->
 		<mkdir dir="${test.build.dir}" />
 		<exec executable="hadoop">
