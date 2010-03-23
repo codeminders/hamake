@@ -16,13 +16,21 @@ public class HamakePath {
     private String mask;
     private int gen;
     private FileSystem fs;
+    
+    public HamakePath(String loc) throws IOException {
+    	this(null, loc, null, null, 0);
+    }
+    
+    public HamakePath(String loc, int gen) throws IOException {
+    	this(null, loc, null, null, gen);
+    }
 
     public HamakePath(String wdir, String loc, String filename, String mask, int gen) throws IOException {
         this.wdir = wdir;
     	Configuration conf = new Configuration();
         Path pathLoc = new Path(loc);
 
-        if (!pathLoc.isAbsolute())
+        if (!pathLoc.isAbsolute() && !StringUtils.isEmpty(wdir))
             pathLoc = new Path(wdir, loc);
 
     	fs = pathLoc.getFileSystem(conf);
