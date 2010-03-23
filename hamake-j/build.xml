@@ -124,7 +124,7 @@
              includes="com/codeminders/hamake/examples/**" />
 	</target>
 
-	<target name="test" description="runs hamake-j JUnit tests" depends="compile-test">
+	<target name="test" description="runs hamake-j JUnit tests" depends="compile-test, dist">
 		<mkdir dir="${test.build.dir}/test_report" />
 		<junit showoutput="yes"
                haltonfailure="yes"
@@ -143,6 +143,7 @@
                   fork="yes">
 				<formatter type="xml" />
 			</test>
+			<sysproperty key="examples.jar" value="${dist.dir}/hamake-examples-${hamake.version}.jar"/>
 
 		</junit>
 

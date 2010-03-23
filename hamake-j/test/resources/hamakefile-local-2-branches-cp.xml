@@ -1,4 +1,4 @@
-<project default="build" name="local-cp">
+<project name="local-cp">
 
 	<config>
 		<property name="basedir" value="/tmp" />
