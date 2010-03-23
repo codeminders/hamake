@@ -69,11 +69,7 @@ public class Main {
         if (line.hasOption('j'))
             njobs = Integer.parseInt(line.getOptionValue('j'));
         if (line.hasOption('f'))
-            mname = line.getOptionValue('f');        
-        String defaultTask = null;
-        if(line.getArgs().length > 0){
-        	defaultTask = line.getArgs()[0];
-        }
+            mname = line.getOptionValue('f');                
 
         MakefileParser makefileParser = new MakefileParser();        
 
@@ -86,10 +82,12 @@ public class Main {
             FileSystem fs = makefilePath.getFileSystem(hadoopCfg);
             is = fs.open(makefilePath);
             make = makefileParser.parse(is, config.verbose);
-            make.setFileSystem(FileSystem.get(hadoopCfg));
-            if(!StringUtils.isEmpty(defaultTask)){
-            	make.setStartTask(defaultTask);
+            if(line.getArgs().length > 0){
+            	for(String target : line.getArgs()){
+            		make.addTarget(target);
+            	}
             }
+            make.setFileSystem(FileSystem.get(hadoopCfg));            
         } catch (IOException ex) {
             System.err.println("Cannot load makefile " + mname + ": " + ex.getMessage());
             if (config.test_mode)

@@ -4,7 +4,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,28 +17,15 @@ public class Hamake {
         FAILED
     }
     private int numJobs;
-    private Collection<String> targets;
+    private List<String> targets;
     private List<Task> tasks;
-    private String startTask;
+    private String defaultTarget;
 
     private FileSystem fileSystem;
 
     public Hamake() {
         this.tasks = new ArrayList<Task>();
-    }
-
-    public String getStartTask() {
-		return startTask;
-	}
-
-	public void setStartTask(String startTask) {
-		if(StringUtils.isEmpty(this.startTask)){
-			this.startTask = startTask;
-		}
-	}
-
-	public int getNumJobs() {
-        return numJobs;
+        this.targets = new ArrayList<String>();
     }
 
     public void setNumJobs(int numJobs) {
@@ -47,27 +33,19 @@ public class Hamake {
     }
 
     public void addTask(Task task) {
-        getTasks().add(task);
+        tasks.add(task);
+    }
+    
+    public void setDefaultTarget(String targetName){
+    	defaultTarget = targetName;
     }
 
-    public Collection<String> getTargets() {
-        return targets;
-    }
-
-    public void setTargets(Collection<String> targets) {
-        this.targets = targets;
-    }
-
-    public List<Task> getTasks() {
-        return tasks;
+    public void addTarget(String target) {
+        this.targets.add(target);
     }
 
     public void setTasks(List<Task> tasks) {
         this.tasks = tasks;
-    }
-
-    public FileSystem getFileSystem() {
-        return fileSystem;
     }
 
     public void setFileSystem(FileSystem fileSystem) {
@@ -77,15 +55,22 @@ public class Hamake {
     public ExitCode run() {
 
         Map<String, Object> context = new HashMap<String, Object>();
-        context.put("filesystem", getFileSystem());
-        TaskRunner runner = new TaskRunner(getTasks(),
-                getNumJobs(),
-                getTargets(),
-                context, startTask);
+        context.put("filesystem", fileSystem);
+        if(targets.size() <= 0 && !StringUtils.isEmpty(defaultTarget)){
+        	targets.add(defaultTarget);
+        }        
+        TaskRunner runner = new TaskRunner(tasks,
+                numJobs,
+                targets,
+                context);
         runner.run();
         if (runner.getFailed() > 0)
             return ExitCode.FAILED;
         return ExitCode.OK;
     }
+
+	protected List<Task> getTasks() {
+		return tasks;
+	}
 
 }

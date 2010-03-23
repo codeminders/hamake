@@ -9,17 +9,11 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		private Task task;
 		private List<GraphNode> children = new ArrayList<GraphNode>();
 		private List<GraphNode> parents = new ArrayList<GraphNode>();
-		private int level;
 		private boolean done;
 
-		public GraphNode(Task t, int l) {
+		public GraphNode(Task t) {
 			this.task = t;
-			this.level = l;
 			this.done = false;
-		}
-
-		public int getLevel() {
-			return level;
 		}
 
 		public Task getTask() {
@@ -53,43 +47,67 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 			return true;
 		}
 		
-		public void makeRoot(){
+		public GraphNode getRootParent(){
 			for(GraphNode node : parents){
-				node.done();
-			}
+				return node.getRootParent(); 
+			}			
+			return this;
 		}
-
+		
 	}
 
 	private List<GraphNode> rootNodes = new ArrayList<GraphNode>();
 	private Map<String, GraphNode> hash = new HashMap<String, GraphNode>();
 
+	/**
+	 * Constructor
+	 * @param tasks list of tasks
+	 */
 	public NoDepsExecutionGraph(List<Task> tasks) {
 		buildGraph(tasks);
 	}
 
+	/**
+	 * Mark task as done
+	 * @param name name of the task
+	 */
 	public void removeTask(String name) {
 		if (hash.containsKey(name)) {
 			hash.get(name).done();
 		}
 	}
 
-	public List<String> getReadyForRunTasks(String rootTask) {		
-		if(hash.containsKey(rootTask)){
-			List<String> ret = new ArrayList<String>();
-			GraphNode task = hash.get(rootTask);
-			task.makeRoot();
-			getReadyForRunTasks(task, ret);
-			return ret;
+	/**
+	 * Get all tasks that are ready and have targets
+	 * @param targets array of targets 
+	 */
+	public List<String> getReadyForRunTasks(String[] targets) {
+		//retrieve all root nodes
+		Map<String, GraphNode> nodes = new HashMap<String, GraphNode>();
+		for(String target : targets){
+			if(hash.containsKey(target)){
+				GraphNode node = hash.get(target).getRootParent();
+				nodes.put(node.getTask().getName(), node);
+			}
+		}
+		if(nodes.size() > 0){
+			return getReadyForRunTasks(new ArrayList<GraphNode>(nodes.values()));
 		}
 		else{
 			return getReadyForRunTasks();
 		}
 	}
 	
+	/**
+	 * Get all tasks that are ready 
+	 */
 	public List<String> getReadyForRunTasks() {
+		return getReadyForRunTasks(rootNodes);
+	}
+	
+	private List<String> getReadyForRunTasks(List<GraphNode> nodes) {
 		List<String> ret = new ArrayList<String>();		
-		for (GraphNode node : rootNodes) {
+		for (GraphNode node : nodes) {
 			if (node.isDone()) {
 				for (GraphNode childNode : node.getChildren()) {
 					getReadyForRunTasks(childNode, ret);
@@ -138,7 +156,7 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 			if (rootNode) {
 				if (!hash.containsKey(ti.getName())) {
 					// add new node
-					GraphNode newNode = new GraphNode(ti, 0);
+					GraphNode newNode = new GraphNode(ti);
 					rootNodes.add(newNode);
 					hash.put(ti.getName(), newNode);
 				}
@@ -155,8 +173,7 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 				if (dependsOn(task,node.getTask())) {
 					if (!hash.containsKey(task.getName())) {
 						// add new node
-						GraphNode newNode = new GraphNode(task,
-								node.getLevel() + 1);
+						GraphNode newNode = new GraphNode(task);
 						newNode.addParent(node);
 						node.addChild(newNode);
 						hash.put(task.getName(), newNode);

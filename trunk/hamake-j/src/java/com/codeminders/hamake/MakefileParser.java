@@ -55,7 +55,7 @@ public class MakefileParser {
         parseTasks(ret, dom.getDocumentElement(), properties, verbose);
         String defaultTask = dom.getDocumentElement().getAttribute("default");
         if(!StringUtils.isEmpty(defaultTask)){        	
-        	ret.setStartTask(defaultTask);
+        	ret.setDefaultTarget(defaultTask);
         }
         return ret;
     }

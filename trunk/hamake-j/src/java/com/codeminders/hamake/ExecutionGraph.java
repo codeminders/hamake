@@ -5,7 +5,7 @@ import java.util.List;
 interface ExecutionGraph {
 
     List<String> getReadyForRunTasks();
-    List<String> getReadyForRunTasks(String rootTask); 
+    public List<String> getReadyForRunTasks(String[] targets); 
     void removeTask(String name);
     
 }

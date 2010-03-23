@@ -9,7 +9,6 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.codeminders.hamake.tasks.MapTask;
-import com.codeminders.hamake.utils.TestHelperUtils;
 
 public class TestDependencyExecutionGraph {
 	
