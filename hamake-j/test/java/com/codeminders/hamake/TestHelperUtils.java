@@ -1,4 +1,4 @@
-package com.codeminders.hamake.utils;
+package com.codeminders.hamake;
 
 import java.io.File;
 import java.io.IOException;

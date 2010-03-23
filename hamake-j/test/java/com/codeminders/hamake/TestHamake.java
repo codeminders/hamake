@@ -17,7 +17,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import com.codeminders.hamake.utils.TestHelperUtils;
 
 public class TestHamake {
 
