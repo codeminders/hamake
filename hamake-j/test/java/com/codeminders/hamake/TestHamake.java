@@ -52,7 +52,7 @@ public class TestHamake {
 		MakefileParser parser = new MakefileParser();
 		Hamake make = new Hamake();
 		File localHamakeFile = new File("hamakefile-local-cp.xml");
-		make = parser.parse(new FileInputStream(localHamakeFile), true);
+		make = parser.parse(new FileInputStream(localHamakeFile), null, true);
 		if (OS.isLinux()) {
 			TestHelperUtils.setTaskExecBinary(make, "map1", "cp");
 			TestHelperUtils.setTaskExecBinary(make, "map2", "cp");
@@ -112,7 +112,7 @@ public class TestHamake {
 		MakefileParser parser = new MakefileParser();
 		Hamake make = new Hamake();
 		File localHamakeFile = new File("hamakefile-local-2-branches-cp.xml");
-		make = parser.parse(new FileInputStream(localHamakeFile), true);
+		make = parser.parse(new FileInputStream(localHamakeFile), null, true);
 		if (OS.isLinux()) {
 			TestHelperUtils.setTaskExecBinary(make, "map11", "cp");
 			TestHelperUtils.setTaskExecBinary(make, "map12", "cp");

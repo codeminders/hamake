@@ -15,7 +15,6 @@ import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.net.URI;
 
 public class HadoopCommand extends BaseCommand {
 	
