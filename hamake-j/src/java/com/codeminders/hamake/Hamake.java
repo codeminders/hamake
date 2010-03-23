@@ -16,10 +16,19 @@ public class Hamake {
         INITERR,
         FAILED
     }
-    private int numJobs;
-    private List<String> targets;
-    private List<Task> tasks;
-    private String defaultTarget;
+    protected int numJobs;
+    protected String projectName;
+    public String getProjectName() {
+		return projectName;
+	}
+
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
+
+	protected List<String> targets;
+	protected List<Task> tasks;
+	protected String defaultTarget;
 
     private FileSystem fileSystem;
 

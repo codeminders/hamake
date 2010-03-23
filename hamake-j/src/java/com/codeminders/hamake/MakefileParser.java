@@ -54,6 +54,7 @@ public class MakefileParser {
         Hamake ret = new Hamake();               
         parseTasks(ret, dom.getDocumentElement(), properties, verbose, wdir);
         String defaultTask = dom.getDocumentElement().getAttribute("default");
+        ret.setProjectName(dom.getDocumentElement().getAttribute("name"));
         if(!StringUtils.isEmpty(defaultTask)){        	
         	ret.setDefaultTarget(defaultTask);
         }
@@ -295,7 +296,7 @@ public class MakefileParser {
         if (size > 1)
             throw new InvalidMakefileException("Multiple elements 'taskdep' in " + res.getName() + " are not permitted");
 
-        NodeList pretasks = ((Element) list.item(0)).getElementsByTagName("taskdep");
+        NodeList pretasks = ((Element) list.item(0)).getElementsByTagName("pretask");
 
         Collection<String> deps = new ArrayList<String>();
         for (int i = 0, sz = pretasks.getLength(); i < sz; i++) {
