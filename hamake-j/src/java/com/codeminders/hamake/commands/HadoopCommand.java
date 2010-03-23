@@ -7,12 +7,14 @@ import com.codeminders.hamake.params.JobConfParam;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.RunJar;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.net.URI;
 
 public class HadoopCommand extends BaseCommand {
 
@@ -21,9 +23,11 @@ public class HadoopCommand extends BaseCommand {
     private String main;
 
     public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
-        FileSystem fs = Utils.getFileSystem(context);
+        FileSystem fs;
         Collection<String> args = new ArrayList<String>();
         try {
+            Path jarPath = new Path(getJar());             
+            fs = Utils.getFileSystem(context, jarPath.toUri());
             args.add(Utils.copyToTemporaryLocal(getJar(), fs).getAbsolutePath());
         } catch (IOException ex) {
             System.err.println("Can't download JAR file: " + getJar());

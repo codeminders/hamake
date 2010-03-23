@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.net.URI;
 
 public class Utils {
 
@@ -168,6 +169,13 @@ public class Utils {
     public static FileSystem getFileSystem(Map<String, Object> context) {
         return (FileSystem) context.get("filesystem");
     }        
+
+    public static FileSystem getFileSystem(Map<String, Object> context, URI uri) throws IOException {
+        if (uri.getScheme() != null)
+            return FileSystem.get(uri, new Configuration());
+        else
+            return getFileSystem(context);
+    }
 
     public static String getenv(String name, String defaultValue) {
         String ret = System.getenv(name);

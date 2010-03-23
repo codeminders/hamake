@@ -3,6 +3,7 @@ package com.codeminders.hamake;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,6 +34,7 @@ public class Main {
         options.addOption("t", "test", false, "TODO test");
         options.addOption("j", "jobs", true, "TODO jobs");
         options.addOption("f", "file", true, "TODO file");
+        options.addOption("w", "workdir", true, "path to data, default is user home dir");
 
         CommandLineParser parser = new PosixParser();
 
@@ -65,11 +67,23 @@ public class Main {
 
         int njobs = -1;
         String mname = DEFAULT_MAKEFILE_NAME;
+        String wdir = null;
 
         if (line.hasOption('j'))
             njobs = Integer.parseInt(line.getOptionValue('j'));
         if (line.hasOption('f'))
-            mname = line.getOptionValue('f');                
+            mname = line.getOptionValue('f');
+        if (line.hasOption('w'))
+        {
+            wdir = line.getOptionValue('w');
+            if (StringUtils.isEmpty(wdir))
+                wdir = SystemUtils.getUserHome().getAbsolutePath();
+        }
+
+        String defaultTask = null;
+        if(line.getArgs().length > 0){
+        	defaultTask = line.getArgs()[0];
+        }
 
         MakefileParser makefileParser = new MakefileParser();        
 
@@ -81,7 +95,7 @@ public class Main {
             Path makefilePath = new Path(mname);
             FileSystem fs = makefilePath.getFileSystem(hadoopCfg);
             is = fs.open(makefilePath);
-            make = makefileParser.parse(is, config.verbose);
+            make = makefileParser.parse(is, wdir, config.verbose);
             if(line.getArgs().length > 0){
             	for(String target : line.getArgs()){
             		make.addTarget(target);

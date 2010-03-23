@@ -36,26 +36,28 @@ public class PigCommand extends BaseCommand {
     }
 
     public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
-        FileSystem fs = Utils.getFileSystem(context);
+        FileSystem fs;
         Collection<String> args = new ArrayList<String>();
+        BufferedReader in = null;
 
-        Collection<Param> scriptParams = getParameters();
-        if (scriptParams != null) {
-            for (Param p : scriptParams) {
-                if (p instanceof PigParam || p instanceof PathParam) {
-                    Collection<String> values = getValues((NamedParam)p, parameters, fs);
-                    if (values == null) return -1000;
-                    args.add(((NamedParam)p).getName() + '=' + values.iterator().next());
+        try {
+            fs = Utils.getFileSystem(context, (new Path(script)).toUri());
+
+            Collection<Param> scriptParams = getParameters();
+            if (scriptParams != null) {
+                for (Param p : scriptParams) {
+                    if (p instanceof PigParam || p instanceof PathParam) {
+                        Collection<String> values = getValues((NamedParam)p, parameters, fs);
+                        if (values == null) return -1000;
+                        args.add(((NamedParam)p).getName() + '=' + values.iterator().next());
+                    }
                 }
             }
-        }
 
-        // TODO: Do we need to define some properties?
-        Properties pigProps = new Properties();
-        PigContext ctx = new PigContext(ExecType.MAPREDUCE, pigProps);
+            // TODO: Do we need to define some properties?
+            Properties pigProps = new Properties();
+            PigContext ctx = new PigContext(ExecType.MAPREDUCE, pigProps);
 
-        BufferedReader in = null;
-        try {
             // Run, using the provided file as a pig file
             Path p = fs.makeQualified(new Path(getScript()));
             in = new BufferedReader(new InputStreamReader(fs.open(p)));
