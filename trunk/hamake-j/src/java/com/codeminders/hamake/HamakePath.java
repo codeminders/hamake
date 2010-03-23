@@ -6,37 +6,28 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import java.io.File;
 import java.io.IOException;
 
 public class HamakePath {
 
+    private String wdir;
     private String loc;
     private String filename;
     private String mask;
     private int gen;
     private FileSystem fs;
 
-    public HamakePath(String loc) throws IOException {
-        this(loc, null, null, 0);
-    }
-    
-    public HamakePath(String loc, int gen) throws IOException {
-        this(loc, null, null, gen);
-    }
-
-    public HamakePath(String loc, String filename) throws IOException {
-        this(loc, filename, null, 0);
-    }
-
-    public HamakePath(String loc, String filename, String mask) throws IOException {
-        this(loc, filename, mask, 0);
-    }
-
-    public HamakePath(String loc, String filename, String mask, int gen) throws IOException {
+    public HamakePath(String wdir, String loc, String filename, String mask, int gen) throws IOException {
+        this.wdir = wdir;
     	Configuration conf = new Configuration();
-    	fs = new Path(loc).getFileSystem(conf);
-        setLoc(loc);
+        Path pathLoc = new Path(loc);
+
+        if (!pathLoc.isAbsolute())
+            pathLoc = new Path(wdir, loc);
+
+    	fs = pathLoc.getFileSystem(conf);
+        setLoc(pathLoc.toString());
+        
         if (filename != null && mask != null)
             throw new IllegalArgumentException("Both filename and mask specified!");
         setFilename(filename);
@@ -58,7 +49,7 @@ public class HamakePath {
             mask = null;
         else
             mask = getMask();
-        return new HamakePath(getLoc(), newFilename, mask, getGen());
+        return new HamakePath(wdir, getLoc(), newFilename, mask, getGen());
     }
 
     public Path getPathName() {

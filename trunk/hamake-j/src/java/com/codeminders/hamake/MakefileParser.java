@@ -10,7 +10,6 @@ import com.codeminders.hamake.params.PigParam;
 import com.codeminders.hamake.tasks.MapTask;
 import com.codeminders.hamake.tasks.ReduceTask;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -28,13 +27,13 @@ import java.util.*;
 
 public class MakefileParser {
 
-    public Hamake parse(String filename, boolean verbose) throws IOException,
+    public Hamake parse(String filename, String wdir, boolean verbose) throws IOException,
             ParserConfigurationException,
             SAXException,
             InvalidMakefileException {
         InputStream is = new FileInputStream(filename);
         try {
-            return parse(is, verbose);
+            return parse(is, wdir, verbose);
         } finally {
             try {
                 is.close();
@@ -42,7 +41,7 @@ public class MakefileParser {
         }
     }
 
-    public Hamake parse(InputStream is, boolean verbose) throws IOException,
+    public Hamake parse(InputStream is, String wdir, boolean verbose) throws IOException,
             ParserConfigurationException,
             SAXException,
             InvalidMakefileException {
@@ -50,9 +49,10 @@ public class MakefileParser {
         
         Element config = parseConfig(dom);
         Map<String, String> properties = parseProperties(config);
+        properties.put("workdir", wdir);
 
         Hamake ret = new Hamake();               
-        parseTasks(ret, dom.getDocumentElement(), properties, verbose);
+        parseTasks(ret, dom.getDocumentElement(), properties, verbose, wdir);
         String defaultTask = dom.getDocumentElement().getAttribute("default");
         if(!StringUtils.isEmpty(defaultTask)){        	
         	ret.setDefaultTarget(defaultTask);
@@ -91,7 +91,8 @@ public class MakefileParser {
     protected void parseTasks(Hamake hamake,
                               Element config,
                               Map<String, String> properties,
-                              boolean verbose) throws InvalidMakefileException, IOException {
+                              boolean verbose,
+                              String wdir) throws InvalidMakefileException, IOException {
         NodeList tx = config.getElementsByTagName("map");
         for (int i = 0, sz = tx.getLength(); i < sz; i++) {
             Element t = (Element) tx.item(i);
@@ -101,7 +102,7 @@ public class MakefileParser {
                     System.out.println("Ignoring disabled task " + Utils.getOptionalAttribute(t, "name", properties));
                 continue;
             }
-            hamake.addTask(parseMapTask(t, properties));
+            hamake.addTask(parseMapTask(t, properties, wdir));
         }
         tx = config.getElementsByTagName("reduce");
         for (int i = 0, sz = tx.getLength(); i < sz; i++) {
@@ -112,14 +113,14 @@ public class MakefileParser {
                     System.out.println("Ignoring disabled task " + Utils.getOptionalAttribute(t, "name", properties));
                 continue;
             }
-            hamake.addTask(parseReduceTask(t, properties));
+            hamake.addTask(parseReduceTask(t, properties, wdir));
         }
     }
 
-    protected Task parseMapTask(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
+    protected Task parseMapTask(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException {
         String name = Utils.getRequiredAttribute(root, "name", properties);
 
-        Collection<HamakePath> inputs = parsePathList(root, "input", properties);
+        Collection<HamakePath> inputs = parsePathList(root, "input", properties, wdir);
         HamakePath input;
         if (inputs.size() == 0)
             input = null;
@@ -128,8 +129,8 @@ public class MakefileParser {
         else
             throw new InvalidMakefileException("Multiple 'input' elements in MAP task '%s' are not permitted" + name);
 
-        List<HamakePath> outputs = parsePathList(root, "output", properties);
-        List<HamakePath> deps = parsePathList(root, "dependencies", properties);
+        List<HamakePath> outputs = parsePathList(root, "output", properties, wdir);
+        List<HamakePath> deps = parsePathList(root, "dependencies", properties, wdir);
 
         Command command = parseCommand(root, properties);
 
@@ -198,12 +199,12 @@ public class MakefileParser {
         return res;
     }
 
-    protected Task parseReduceTask(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
+    protected Task parseReduceTask(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException {
         String name = Utils.getRequiredAttribute(root, "name", properties);
 
-        List<HamakePath> inputs = parsePathList(root, "input", properties);
-        List<HamakePath> outputs = parsePathList(root, "output", properties);
-        Collection<HamakePath> deps = parsePathList(root, "dependencies", properties);
+        List<HamakePath> inputs = parsePathList(root, "input", properties, wdir);
+        List<HamakePath> outputs = parsePathList(root, "output", properties, wdir);
+        Collection<HamakePath> deps = parsePathList(root, "dependencies", properties, wdir);
 
         Command command = parseCommand(root, properties);
 
@@ -305,7 +306,8 @@ public class MakefileParser {
         res.setTaskDeps(deps);
     }
 
-    protected List<HamakePath> parsePathList(Element root, String name, Map<String, String> properties)
+    @SuppressWarnings({"unchecked"})
+    protected List<HamakePath> parsePathList(Element root, String name, Map<String, String> properties, String wdir)
             throws InvalidMakefileException, IOException {
         NodeList list = root.getElementsByTagName(name);
         int len = list.getLength();
@@ -317,12 +319,12 @@ public class MakefileParser {
         NodeList path = ((Element) list.item(0)).getElementsByTagName("path");
         List<HamakePath> ret = new ArrayList<HamakePath>();
         for (int i = 0, sz = path.getLength(); i < sz; i++) {
-            ret.add(parsePath((Element) path.item(i), properties));
+            ret.add(parsePath((Element) path.item(i), properties, wdir));
         }
         return ret;
     }
 
-    protected HamakePath parsePath(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
+    protected HamakePath parsePath(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException {
 
         String location = Utils.getRequiredAttribute(root, "location", properties);
         String filename = Utils.getOptionalAttribute(root, "filename", properties);
@@ -333,7 +335,7 @@ public class MakefileParser {
             gen = 0;
         else
             gen = Integer.parseInt(gen_s);
-        return new HamakePath(location, filename, mask, gen);
+        return new HamakePath(wdir, location, filename, mask, gen);
     }
 
 }

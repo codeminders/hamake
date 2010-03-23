@@ -7,15 +7,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+//import org.apache.hadoop.mapreduce.Mapper;
+//import org.apache.hadoop.mapreduce.InputSplit;
+//import org.apache.hadoop.mapreduce.JobContext;
+//import org.apache.hadoop.mapreduce.RecordReader;
+//import org.apache.hadoop.mapreduce.TaskAttemptContext;
+//import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+//import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+//import org.apache.hadoop.mapreduce.Job;
+//import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -56,108 +57,93 @@ public class JarListing extends Configured implements Tool
 
     public int run(String[] args) throws Exception
     {
-        Configuration config = new Configuration();
+        JobConf config = new JobConf(JarListing.class);
         if(args.length < 2)
         {
           printUsage();
           return 1;
         }
 
-        Job job = new Job(config, "JarListing");
-        job.setJarByClass(JarListing.class);
+        config.setJobName("JarListing");
+        config.setJarByClass(JarListing.class);
 
         //set the InputFormat of the job to our InputFormat
-        job.setInputFormatClass(JarInputFormat.class);
+        config.setInputFormat(JarInputFormat.class);
 
         // the keys are words (strings)
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
+        config.setOutputKeyClass(Text.class);
+        config.setOutputValueClass(Text.class);
 
         //use the defined mapper
-        job.setMapperClass(MapClass.class);
+        config.setMapperClass(MapClass.class);
 
-        FileInputFormat.addInputPaths(job, args[0]);
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        FileInputFormat.addInputPaths(config, args[0]);
+        FileOutputFormat.setOutputPath(config, new Path(args[1]));
 
-        return job.waitForCompletion(true) ? 0 : 1;
+        return JobClient.runJob(config).isSuccessful() ? 0 : 1;
     }
 
     public static class MapClass
-        extends Mapper<NullWritable, JarEntryInfoWritable, Text, Text>
-    {
-        @Override
-        protected void map(NullWritable key, JarEntryInfoWritable value, Context context)
-            throws IOException, InterruptedException
-        {
+            implements Mapper<NullWritable, JarEntryInfoWritable, Text, Text> {
+
+        public void map(NullWritable key, JarEntryInfoWritable value, OutputCollector<Text, Text> outCollector, Reporter reporter) throws IOException {
             if(value.getEntry().isDirectory())
                 return;
-            
+
             Text k = new Text(value.getEntry().getName());
             Text v = new Text("" + value.getEntry().getSize() + "\t" + value.getEntry().getTime());
-            context.write(k, v);
+            outCollector.collect(k, v);
+        }
+
+        public void configure(JobConf jobConf) {
+        }
+
+        public void close() throws IOException {
         }
     }
     
     public static class JarInputFormat
         extends FileInputFormat<NullWritable, JarEntryInfoWritable>
     {
-        @Override
-        protected boolean isSplitable(JobContext context, Path filename)
-        {
-            return false;
-        }
 
-        @Override
-        public RecordReader<NullWritable, JarEntryInfoWritable> createRecordReader(InputSplit inputSplit,
-                                                                     TaskAttemptContext taskAttemptContext)
-            throws IOException, InterruptedException
-        {
-            return new RecordReader<NullWritable, JarEntryInfoWritable> ()
-            {
+        public RecordReader<NullWritable, JarEntryInfoWritable> getRecordReader(InputSplit inputSplit, JobConf jobConf, Reporter reporter) throws IOException {
+            final JarInputStream is;
 
-                private JarInputStream is;
-                private JarEntry       entry;
-                private boolean        processed;
+            Path path = ((FileSplit)inputSplit).getPath();
 
-                @Override
-                public void initialize(InputSplit inputSplit, TaskAttemptContext taskAttemptContext)
-                    throws IOException, InterruptedException
-                {
-                    Path path = ((FileSplit)inputSplit).getPath();
-                    FileSystem fs = path.getFileSystem(taskAttemptContext.getConfiguration());
-                    is = new JarInputStream(fs.open(path));
-                }
+            FileSystem fs = path.getFileSystem(jobConf);
+            is = new JarInputStream(fs.open(path));
 
-                @Override
-                public boolean nextKeyValue() throws IOException, InterruptedException
-                {
+            return new RecordReader<NullWritable, JarEntryInfoWritable> () {
+                JarEntry       entry;
+                boolean        processed;
+                int            pos = 0;
+
+                public boolean next(NullWritable key, JarEntryInfoWritable value) throws IOException {
                     entry = is.getNextJarEntry();
                     processed = (entry == null);
+                    value.setEntry(entry);
                     return !processed;
                 }
 
-                @Override
-                public NullWritable getCurrentKey() throws IOException, InterruptedException
-                {
+                public NullWritable createKey() {
                     return NullWritable.get();
                 }
 
-                @Override
-                public JarEntryInfoWritable getCurrentValue() throws IOException, InterruptedException
-                {
-                    return new JarEntryInfoWritable(entry);
+                public JarEntryInfoWritable createValue() {                    
+                    return new JarEntryInfoWritable(null);
                 }
 
-                @Override
-                public float getProgress() throws IOException, InterruptedException
-                {
-                    return processed ? 1 : 0;
+                public long getPos() throws IOException {
+                    return pos++;
                 }
 
-                @Override
-                public void close() throws IOException
-                {
+                public void close() throws IOException {
                     is.close();
+                }
+
+                public float getProgress() throws IOException {
+                    return processed ? 1 : 0;
                 }
             };
         }
@@ -191,6 +177,10 @@ public class JarListing extends Configured implements Tool
             
             entry.setTime(dataInput.readLong());
             entry.setSize(dataInput.readLong());
+        }
+
+        public void setEntry(JarEntry entry) {
+            this.entry = entry;
         }
     }
 }
