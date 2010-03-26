@@ -42,6 +42,8 @@ public class ExecCommand extends BaseCommand {
             }
         }
         String command = StringUtils.join(args, ' ');
+        if (Config.getInstance().dryrun)
+            return 0;
         return Utils.execute(command);
     }
 
