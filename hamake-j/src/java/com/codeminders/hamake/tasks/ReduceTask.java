@@ -19,7 +19,6 @@ import java.util.concurrent.Semaphore;
 
 public class ReduceTask extends Task {
 
-    private Collection<HamakePath> deps = new ArrayList<HamakePath>();
     private Collection<HamakePath> inputs = new ArrayList<HamakePath>();
 
     public List<HamakePath> getInputs() {
@@ -44,7 +43,6 @@ public class ReduceTask extends Task {
         }
         if (numo > 0 && mots != -1) {
             Collection<HamakePath> paths = new ArrayList<HamakePath>(getInputs());
-            paths.addAll(getDeps());
             for (HamakePath p : paths) {
                 long stamp = getTimeStamp(p.getFileSystem(), p);
                 if (stamp == 0) {
@@ -59,7 +57,6 @@ public class ReduceTask extends Task {
         if (mits == -1 || mits > mots) {
             Map<String, Collection> params = new HashMap<String, Collection>();
             params.put(PathParam.Type.input.name(), getInputs());
-            params.put(PathParam.Type.dependency.name(), getDeps());
             params.put(PathParam.Type.output.name(), getOutputs());
 
             for (HamakePath p : getOutputs())
@@ -105,14 +102,6 @@ public class ReduceTask extends Task {
         return ret;
     }
 
-    public Collection<HamakePath> getDeps() {
-        return deps;
-    }
-
-    public void setDeps(Collection<HamakePath> deps) {
-        this.deps = deps;
-    }
-
     public void setInputs(List<HamakePath> inputs) {
         this.inputs = inputs;
     }
@@ -120,8 +109,7 @@ public class ReduceTask extends Task {
     @Override
     public String toString() {
         return new ToStringBuilder(this).
-                append("inputs", getInputs()).
-                append("deps", getDeps()).appendSuper(super.toString()).toString();
+                append("inputs", getInputs()).appendSuper(super.toString()).toString();
     }
 
 }

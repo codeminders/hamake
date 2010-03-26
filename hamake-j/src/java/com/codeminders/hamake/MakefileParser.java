@@ -205,14 +205,12 @@ public class MakefileParser {
 
         List<HamakePath> inputs = parsePathList(root, "input", properties, wdir);
         List<HamakePath> outputs = parsePathList(root, "output", properties, wdir);
-        Collection<HamakePath> deps = parsePathList(root, "dependencies", properties, wdir);
 
         Command command = parseCommand(root, properties);
 
         ReduceTask res = new ReduceTask();
         res.setName(name);
         res.setOutputs(outputs);
-        res.setDeps(deps);
         res.setCommand(command);
         res.setInputs(inputs);
         parseTaskDeps(root, res, properties);
