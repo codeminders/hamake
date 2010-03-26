@@ -12,6 +12,8 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileInputStream;
+import java.security.Permission;
 
 public class Main {
 
@@ -67,12 +69,15 @@ public class Main {
 
         int njobs = -1;
         String mname = DEFAULT_MAKEFILE_NAME;
+        boolean localFs = true;
         String wdir = null;
 
         if (line.hasOption('j'))
             njobs = Integer.parseInt(line.getOptionValue('j'));
-        if (line.hasOption('f'))
+        if (line.hasOption('f')) {
             mname = line.getOptionValue('f');
+            localFs = false;
+        }
         if (line.hasOption('w'))
         {
             wdir = line.getOptionValue('w');
@@ -80,21 +85,21 @@ public class Main {
                 wdir = SystemUtils.getUserHome().getAbsolutePath();
         }
 
-        String defaultTask = null;
-        if(line.getArgs().length > 0){
-        	defaultTask = line.getArgs()[0];
-        }
-
-        MakefileParser makefileParser = new MakefileParser();        
+        MakefileParser makefileParser = new MakefileParser();
 
         Hamake make = null;        
 
         InputStream is = null;
         try {
             Configuration hadoopCfg = new Configuration();
-            Path makefilePath = new Path(mname);
-            FileSystem fs = makefilePath.getFileSystem(hadoopCfg);
-            is = fs.open(makefilePath);
+            if (localFs) {
+                is = new FileInputStream(mname);
+            }
+            else {
+                Path makefilePath = new Path(mname);
+                FileSystem fs = makefilePath.getFileSystem(hadoopCfg);
+                is = fs.open(makefilePath);
+            }
             make = makefileParser.parse(is, wdir, config.verbose);
             if(line.getArgs().length > 0){
             	for(String target : line.getArgs()){
@@ -128,14 +133,39 @@ public class Main {
 
         make.setNumJobs(njobs);
 
+        SecurityManager securityManager = System.getSecurityManager();
+        System.setSecurityManager(new NoExitSecurityManager());
+
+        int status;
         try {
-            System.exit(make.run().ordinal());
+            status = make.run().ordinal();
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             if (config.test_mode)
                 ex.printStackTrace();
-            System.exit(ExitCodes.FAILED.ordinal());
+            status = ExitCodes.FAILED.ordinal();
         }
+        System.setSecurityManager(securityManager);
+        System.exit(status);
 
     }
+
+    private static class NoExitSecurityManager extends SecurityManager {
+        @Override
+        public void checkPermission(Permission perm) {
+            // allow anything.
+        }
+
+        @Override
+        public void checkPermission(Permission perm, Object context) {
+            // allow anything.
+        }
+
+        @Override
+        public void checkExit(int status) {
+            super.checkExit(status);
+            throw new ExitException(status);
+        }
+    }
+
 }
