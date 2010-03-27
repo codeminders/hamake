@@ -73,7 +73,7 @@ public class HadoopCommand extends BaseCommand {
                 return 0;
             RunJar.main(s_args);            
         } catch (ExitException e){
-            System.out.println("System.exit(" + e.status + ") has been called from " + main + " It is reccommended not to call this method whithin Hadoop Jobs");           
+            return e.status;
         } catch (Throwable ex) {
             System.err.println("Failed to execute Hadoop command " + getJar() + '/' + getMain() + ": " + ex.getMessage());
             if (Config.getInstance().test_mode)
