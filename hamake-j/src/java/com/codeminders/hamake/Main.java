@@ -32,10 +32,10 @@ public class Main {
         options.addOption("V", "version", false, "display version and exit");
         options.addOption("v", "verbose", false, "verbose mode");
         options.addOption("n", "dry-run", false, "dry run mode");
-        options.addOption("d", "nodeps", false, "no deps");
-        options.addOption("t", "test", false, "TODO test");
-        options.addOption("j", "jobs", true, "TODO jobs");
-        options.addOption("f", "file", true, "TODO file");
+        options.addOption("d", "nodeps", false, "no deps mode");
+        options.addOption("t", "test", false, "test mode");
+        options.addOption("j", "jobs", true, "number of job threads to spawn");
+        options.addOption("f", "file", true, "makefile location, hamakefile.xml on local filesystem if not specified");
         options.addOption("w", "workdir", true, "path to data, default is user home dir");
 
         CommandLineParser parser = new PosixParser();
