@@ -8,6 +8,8 @@ import com.codeminders.hamake.params.PigParam;
 import com.codeminders.hamake.params.PathParam;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.pig.ExecType;
@@ -24,6 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 
 public class PigCommand extends BaseCommand {
+	
+	public static final Log LOG = LogFactory.getLog(PigCommand.class);
 
     private String script;
 
@@ -65,7 +69,7 @@ public class PigCommand extends BaseCommand {
             File substFile = File.createTempFile("subst", ".pig");
             BufferedReader pin = preprocessPigScript(in, args, substFile, Config.getInstance().dryrun);
             if (Config.getInstance().dryrun) {
-                System.err.println("Substituted pig script is at " + substFile);
+            	LOG.info("Substituted pig script is at " + substFile);
                 return 0;
             }
 
@@ -83,24 +87,16 @@ public class PigCommand extends BaseCommand {
             return results[1] == 0 ? 0 : -1000;
 
         } catch (ExecException ex) {
-            System.err.println("Failed to execute PIG command " + getScript() + ": " + ex.getMessage());
-            if (Config.getInstance().test_mode)
-                ex.printStackTrace();
+        	LOG.error("Failed to execute PIG command " + getScript(), ex);
             return -1000;
         } catch (IOException ex) {
-            System.err.println("Failed to execute PIG command " + getScript() + ": " + ex.getMessage());
-            if (Config.getInstance().test_mode)
-                ex.printStackTrace();
+        	LOG.error("Failed to execute PIG command " + getScript(), ex);
             return -1000;
         } catch (ParseException ex) {
-            System.err.println("Failed to execute PIG command " + getScript() + ": " + ex.getMessage());
-            if (Config.getInstance().test_mode)
-                ex.printStackTrace();
+        	LOG.error("Failed to execute PIG command " + getScript(), ex);
             return -1000;
         } catch (Throwable ex) {
-            System.err.println("Failed to execute PIG command " + getScript() + ": " + ex.getMessage());
-            if (Config.getInstance().test_mode)
-                ex.printStackTrace();
+        	LOG.error("Failed to execute PIG command " + getScript(), ex);
             return -1000;
         } finally {
             IOUtils.closeQuietly(in);
@@ -148,14 +144,12 @@ public class PigCommand extends BaseCommand {
         try {
             values = p.get(parameters, fs);
         } catch (IOException ex) {
-            System.err.println("Failed to extract parameter values from parameter " +
-                    p.getName() + ": " + ex.getMessage());
-            if (Config.getInstance().test_mode)
-                ex.printStackTrace();
+        	LOG.error("Failed to extract parameter values from parameter " +
+                    p.getName(), ex);
             return null;
         }
         if (values.size() != 1) {
-            System.err.println("Multiple values for param are no supported in PIG scripts");
+        	LOG.error("Multiple values for param are no supported in PIG scripts");
             return null;
         }
 

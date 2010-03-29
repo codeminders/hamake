@@ -5,6 +5,8 @@ import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 
 import java.io.IOException;
@@ -13,6 +15,8 @@ import java.util.Collection;
 import java.util.Map;
 
 public class ExecCommand extends BaseCommand {
+	
+	public static final Log LOG = LogFactory.getLog(ExecCommand.class);
 
     private String binary;
 
@@ -34,9 +38,7 @@ public class ExecCommand extends BaseCommand {
                 try {
                     args.addAll(p.get(parameters, fs));
                 } catch (IOException ex) {
-                    System.err.println("Failed to extract parameter values: " + ex.getMessage());
-                    if (Config.getInstance().test_mode)
-                        ex.printStackTrace();
+                	LOG.error("Failed to extract parameter values", ex);
                     return -1000;
                 }
             }

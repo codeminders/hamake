@@ -7,6 +7,8 @@ import com.codeminders.hamake.Task;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.PathParam;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -21,6 +23,8 @@ import java.util.concurrent.Semaphore;
 
 public class MapTask extends Task {
 
+	public static final Log LOG = LogFactory.getLog(MapTask.class);
+	
     private Collection<HamakePath> deps = new ArrayList<HamakePath>();
     private HamakePath xinput;
 
@@ -46,13 +50,11 @@ public class MapTask extends Task {
             if (inputlist == null)
                 return -1;
             if(inputlist.isEmpty()){
-    			System.err.println("WARN: Input folder for task " + getName() + " is empty");
+            	LOG.warn("WARN: Input folder for task " + getName() + " is empty");
             	return 0;
             }
         } catch (IOException ex) {
-            System.err.println("Error accessing " + xinput + ": " + ex.getMessage());
-            if (Config.getInstance().test_mode)
-                ex.printStackTrace();
+        	LOG.error("Error accessing " + xinput, ex);
             return -1;
         }
 
@@ -64,9 +66,7 @@ public class MapTask extends Task {
                     return -1;
                 outputlists.add(new Object[] {output, outputlist});
             } catch (IOException ex) {
-                System.err.println("Error accessing " + output + ": " + ex.getMessage());
-                if (Config.getInstance().test_mode)
-                    ex.printStackTrace();
+            	LOG.error("Error accessing " + output, ex);
                 return -1;
             }
         }
@@ -92,11 +92,11 @@ public class MapTask extends Task {
                     FileStatus stat = outputlist.get(iname);
                     if (stat.getModificationTime() >= i.getModificationTime()) {
                         if (Config.getInstance().verbose)
-                            System.err.println("Output " + oname + " is already present and fresh");
+                        	LOG.info("Output " + oname + " is already present and fresh");                            
                         present.add(oname);
                     } else {
                         if (Config.getInstance().verbose)
-                            System.err.println("Output " + oname + " is present but not fresh. Removing it.");
+                        	LOG.info("Output " + oname + " is present but not fresh. Removing it.");
                         if (!Config.getInstance().dryrun) {
                             synchronized (fs) {
                                 fs.delete(oname, true);
@@ -109,7 +109,7 @@ public class MapTask extends Task {
             }
             if (present.size() == getOutputs().size()) {
                 if (Config.getInstance().verbose)
-                    System.err.println("All outputs of " + iname + " are fresh");
+                	LOG.info("All outputs of " + iname + " are fresh");
                 // all files are fresh. no need to process this input
                 continue;
             }
@@ -117,7 +117,7 @@ public class MapTask extends Task {
             have_work = true;
 
             for (Path pr : present) {
-                System.err.println("Removing partial output " + pr);
+            	LOG.info("Removing partial output " + pr);
                 if (!Config.getInstance().dryrun) {
                     synchronized (fs) {
                         fs.delete(pr, true);
@@ -149,7 +149,7 @@ public class MapTask extends Task {
             try {
                 job_semaphore.acquire();
             } catch (InterruptedException ex) {
-                System.err.println("Execution is interrupted");
+            	LOG.error(ex);
                 return -1000;
             }
             try {
@@ -162,8 +162,7 @@ public class MapTask extends Task {
                 threads.add(t);
                 t.start();
             } catch (Exception ex) {
-                System.err.println("Unexpected exception starting thread!");
-                ex.printStackTrace();
+            	LOG.error(ex);
                 job_semaphore.release();
 
             }
@@ -173,7 +172,7 @@ public class MapTask extends Task {
             try {
                 t.join();
             } catch (InterruptedException ex) {
-                System.err.println("Execution is interrupted");
+            	LOG.error(ex);
                 return -1000;
             }
             int t_rc = t.getReturnCode();

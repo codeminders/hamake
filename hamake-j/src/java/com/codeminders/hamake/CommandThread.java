@@ -1,5 +1,7 @@
 package com.codeminders.hamake;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -9,6 +11,8 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 public class CommandThread extends Thread {
+	
+	public static final Log LOG = LogFactory.getLog(CommandThread.class);
 
     private Command command;
     private Map<String, Collection> params;
@@ -40,18 +44,14 @@ public class CommandThread extends Thread {
             try {
                 rc = command.execute(params, exec_context);
             } catch (Exception ex) {
-                System.err.println("Execution of command is " + command + " failed: " + ex.getMessage());
-                if (Config.getInstance().test_mode)
-                    ex.printStackTrace();
+            	LOG.error("Execution of command is " + command + " failed", ex);
                 rc = -1;
             }
             if (rc != 0)
                 try {
                     cleanup();
                 } catch (IOException ex) {
-                    System.err.println("I/O error during clean up after " + command + ": " + ex.getMessage());
-                    if (Config.getInstance().test_mode)
-                        ex.printStackTrace();
+                	LOG.error("I/O error during clean up after " + command, ex);
                 }
         } finally {
             job_semaphore.release();
@@ -68,7 +68,7 @@ public class CommandThread extends Thread {
                 exists = fs.exists(p);
                 if (exists)
                     if (Config.getInstance().verbose)
-                        System.err.println("Removing " + p.toUri());
+                    	LOG.info("Removing " + p.toUri());
                 if (!Config.getInstance().dryrun) {
                     synchronized (fs) {
                         fs.delete(p, true);
