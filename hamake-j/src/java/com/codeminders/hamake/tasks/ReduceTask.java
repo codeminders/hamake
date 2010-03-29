@@ -4,6 +4,8 @@ import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Task;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.PathParam;
+
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -12,6 +14,7 @@ import org.apache.hadoop.fs.Path;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,16 +22,16 @@ import java.util.concurrent.Semaphore;
 
 public class ReduceTask extends Task {
 
-    private Collection<HamakePath> inputs = new ArrayList<HamakePath>();
+    private List<HamakePath> inputs = new ArrayList<HamakePath>();
 
-    public List<HamakePath> getInputs() {
+    public List<HamakePath> getInputs() {    	
         return new ArrayList<HamakePath>(inputs);
     }
 
     public int execute(Semaphore semaphore, Map<String, Object> context) throws IOException {
         long mits = -1;
-        long mots = -1;
-
+        long mots = -1;                
+        
         int numo = 0;
         for (HamakePath p : getOutputs()) {
             long stamp = getTimeStamp(p.getFileSystem(), p);
@@ -56,6 +59,22 @@ public class ReduceTask extends Task {
 
         if (mits == -1 || mits > mots) {
             Map<String, Collection> params = new HashMap<String, Collection>();
+            //check that input folder is not empty            
+    		for(HamakePath path : inputs){
+    			try{
+    				if(ArrayUtils.isEmpty(path.getFileSystem().listStatus(path.getPathName()))){
+    					System.err.println("WARN: The input folder is empty for task " + getName()); 
+    				}
+    			}
+    			catch(IOException e){
+    				System.err.println(e);
+    			}
+    		}    		
+    		if(getInputs().isEmpty()){
+    			System.err.println("WARN: There is no input folder for task " + getName());
+            	return 0;
+            }
+    		
             params.put(PathParam.Type.input.name(), getInputs());
             params.put(PathParam.Type.output.name(), getOutputs());
 

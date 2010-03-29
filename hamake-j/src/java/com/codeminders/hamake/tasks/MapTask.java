@@ -45,6 +45,10 @@ public class MapTask extends Task {
             inputlist = Utils.getFileList(xinput, false, xinput.getMask());
             if (inputlist == null)
                 return -1;
+            if(inputlist.isEmpty()){
+    			System.err.println("WARN: Input folder for task " + getName() + " is empty");
+            	return 0;
+            }
         } catch (IOException ex) {
             System.err.println("Error accessing " + xinput + ": " + ex.getMessage());
             if (Config.getInstance().test_mode)
