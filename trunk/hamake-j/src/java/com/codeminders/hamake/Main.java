@@ -4,6 +4,8 @@ import org.apache.commons.cli.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -16,6 +18,8 @@ import java.io.FileInputStream;
 import java.security.Permission;
 
 public class Main {
+	
+	public static final Log LOG = LogFactory.getLog(Main.class);
 
     enum ExitCodes {
         OK,
@@ -140,7 +144,7 @@ public class Main {
         try {
             status = make.run().ordinal();
         } catch (Exception ex) {
-            System.err.println(ex.getMessage());
+        	LOG.error(ex);
             if (config.test_mode)
                 ex.printStackTrace();
             status = ExitCodes.FAILED.ordinal();

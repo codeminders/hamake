@@ -7,6 +7,8 @@ import com.codeminders.hamake.params.PathParam;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -14,15 +16,16 @@ import org.apache.hadoop.fs.Path;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 public class ReduceTask extends Task {
+	
+	public static final Log LOG = LogFactory.getLog(ReduceTask.class);
 
-    private List<HamakePath> inputs = new ArrayList<HamakePath>();
+    private Collection<HamakePath> inputs = new ArrayList<HamakePath>();
 
     public List<HamakePath> getInputs() {    	
         return new ArrayList<HamakePath>(inputs);
@@ -49,7 +52,7 @@ public class ReduceTask extends Task {
             for (HamakePath p : paths) {
                 long stamp = getTimeStamp(p.getFileSystem(), p);
                 if (stamp == 0) {
-                    System.err.println("Some of input/dependency files not present!");
+                	LOG.error("Some of input/dependency files not present!");
                     return -10;
                 }
                 if (stamp > mits)
@@ -63,15 +66,15 @@ public class ReduceTask extends Task {
     		for(HamakePath path : inputs){
     			try{
     				if(ArrayUtils.isEmpty(path.getFileSystem().listStatus(path.getPathName()))){
-    					System.err.println("WARN: The input folder is empty for task " + getName()); 
+    					LOG.warn("WARN: The input folder is empty for task " + getName());
     				}
     			}
     			catch(IOException e){
-    				System.err.println(e);
+    				LOG.error(e);
     			}
     		}    		
     		if(getInputs().isEmpty()){
-    			System.err.println("WARN: There is no input folder for task " + getName());
+    			LOG.warn("WARN: There is no input folder for task " + getName());
             	return 0;
             }
     		

@@ -1,6 +1,8 @@
 package com.codeminders.hamake;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -10,6 +12,8 @@ import java.io.IOException;
 import java.net.URI;
 
 public class HamakePath {
+	
+	public static final Log LOG = LogFactory.getLog(HamakePath.class);
 
     private String wdir;
     private String loc;
@@ -117,7 +121,7 @@ public class HamakePath {
             }
             if (exists) {
                 if (Config.getInstance().verbose) {
-                    System.err.println("Removing " + p.toUri());
+                	LOG.warn("Removing " + p.toUri());
                 }
                 if (!Config.getInstance().dryrun) {
                     synchronized (fs) {
@@ -147,7 +151,7 @@ public class HamakePath {
             for (FileStatus stat : list) {
                 if (Utils.matches(stat.getPath(), getMask())) {
                     if (Config.getInstance().verbose) {
-                        System.err.println("Removing " + stat.getPath());
+                    	LOG.warn("Removing " + stat.getPath());
                     }
                     if (!Config.getInstance().dryrun) {
                         synchronized (fs) {

@@ -7,6 +7,8 @@ import com.codeminders.hamake.ExitException;
 import com.codeminders.hamake.params.JobConfParam;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.RunJar;
@@ -18,6 +20,7 @@ import java.util.Map;
 
 public class HadoopCommand extends BaseCommand {
     
+	public static final Log LOG = LogFactory.getLog(HadoopCommand.class);
     private String jar;
     private String main;
 
@@ -29,9 +32,7 @@ public class HadoopCommand extends BaseCommand {
             fs = Utils.getFileSystem(context, jarPath.toUri());
             args.add(Utils.copyToTemporaryLocal(getJar(), fs).getAbsolutePath());
         } catch (IOException ex) {
-            System.err.println("Can't download JAR file: " + getJar());
-            if (Config.getInstance().test_mode)
-                ex.printStackTrace();
+        	LOG.error("Can't download JAR file: " + getJar(), ex);
             return -1000;
         }
         args.add(getMain());
@@ -43,9 +44,7 @@ public class HadoopCommand extends BaseCommand {
                     try {
                         args.addAll(p.get(parameters, fs));
                     } catch (IOException ex) {
-                        System.err.println("Failed to extract parameter values from parameter: " + ex.getMessage());
-                        if (Config.getInstance().test_mode)
-                            ex.printStackTrace();
+                    	LOG.error("Failed to extract parameter values from parameter", ex);
                         return -1000;
                     }
                 }
@@ -56,9 +55,7 @@ public class HadoopCommand extends BaseCommand {
                     try {
                         args.addAll(p.get(parameters, fs));
                     } catch (IOException ex) {
-                        System.err.println("Failed to extract parameter values from parameter: " + ex.getMessage());
-                        if (Config.getInstance().test_mode)
-                            ex.printStackTrace();
+                    	LOG.error("Failed to extract parameter values from parameter", ex);
                         return -1000;
                     }
                 }
@@ -68,16 +65,14 @@ public class HadoopCommand extends BaseCommand {
             String s_args[] = new String[args.size()];
             args.toArray(s_args);
             if (Config.getInstance().verbose)
-                System.err.println("Executing Hadoop task " + StringUtils.join(s_args, ' '));
+            	LOG.info("Executing Hadoop task " + StringUtils.join(s_args, ' '));
             if (Config.getInstance().dryrun)
                 return 0;
             RunJar.main(s_args);            
         } catch (ExitException e){
             return e.status;
         } catch (Throwable ex) {
-            System.err.println("Failed to execute Hadoop command " + getJar() + '/' + getMain() + ": " + ex.getMessage());
-            if (Config.getInstance().test_mode)
-                ex.printStackTrace();
+        	LOG.error("Failed to execute Hadoop command " + getJar() + '/' + getMain(), ex);
             return -1000;
         }
         return 0;

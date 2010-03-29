@@ -5,7 +5,12 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class TaskThread extends Thread {
+	
+	public static final Log LOG = LogFactory.getLog(TaskThread.class);
 
     private Map<String, Object> context;
     private Semaphore semaphore;
@@ -42,9 +47,7 @@ public class TaskThread extends Thread {
         try {
             rc = task.execute(semaphore, context);
         } catch (Exception ex) {
-            System.err.println("Unexpected exception occured during task " + task.getName() + " execution");
-            if (Config.getInstance().test_mode)
-                ex.printStackTrace();
+        	LOG.error("Unexpected exception occured during task " + task.getName(), ex);
             rc = -1000;
         }
         lock.lock();

@@ -1,8 +1,9 @@
 package com.codeminders.hamake;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.w3c.dom.Element;
@@ -18,6 +19,8 @@ import java.util.regex.Pattern;
 import java.net.URI;
 
 public class Utils {
+	
+	public static final Log LOG = LogFactory.getLog(Utils.class);
 
     private static final Pattern VARIABLE_PLACEHOLDER = Pattern.compile("%\\(([^\\)]+)\\)[sdiefc]");
 
@@ -123,7 +126,7 @@ public class Utils {
                                                       String mask)
             throws IOException {
         if (Config.getInstance().test_mode)
-            System.err.println("Scanning " + ipath);
+        	LOG.info("Scanning " + ipath);
 
         boolean exists;
 
@@ -132,13 +135,13 @@ public class Utils {
         }
         if (!exists) {
             if (create) {
-                System.err.println("Creating " + ipath);
+                LOG.info("Creating " + ipath);
                 synchronized (ipath.getFileSystem()) {
                 	ipath.getFileSystem().mkdirs(ipath.getPathName());
                 }
                 return Collections.emptyMap();
             } else {
-                System.err.println("Path " + ipath + " does not exist!");
+            	LOG.error("Path " + ipath + " does not exist!");
                 return null;
             }
         }
@@ -148,7 +151,7 @@ public class Utils {
             stat = ipath.getFileSystem().getFileStatus(ipath.getPathName());
         }
         if (!stat.isDir()) {
-            System.err.println("Path " + ipath + " must be dir!");
+        	LOG.error("Path " + ipath + " must be dir!");
             return null;
         }
 
@@ -184,7 +187,7 @@ public class Utils {
 
     public static int execute(String command) {
         if (Config.getInstance().verbose)
-            System.err.println("Executing " + command);
+        	LOG.info("Executing " + command);
         try {
             if (Config.getInstance().dryrun)
                 return 0;
@@ -202,20 +205,11 @@ public class Utils {
             	return Runtime.getRuntime().exec(cmd).waitFor();
             }
         } catch (IOException ex) {
-            System.err.println(command + " execution failed, I/O error");
-            if (Config.getInstance().test_mode) {
-                ex.printStackTrace();
-            }
+        	LOG.error(command + " execution failed, I/O error", ex);
         } catch (InterruptedException ex) {
-            System.err.println(command + " execution is interrupted");
-            if (Config.getInstance().test_mode) {
-                ex.printStackTrace();
-            }
+        	LOG.error(command + " execution is interrupted", ex);
         } catch (Exception ex) {
-            System.err.println(command + " execution failed, internal error");
-            if (Config.getInstance().test_mode) {
-                ex.printStackTrace();
-            }
+        	LOG.error(command + " execution failed, internal error", ex);
         }
         return -1000;
     }
@@ -230,8 +224,7 @@ public class Utils {
     	else if(fs.exists(srcPath)){
     		File dstFile = File.createTempFile("hamake", ".tmp");
     		if (Config.getInstance().verbose) {
-                System.err.println("Downloading " + path + " to " + dstFile.getAbsolutePath());
-                System.out.println();
+    			LOG.info("Downloading " + path + " to " + dstFile.getAbsolutePath());
             }
             fs.copyToLocalFile(srcPath, new Path(dstFile.getAbsolutePath()));
             dstFile.deleteOnExit();

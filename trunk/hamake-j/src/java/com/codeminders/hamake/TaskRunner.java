@@ -6,7 +6,12 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class TaskRunner {
+	
+	public static final Log LOG = LogFactory.getLog(TaskRunner.class);
 
     private ExecutionGraph graph;
     private Map<String, Object> context;
@@ -56,7 +61,7 @@ public class TaskRunner {
 
     public void startTasks(Collection<String> tasks) {
         for (String task : tasks) {
-            System.err.println("Starting " + task);
+        	LOG.info("Starting " + task);
             Task t = this.tasks.get(task);
             TaskThread tt = new TaskThread(t, job_semaphore, lock, condition, context);
             running.add(tt);
@@ -72,7 +77,7 @@ public class TaskRunner {
         Thread shutdownHook = new Thread() {
             @Override
             public void run() {
-                System.out.println("Program was terminated unexpectedly. Make sure HaMake task dosn't call System.exit()");
+            	LOG.warn("Program was terminated unexpectedly. Make sure HaMake task dosn't call System.exit()");
             }
         };
 
@@ -102,7 +107,7 @@ public class TaskRunner {
                 try {
                     condition.await();
                 } catch (InterruptedException ex) {
-                    System.err.println("Execution is interrupted");
+                	LOG.error("Execution is interrupted");
                     return;
                 }
 
@@ -118,10 +123,10 @@ public class TaskRunner {
                 }
                 for (TaskThread tt : justFinished) {
                     if (tt.getReturnCode() == 0) {
-                        System.err.println("Execution of " + tt.getTaskName() + " is completed");
+                    	LOG.info("Execution of " + tt.getTaskName() + " is completed");
                         graph.removeTask(tt.getTaskName());
                     } else {
-                        System.err.println("Execution of " + tt.getTaskName() + " is failed with code " + tt.getReturnCode());
+                    	LOG.error("Execution of " + tt.getTaskName() + " is failed with code " + tt.getReturnCode());
                         failed.add(tt.getTaskName());
                         graph.removeTask(tt.getTaskName());
 
