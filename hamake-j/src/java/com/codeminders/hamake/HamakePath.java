@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
+import java.net.URI;
 
 public class HamakePath {
 
@@ -28,12 +29,17 @@ public class HamakePath {
     public HamakePath(String wdir, String loc, String filename, String mask, int gen) throws IOException {
         this.wdir = wdir;
     	Configuration conf = new Configuration();
+
         Path pathLoc = new Path(loc);
 
         if (!pathLoc.isAbsolute() && !StringUtils.isEmpty(wdir))
             pathLoc = new Path(wdir, loc);
 
-    	fs = pathLoc.getFileSystem(conf);
+        if (pathLoc.toUri().getScheme() == null)
+            fs = FileSystem.get(URI.create("/"), conf);
+        else
+            fs = pathLoc.getFileSystem(conf);
+
         setLoc(pathLoc.toString());
         
         if (filename != null && mask != null)
