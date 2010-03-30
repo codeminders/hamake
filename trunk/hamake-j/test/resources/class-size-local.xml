@@ -6,7 +6,7 @@
         <property name="output"  value="build/test"/>
         <property name="lib"     value="lib"/>
         <property name="dist"    value="dist"/>
-        <property name="scripts" value="src/scripts"/>
+        <property name="scripts" value="test/resources/scripts"/>
     </config>
 
     <map name="jar-listings">

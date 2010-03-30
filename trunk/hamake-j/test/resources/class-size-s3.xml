@@ -6,7 +6,7 @@
         <property name="output"  value="s3://hamake/build/test"/>
         <property name="lib"     value="s3://hamake/lib"/>
         <property name="dist"    value="s3://hamake/dist"/>
-        <property name="scripts" value="s3://hamake/src/scripts"/>
+        <property name="scripts" value="s3://hamake/test/resources/scripts"/>
     </config>
 
     <map name="jar-listings">
