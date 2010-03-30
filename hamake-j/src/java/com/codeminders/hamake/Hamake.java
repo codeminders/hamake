@@ -1,6 +1,7 @@
 package com.codeminders.hamake;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 
 import java.security.Permission;
@@ -31,8 +32,6 @@ public class Hamake {
 	protected List<Task> tasks;
 	protected String defaultTarget;
 
-    private FileSystem fileSystem;
-
     public Hamake() {
         this.tasks = new ArrayList<Task>();
         this.targets = new ArrayList<String>();
@@ -58,17 +57,12 @@ public class Hamake {
         this.tasks = tasks;
     }
 
-    public void setFileSystem(FileSystem fileSystem) {
-        this.fileSystem = fileSystem;
-    }
-
     public ExitCode run() {
     	
     	SecurityManager securityManager = System.getSecurityManager();
-        System.setSecurityManager(new NoExitSecurityManager());
-        
+        System.setSecurityManager(new NoExitSecurityManager());        
         Map<String, Object> context = new HashMap<String, Object>();
-        context.put("filesystem", fileSystem);
+        context.put("hamake.configuration", new Configuration());
         try{
 	        if(targets.size() <= 0 && !StringUtils.isEmpty(defaultTarget)){
 	        	targets.add(defaultTarget);

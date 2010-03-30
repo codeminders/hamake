@@ -37,7 +37,7 @@ public class MapTask extends Task {
     }
 
     public int execute(Semaphore semaphore, Map<String, Object> context) throws IOException {
-        FileSystem fs = Utils.getFileSystem(context);
+        FileSystem fs = xinput.getFileSystem();
         if (xinput.hasFilename()) {
             // TODO: file 2 file mapping
             return -100;
@@ -99,7 +99,7 @@ public class MapTask extends Task {
                         	LOG.info("Output " + oname + " is present but not fresh. Removing it.");
                         if (!Config.getInstance().dryrun) {
                             synchronized (fs) {
-                                fs.delete(oname, true);
+                            	fs.delete(oname, true);
                             }
                         }
                     }
