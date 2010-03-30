@@ -16,11 +16,12 @@
 	<property name="lib.dir" value="${basedir}/lib" />
 	<property name="build.dir" value="${basedir}/build" />
 	<property name="dist.dir" value="${basedir}/dist" />
+	<property name="dist.examples.dir" value="${dist.dir}/examples" />
 	<property name="test.dir" value="${basedir}/test" />
 	<property name="test.build.dir" value="${build.dir}/test" />
 	<property name="test.src.dir" value="${test.dir}/java" />
 	<property name="test.resources.dir" value="${test.dir}/resources" />
-	
+
 	<!--Apache Ivy(http://ant.apache.org/ivy/history/latest-milestone/install.html) -->
 	<loadproperties srcfile="${basedir}/ivy/libraries.properties" />
 	<property name="build.ivy.lib.dir" value="${build.dir}/lib" />
@@ -59,7 +60,7 @@
 		<fileset dir="${lib.dir}">
 			<patternset refid="library.patterns" />
 		</fileset>
-		<path refid="ivy-classpath"/>
+		<path refid="ivy-classpath" />
 	</path>
 
 	<path id="test.classpath">
@@ -98,8 +99,10 @@
 	<target name="dist" depends="compile, build-examples">
 		<mkdir dir="${dist.dir}" />
 		<mkdir dir="${dist.dir}/lib" />
+		<mkdir dir="${dist.examples.dir}" />
 		<copy todir="${dist.dir}/lib">
 			<fileset dir="lib" includes="*.jar" excludes="hadoop*.jar" />
+			<fileset dir="${build.dir}/lib" includes="*.jar" excludes="hadoop*.jar" />
 		</copy>
 		<copy todir="${dist.dir}">
 			<fileset file="${basedir}/README.txt" />
@@ -116,11 +119,21 @@
 			<fileset dir="${build.dir}/classes" includes="**/*.class" excludes="com/codeminders/hamake/examples/**" />
 			<fileset dir="${build.dir}" includes="lib/*.jar" />
 		</jar>
+		<mkdir dir="${dist.examples.dir}/hamakefiles" />
+		<copy todir="${dist.examples.dir}/hamakefiles">
+			<fileset dir="${test.resources.dir}">
+				<patternset includes="class-size*.xml" />
+			</fileset>			
+		</copy>
+		<mkdir dir="${dist.examples.dir}/scripts" />
+		<copy todir="${dist.examples.dir}/scripts">			
+			<fileset file="${test.resources.dir}/scripts/median.pig" />
+		</copy>
 	</target>
 
 	<target name="build-examples" depends="compile">
-		<mkdir dir="${dist.dir}" />
-		<jar destfile="${dist.dir}/hamake-examples-${hamake.version}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" />
+		<mkdir dir="${dist.dir}/examples" />
+		<jar destfile="${dist.dir}/examples/hamake-examples-${hamake.version}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" />
 	</target>
 
 	<target name="test" description="runs hamake-j JUnit tests" depends="compile-test, dist">
@@ -133,7 +146,7 @@
 			<test name="com.codeminders.hamake.AllHamakeTests" haltonfailure="no" outfile="hamake" todir="${test.build.dir}/test_report" fork="yes">
 				<formatter type="xml" />
 			</test>
-			<sysproperty key="examples.jar" value="${dist.dir}/hamake-examples-${hamake.version}.jar" />
+			<sysproperty key="examples.jar" value="${dist.examples.dir}/hamake-examples-${hamake.version}.jar" />
 
 		</junit>
 

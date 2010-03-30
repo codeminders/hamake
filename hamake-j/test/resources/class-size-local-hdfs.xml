@@ -6,7 +6,7 @@
         <property name="output"  value="hdfs:///user/bond/abondar/build/test"/>
         <property name="lib"     value="hdfs:///user/bond/abondar/lib"/>
         <property name="dist"    value="dist"/>
-        <property name="scripts" value="src/scripts"/>
+        <property name="scripts" value="test/resources/scripts"/>
     </config>
 
     <map name="jar-listings">
