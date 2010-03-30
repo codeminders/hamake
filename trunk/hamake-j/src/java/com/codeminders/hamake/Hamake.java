@@ -3,6 +3,7 @@ package com.codeminders.hamake;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,24 +63,50 @@ public class Hamake {
     }
 
     public ExitCode run() {
-
+    	
+    	SecurityManager securityManager = System.getSecurityManager();
+        System.setSecurityManager(new NoExitSecurityManager());
+        
         Map<String, Object> context = new HashMap<String, Object>();
         context.put("filesystem", fileSystem);
-        if(targets.size() <= 0 && !StringUtils.isEmpty(defaultTarget)){
-        	targets.add(defaultTarget);
-        }        
-        TaskRunner runner = new TaskRunner(tasks,
-                numJobs,
-                targets,
-                context);
-        runner.run();
-        if (runner.getFailed() > 0)
-            return ExitCode.FAILED;
+        try{
+	        if(targets.size() <= 0 && !StringUtils.isEmpty(defaultTarget)){
+	        	targets.add(defaultTarget);
+	        }        
+	        TaskRunner runner = new TaskRunner(tasks,
+	                numJobs,
+	                targets,
+	                context);
+	        runner.run();
+	        if (runner.getFailed() > 0)
+	            return ExitCode.FAILED;
+        }
+        finally{
+        	System.setSecurityManager(securityManager);
+        }
         return ExitCode.OK;
     }
 
 	protected List<Task> getTasks() {
 		return tasks;
 	}
+	
+	private static class NoExitSecurityManager extends SecurityManager {
+        @Override
+        public void checkPermission(Permission perm) {
+            // allow anything.
+        }
+
+        @Override
+        public void checkPermission(Permission perm, Object context) {
+            // allow anything.
+        }
+
+        @Override
+        public void checkExit(int status) {
+            super.checkExit(status);
+            throw new ExitException(status);
+        }
+    }
 
 }

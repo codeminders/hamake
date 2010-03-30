@@ -135,10 +135,7 @@ public class Main {
             IOUtils.closeQuietly(is);
         }
 
-        make.setNumJobs(njobs);
-
-        SecurityManager securityManager = System.getSecurityManager();
-        System.setSecurityManager(new NoExitSecurityManager());
+        make.setNumJobs(njobs);        
 
         int status;
         try {
@@ -148,28 +145,9 @@ public class Main {
             if (config.test_mode)
                 ex.printStackTrace();
             status = ExitCodes.FAILED.ordinal();
-        }
-        System.setSecurityManager(securityManager);
+        }        
         System.exit(status);
 
-    }
-
-    private static class NoExitSecurityManager extends SecurityManager {
-        @Override
-        public void checkPermission(Permission perm) {
-            // allow anything.
-        }
-
-        @Override
-        public void checkPermission(Permission perm, Object context) {
-            // allow anything.
-        }
-
-        @Override
-        public void checkExit(int status) {
-            super.checkExit(status);
-            throw new ExitException(status);
-        }
-    }
+    }    
 
 }
