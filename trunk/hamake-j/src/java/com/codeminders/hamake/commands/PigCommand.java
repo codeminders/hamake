@@ -1,8 +1,8 @@
 package com.codeminders.hamake.commands;
 
 import com.codeminders.hamake.Config;
+import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Param;
-import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.NamedParam;
 import com.codeminders.hamake.params.PigParam;
 import com.codeminders.hamake.params.PathParam;
@@ -29,12 +29,12 @@ public class PigCommand extends BaseCommand {
 	
 	public static final Log LOG = LogFactory.getLog(PigCommand.class);
 
-    private String script;
+    private HamakePath script;
 
     public PigCommand() {
     }
 
-    public PigCommand(String script, Collection<Param> parameters) {
+    public PigCommand(HamakePath script, Collection<Param> parameters) {
         setScript(script);
         setParameters(parameters);
     }
@@ -45,7 +45,7 @@ public class PigCommand extends BaseCommand {
         BufferedReader in = null;
 
         try {
-            fs = Utils.getFileSystem(context, (new Path(script)).toUri());
+            fs = script.getFileSystem();
 
             Collection<Param> scriptParams = getParameters();
             if (scriptParams != null) {
@@ -63,7 +63,7 @@ public class PigCommand extends BaseCommand {
             PigContext ctx = new PigContext(ExecType.MAPREDUCE, pigProps);
 
             // Run, using the provided file as a pig file
-            Path p = fs.makeQualified(new Path(getScript()));
+            Path p = fs.makeQualified(getScript().getPathName());
             in = new BufferedReader(new InputStreamReader(fs.open(p)));
             // run parameter substitution preprocessor first
             File substFile = File.createTempFile("subst", ".pig");
@@ -103,11 +103,11 @@ public class PigCommand extends BaseCommand {
         }
     }
 
-    public String getScript() {
+    public HamakePath getScript() {
         return script;
     }
 
-    public void setScript(String script) {
+    public void setScript(HamakePath script) {
         this.script = script;
     }
 

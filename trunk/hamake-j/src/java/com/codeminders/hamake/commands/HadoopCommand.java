@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.RunJar;
@@ -24,12 +25,13 @@ public class HadoopCommand extends BaseCommand {
     private String jar;
     private String main;
 
-    public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
+    @SuppressWarnings("unchecked")
+	public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
         FileSystem fs;
         Collection<String> args = new ArrayList<String>();
         try {
             Path jarPath = new Path(getJar());             
-            fs = Utils.getFileSystem(context, jarPath.toUri());
+            fs = jarPath.getFileSystem(new Configuration());
             args.add(Utils.copyToTemporaryLocal(getJar(), fs).getAbsolutePath());
         } catch (IOException ex) {
         	LOG.error("Can't download JAR file: " + getJar(), ex);

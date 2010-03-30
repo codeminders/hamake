@@ -1,7 +1,9 @@
 <project name="test-syntax" default="map1">
 
-	<property name="dfsroot" value="/root" />
-	<property name="basedir" value="/base" />
+	<config>
+		<property name="dfsroot" value="/root" />
+		<property name="basedir" value="/base" />
+	</config>
 
 	<map name="map1">
 		<description>first map</description>

@@ -15,7 +15,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
-import java.security.Permission;
 
 public class Main {
 	
@@ -110,7 +109,6 @@ public class Main {
             		make.addTarget(target);
             	}
             }
-            make.setFileSystem(FileSystem.get(hadoopCfg));            
         } catch (IOException ex) {
             System.err.println("Cannot load makefile " + mname + ": " + ex.getMessage());
             if (config.test_mode)

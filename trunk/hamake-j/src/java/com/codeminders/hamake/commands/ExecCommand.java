@@ -1,6 +1,7 @@
 package com.codeminders.hamake.commands;
 
 import com.codeminders.hamake.Config;
+import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Utils;
 import org.apache.commons.lang.StringUtils;
@@ -18,20 +19,20 @@ public class ExecCommand extends BaseCommand {
 	
 	public static final Log LOG = LogFactory.getLog(ExecCommand.class);
 
-    private String binary;
+    private HamakePath binary;
 
     public ExecCommand() {
     }
 
-    public ExecCommand(String binary, Collection<Param> parameters) {
+    public ExecCommand(HamakePath binary, Collection<Param> parameters) {
         setBinary(binary);
         setParameters(parameters);
     }
 
-    public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
-        FileSystem fs = Utils.getFileSystem(context);
+    public int execute(Map<String, Collection> parameters, Map<String, Object> context) throws IOException {
+        FileSystem fs = binary.getFileSystem();
         Collection<String> args = new ArrayList<String>();
-        args.add(getBinary());
+        args.add(getBinary().getPathName().toString());
         Collection<Param> scriptParams = getParameters();
         if (scriptParams != null) {
             for (Param p : scriptParams) {
@@ -49,11 +50,11 @@ public class ExecCommand extends BaseCommand {
         return Utils.execute(command);
     }
 
-    public String getBinary() {
+    public HamakePath getBinary() {
         return binary;
     }
 
-    public void setBinary(String binary) {
+    public void setBinary(HamakePath binary) {
         this.binary = binary;
     }
 

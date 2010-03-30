@@ -153,7 +153,7 @@ public class MakefileParser {
         return res;
     }
 
-    protected Command parseCommand(Element root, Map<String, String> properties) throws InvalidMakefileException {
+    protected Command parseCommand(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
         NodeList list = root.getElementsByTagName("task");
         int size = list.getLength();
         if (size > 1)
@@ -186,16 +186,16 @@ public class MakefileParser {
         return res;
     }
 
-    protected Command parsePigCommand(Element root, Map<String, String> properties) throws InvalidMakefileException {
+    protected Command parsePigCommand(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
         PigCommand res = new PigCommand();
-        res.setScript(Utils.getRequiredAttribute(root, "script", properties));
+        res.setScript(new HamakePath(Utils.getRequiredAttribute(root, "script", properties)));
         res.setParameters(parseParametersList(root, properties));
         return res;
     }
 
-    protected Command parseExecCommand(Element root, Map<String, String> properties) throws InvalidMakefileException {
+    protected Command parseExecCommand(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
         ExecCommand res = new ExecCommand();
-        res.setBinary(Utils.getRequiredAttribute(root, "binary", properties));
+        res.setBinary(new HamakePath(Utils.getRequiredAttribute(root, "binary", properties)));
         res.setParameters(parseParametersList(root, properties));
         return res;
     }

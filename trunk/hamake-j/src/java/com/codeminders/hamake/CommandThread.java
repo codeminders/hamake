@@ -2,6 +2,7 @@ package com.codeminders.hamake;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -58,13 +59,14 @@ public class CommandThread extends Thread {
         }
     }
 
-    protected void cleanup() throws IOException {
-        FileSystem fs = Utils.getFileSystem(exec_context);
+    protected void cleanup() throws IOException {        
         // TODO this would work only for files, not for paths with masks
         //  use removeIfExists() instead
+    	Configuration conf = (Configuration)exec_context.get("hamake.configuration");
         for (Path p : cleanuplist) {
             boolean exists;
-            synchronized (fs) {
+            synchronized (exec_context) {
+            	FileSystem fs = p.getFileSystem(conf);
                 exists = fs.exists(p);
                 if (exists)
                     if (Config.getInstance().verbose)

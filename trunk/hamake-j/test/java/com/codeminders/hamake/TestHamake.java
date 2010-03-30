@@ -3,10 +3,7 @@ package com.codeminders.hamake;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.security.Permission;
-import java.util.Collection;
-import java.util.HashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -14,8 +11,6 @@ import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,7 +74,6 @@ public class TestHamake {
 	 TestHelperUtils.setReduceTaskInputOutputFolders(make, "reduce",
 	 new HamakePath(tempMap2OutDir.getAbsolutePath()), new HamakePath(
 	 tempReduce1OutFile.getAbsolutePath()));
-	 make.setFileSystem(FileSystem.get(new Configuration()));
 	 make.setNumJobs(2);
 	 make.run();
 	 Assert.assertEquals(10, FileUtils.listFiles(tempMap1OutDir,
@@ -158,7 +152,6 @@ public class TestHamake {
 	 TestHelperUtils.setReduceTaskInputOutputFolders(make, "reduce2",
 	 new HamakePath(tempMap22OutDir.getAbsolutePath()), new HamakePath(
 	 tempReduce2OutFile.getAbsolutePath()));
-	 make.setFileSystem(FileSystem.get(new Configuration()));
 	 make.setNumJobs(2);
 	 make.run();
 	 Assert.assertEquals(10, FileUtils.listFiles(tempMap11OutDir,
@@ -177,12 +170,13 @@ public class TestHamake {
 	 FileUtils.sizeOfDirectory(tempReduce2OutDir) > 0);
 	 }
 
-	@Test
+	@Test	
 	public void testSystemExitIsProhibited() throws IOException,
 			ParserConfigurationException, SAXException,
 			InvalidMakefileException, InterruptedException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 		SecurityManager securityManager = System.getSecurityManager();
-		SecurityManager manager = new SecurityManager(){
+		@SuppressWarnings(value = { "unused" })		
+		SecurityManager manager = new SecurityManager(){			
 			boolean exitCalled = false;
 			@Override
 	        public void checkPermission(Permission perm) { }
@@ -205,7 +199,6 @@ public class TestHamake {
 		MakefileParser parser = new MakefileParser();
 		File localHamakeFile = new File("hamakefile-testexit.xml");
 		final Hamake make = parser.parse(new FileInputStream(localHamakeFile), null, true);
-		make.setFileSystem(FileSystem.get(new Configuration()));
 		make.setNumJobs(1);
 		((HadoopCommand) ((MapTask) make.getTasks().get(0)).getCommand())
 				.setJar(TestHelperUtils.getExamplesJar().getAbsolutePath());

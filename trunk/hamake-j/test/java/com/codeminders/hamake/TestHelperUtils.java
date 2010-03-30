@@ -101,7 +101,7 @@ public class TestHelperUtils {
 		}
 	}
 	
-	public static void setTaskExecBinary(Hamake make, String taskName, String binary){
+	public static void setTaskExecBinary(Hamake make, String taskName, String binary) throws IOException{
 		Collection<Task> tasks = make.getTasks();
 		Iterator<Task> i = tasks.iterator();
 		while(i.hasNext()){
@@ -110,14 +110,14 @@ public class TestHelperUtils {
 				MapTask m = (MapTask)task;
 				if(task.getName().equals(taskName)){
 					ExecCommand command = (ExecCommand)m.getCommand();
-					command.setBinary(binary);
+					command.setBinary(new HamakePath(binary));
 				}
 			}
 			if(task instanceof ReduceTask){
 				ReduceTask r = (ReduceTask)task;
 				if(task.getName().equals(taskName)){
 					ExecCommand command = (ExecCommand)r.getCommand();
-					command.setBinary(binary);
+					command.setBinary(new HamakePath(binary));
 				}				
 			}
 		}
