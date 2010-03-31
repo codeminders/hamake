@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.VersionInfo;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -95,6 +96,8 @@ public class Main {
         InputStream is = null;
         try {
             Configuration hadoopCfg = new Configuration();
+            LOG.info("Using Hadoop " + VersionInfo.getVersion());
+
             if (localFs) {
                 is = new FileInputStream(mname);
             }

@@ -39,10 +39,11 @@ public class HamakePath {
         if (!pathLoc.isAbsolute() && !StringUtils.isEmpty(wdir))
             pathLoc = new Path(wdir, loc);
 
-        if (pathLoc.toUri().getScheme() == null)
-            fs = FileSystem.get(URI.create("/"), conf);
-        else
-            fs = pathLoc.getFileSystem(conf);
+//        if (pathLoc.toUri().getScheme() == null)
+//            fs = FileSystem.get(URI.create("/"), conf);
+//        else
+//            fs = pathLoc.getFileSystem(conf);
+        fs = pathLoc.getFileSystem(conf);
 
         setLoc(pathLoc.toString());
         
