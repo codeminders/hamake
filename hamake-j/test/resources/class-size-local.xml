@@ -4,8 +4,8 @@
 
     <config>
         <property name="output"  value="build/test"/>
-        <property name="lib"     value="lib"/>
-        <property name="dist"    value="dist"/>
+        <property name="lib"     value="build/lib"/>
+        <property name="dist"    value="dist/examples"/>
         <property name="scripts" value="test/resources/scripts"/>
     </config>
 
@@ -58,7 +58,6 @@
         
     </reduce>
 
-<!--
     <map name="map">
         <input>
             <path location="%(output)s/class-size-histogram"/>
@@ -69,12 +68,11 @@
             <path location="%(output)s/class-size-median-bin"/>
         </output>
 
-        <pig script="%(scripts)s/median.pig">
+        <pig script="%(workdir)s/%(scripts)s/median.pig">
             <pathparam type="inputfile" name="infile" />
             <pathparam type="outputfile" name="outfile" />
         </pig>
     </map>
--->
 
 
 </project>

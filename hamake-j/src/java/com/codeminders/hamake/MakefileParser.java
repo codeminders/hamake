@@ -27,10 +27,13 @@ import java.util.*;
 
 public class MakefileParser {
 
+    protected static boolean isPigAvailable = Utils.isPigAvailable();
+
     public Hamake parse(String filename, String wdir, boolean verbose) throws IOException,
             ParserConfigurationException,
             SAXException,
-            InvalidMakefileException {
+            InvalidMakefileException,
+            PigNotFoundException {
         InputStream is = new FileInputStream(filename);
         try {
             return parse(is, wdir, verbose);
@@ -44,7 +47,8 @@ public class MakefileParser {
     public Hamake parse(InputStream is, String wdir, boolean verbose) throws IOException,
             ParserConfigurationException,
             SAXException,
-            InvalidMakefileException {
+            InvalidMakefileException,
+            PigNotFoundException {
         Document dom = loadMakefile(is);
         
         Element config = parseConfig(dom);
@@ -93,7 +97,7 @@ public class MakefileParser {
                               Element config,
                               Map<String, String> properties,
                               boolean verbose,
-                              String wdir) throws InvalidMakefileException, IOException {
+                              String wdir) throws InvalidMakefileException, IOException, PigNotFoundException {
         NodeList tx = config.getElementsByTagName("map");
         for (int i = 0, sz = tx.getLength(); i < sz; i++) {
             Element t = (Element) tx.item(i);
@@ -118,7 +122,7 @@ public class MakefileParser {
         }
     }
 
-    protected Task parseMapTask(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException {
+    protected Task parseMapTask(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException, PigNotFoundException {
         String name = Utils.getRequiredAttribute(root, "name", properties);
 
         Collection<HamakePath> inputs = parsePathList(root, "input", properties, wdir);
@@ -153,7 +157,7 @@ public class MakefileParser {
         return res;
     }
 
-    protected Command parseCommand(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
+    protected Command parseCommand(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException, PigNotFoundException {
         NodeList list = root.getElementsByTagName("task");
         int size = list.getLength();
         if (size > 1)
@@ -185,8 +189,11 @@ public class MakefileParser {
         res.setParameters(parseParametersList(root, properties));
         return res;
     }
+    
+    protected Command parsePigCommand(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException, PigNotFoundException {
+        if (!isPigAvailable)
+            throw new PigNotFoundException("Pig isn't found in classpath. Please, make sure Pig classes are availavle in classpath.");
 
-    protected Command parsePigCommand(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
         PigCommand res = new PigCommand();
         res.setScript(new HamakePath(Utils.getRequiredAttribute(root, "script", properties)));
         res.setParameters(parseParametersList(root, properties));
@@ -200,7 +207,7 @@ public class MakefileParser {
         return res;
     }
 
-    protected Task parseReduceTask(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException {
+    protected Task parseReduceTask(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException, PigNotFoundException {
         String name = Utils.getRequiredAttribute(root, "name", properties);
 
         List<HamakePath> inputs = parsePathList(root, "input", properties, wdir);
