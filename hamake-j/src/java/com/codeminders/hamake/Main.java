@@ -3,7 +3,6 @@ package com.codeminders.hamake;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -75,6 +74,7 @@ public class Main {
         String mname = DEFAULT_MAKEFILE_NAME;
         boolean localFs = true;
         String wdir = null;
+        Configuration hadoopCfg = new Configuration();
 
         if (line.hasOption('j'))
             njobs = Integer.parseInt(line.getOptionValue('j'));
@@ -82,12 +82,9 @@ public class Main {
             mname = line.getOptionValue('f');
             localFs = false;
         }
+
         if (line.hasOption('w'))
-        {
             wdir = line.getOptionValue('w');
-            if (StringUtils.isEmpty(wdir))
-                wdir = SystemUtils.getUserHome().getAbsolutePath();
-        }
 
         MakefileParser makefileParser = new MakefileParser();
 
@@ -95,8 +92,10 @@ public class Main {
 
         InputStream is = null;
         try {
-            Configuration hadoopCfg = new Configuration();
             LOG.info("Using Hadoop " + VersionInfo.getVersion());
+
+            if (StringUtils.isEmpty(wdir))
+                wdir = FileSystem.get(hadoopCfg).getWorkingDirectory().toString();
 
             if (localFs) {
                 is = new FileInputStream(mname);
