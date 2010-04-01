@@ -97,6 +97,8 @@ public class Main {
             if (StringUtils.isEmpty(wdir))
                 wdir = FileSystem.get(hadoopCfg).getWorkingDirectory().toString();
 
+            LOG.info("Working dir:  " + wdir);
+
             if (localFs) {
                 is = new FileInputStream(mname);
             }
