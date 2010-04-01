@@ -192,7 +192,7 @@ public class MakefileParser {
     
     protected Command parsePigCommand(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException, PigNotFoundException {
         if (!isPigAvailable)
-            throw new PigNotFoundException("Pig isn't found in classpath. Please, make sure Pig classes are availavle in classpath.");
+            throw new PigNotFoundException("Pig isn't found in classpath. Please, make sure Pig classes are available in classpath.");
 
         PigCommand res = new PigCommand();
         res.setScript(new HamakePath(Utils.getRequiredAttribute(root, "script", properties)));
