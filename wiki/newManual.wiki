@@ -1,0 +1,53 @@
+=== How to ... ===
+
+Hamake is the Hadoop client-side utility. It's executed in the Hadoop environment. It means you need the Hadoop to be installed on the machine where you are going to run Hamake.
+    Example: {{{hadoop jar hamake-j-1.0.jar}}}
+
+Basically, the Hamake utility simply executes series of user-defined code that submits MapReduce jobs to the Hadoop cluster. The Hamake is responsible for analyzing and collecting input data for user-defined MR code. The Hamake not allows user to send Map or Reduce jobs separately. 
+
+Hamake operates by the tasks which are MR code and has to be implemented by the user. These tasks declared in the [http://code.google.com/p/hamake/wiki/HaMakefileSyntax XML file] and may depend to each other by means of input and output data.
+    Example: 
+{{{ 
+<mapreduceTask name="jar-listings" main="com.codeminders.hamake.examples.JarListing" jar="hamake-examples-1.0.jar">
+  <foreach>
+    <input name="jar" location="lib" mask="*.jar" />
+    <output name="listing" location="jar-listings" />
+  </foreach>
+  <parameter value="${jar}" />
+  <parameter value="${listing}" />
+</mapreduceTask>
+
+<mapreduceTask name="filter-listings" main="com.codeminders.hamake.examples.JarListingFilter" jar="hamake-examples-1.0.jar">
+  <foreach>
+    <input name="jar" location="jar-listings"/>
+    <output name="listing" location="jar-listings-filtered" />
+  </foreach>
+  <parameter value="${jar}" />
+  <parameter value="${listing}" />
+</mapreduceTask>
+
+}}}
+
+In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" task will be obtained.
+
+In general, the Hamake not strictly follow [wiki:Dataflow] programming paradigm. It means the Hamake builds the execution path on base of dependencies between output of one tasks and input of others. So, the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. 
+
+Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
+
+Some tasks can be executed in parallel, if they have fresh input data and don't have dependencies between each other.
+
+The Hamake builds dependency tree of tasks outputs and inputs and entirely stored the tree in memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as JVM heap upper limit (2Gb).
+
+TODO:
+
+describe how FSs are recognized in XML?
+
+task dependencies
+
+external data dependencies
+
+task types
+
+
+
+=== Using additional libraries and resources ===
