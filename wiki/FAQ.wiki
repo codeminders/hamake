@@ -15,6 +15,8 @@ Q: Is there a way to query a workflow's progress to get a percentage complete?
 
 Q: Why not ANT? 
 
+Q: Where executables are executed? Nodes, local machine, etc. 
+
 
 = Development =
 TBD
