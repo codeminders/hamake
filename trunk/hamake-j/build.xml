@@ -159,7 +159,7 @@
 
   </target>
 
-  <target name="examples" depends="dist">
+  <target name="examples.local" depends="dist">
     <pathconvert targetos="unix" property="classpath.unix" refid="test.classpath"/>
     <pathconvert targetos="windows" property="classpath.windows" refid="test.classpath"/>
 
@@ -187,6 +187,34 @@
       <arg value="-t" />
       <arg value="-w" />
       <arg value="file:///${basedir}" />
+    </exec>
+
+  </target>
+
+  <target name="examples.distributed" depends="dist">
+    <pathconvert targetos="unix" property="classpath.unix" refid="test.classpath"/>
+    <pathconvert targetos="windows" property="classpath.windows" refid="test.classpath"/>
+
+    <!--<delete dir="${test.build.dir}"/>-->
+    <mkdir dir="${test.build.dir}" />
+    <exec executable="hadoop" osfamily="unix">
+      <env key="HADOOP_CLASSPATH" path="${classpath.unix}"/>
+      <arg value="jar" />
+      <arg value="${dist.dir}/hamake-j-${hamake.version}.jar" />
+      <arg value="-f" />
+      <arg value="file://${test.dir}/resources/class-size.xml" />
+      <arg value="-v" />
+      <arg value="-t" />
+    </exec>
+
+    <exec executable="hadoop.bat" osfamily="windows">
+      <env key="HADOOP_CLASSPATH" path="${classpath.windows}"/>
+      <arg value="jar" />
+      <arg value="${dist.dir}/hamake-j-${hamake.version}.jar" />
+      <arg value="-f" />
+      <arg value="file:///${test.dir}/resources/class-size.xml" />
+      <arg value="-v" />
+      <arg value="-t" />
     </exec>
 
   </target>
