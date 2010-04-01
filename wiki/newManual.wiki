@@ -1,7 +1,21 @@
-=== How to ... ===
+=== Hamake Manual ===
+version 1.0
 
-Hamake is the Hadoop client-side utility. It's executed in the Hadoop environment. It means you need the Hadoop to be installed on the machine where you are going to run Hamake.
+== Overview ==
+
+Hamake is a lightweight utility and workflow engine for running Hadoop Map Reduce jobs and Pig scrips on a dataset stored on HDFS. 
+
+== Installation ==
+
+== Running Hamake ==
+Hamake runs in Hadoop environment. Please make sure you have installed Hadoop on the machine where you are going to run Hamake and added Hadoop bin directory in PATH environment variable.
+
+{{{
+export PATH=$PATH:$HADOOP_HOME/bin
+}}}
+To run Hamake 
     Example: {{{hadoop jar hamake-j-1.0.jar}}}
+
 
 Basically, the Hamake utility simply executes series of user-defined code that submits MapReduce jobs to the Hadoop cluster. The Hamake is responsible for analyzing and collecting input data for user-defined MR code. The Hamake not allows user to send Map or Reduce jobs separately. 
 
@@ -38,8 +52,6 @@ Some tasks can be executed in parallel, if they have fresh input data and don't 
 
 The Hamake builds dependency tree of tasks outputs and inputs and entirely stored the tree in memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as JVM heap upper limit (2Gb).
 
-TODO:
-
 describe how FSs are recognized in XML?
 
 task dependencies
@@ -48,6 +60,6 @@ external data dependencies
 
 task types
 
-
+== Command Line Parameters ==
 
 === Using additional libraries and resources ===
