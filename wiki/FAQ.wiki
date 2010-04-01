@@ -9,6 +9,12 @@ A: In short: 'Cascading' is a framework, while 'hamake' is a tool. Some differen
   * We found hamake especially suitable for incremental processing of datasets
   * You can use 'hamake' to automate tasks written in other languages, using _Hadoop streaming_
 
+Q: Why XML and not JSON?
+
+Q: Is there a way to query a workflow's progress to get a percentage complete?
+
+Q: Why not ANT? 
+
 
 = Development =
 TBD
