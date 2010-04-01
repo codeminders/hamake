@@ -227,6 +227,19 @@ public class Utils {
     public static boolean matches(Path p, String mask) {
         String name = p.getName();
         return mask == null || FilenameUtils.wildcardMatch(name, mask);
-    }   
+    }
+
+    public static boolean isPigAvailable()
+    {
+        try {
+            Utils.class.getClassLoader().loadClass(org.apache.pig.Main.class.getCanonicalName());
+        } catch (ClassNotFoundException e) {
+            return false;
+        } catch (NoClassDefFoundError e) {
+            return false;
+        }
+
+        return true;
+    }
     
 }

@@ -132,6 +132,11 @@ public class Main {
             if (config.test_mode)
                 ex.printStackTrace();
             System.exit(ExitCodes.INITERR.ordinal());
+        } catch (PigNotFoundException ex) {
+            System.err.println("Cannot execute Pig task: " + ex.getMessage());
+            if (config.test_mode)
+                ex.printStackTrace();
+            System.exit(ExitCodes.INITERR.ordinal());
         } finally {
             IOUtils.closeQuietly(is);
         }
