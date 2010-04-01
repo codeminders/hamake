@@ -15,7 +15,9 @@ Java-related improvements:
 Misc improvements:
   * Option to stop MAP task if one or certain number file processing failures (now it tries to process all files)
   * Implement file-to-file MAP tasks
-  * Tasks DFS COPY, MOVE commands
+  * Task "FS" (operations with/between filesystems: DFS COPY, MOVE etc commands)
+  * action on error
+  * workflow monitoring
   * Allow to run external any script/command
   * Handle files removal in MAP tasks.
   * Review how REDUCE tasks without inputs of outputs supposed to work
