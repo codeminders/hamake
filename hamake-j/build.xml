@@ -2,208 +2,226 @@
 <project name="hamake" default="all" xmlns:ivy="antlib:org.apache.ivy.ant">
 
 
-	<property file="build.properties" />
+  <property file="build.properties" />
 
-	<property name="hadoop.version" value="0.20" />
-
-
-	<!-- Compiler options -->
-	<property name="compiler.debug" value="on" />
-	<property name="compiler.deprecation" value="off" />
-	<property name="compiler.generate.no.warnings" value="off" />
-	<property name="compiler.max.memory" value="128m" />
-	<property name="src.dir" value="${basedir}/src/java" />
-	<property name="lib.dir" value="${basedir}/lib" />
-	<property name="build.dir" value="${basedir}/build" />
-	<property name="dist.dir" value="${basedir}/dist" />
-	<property name="dist.examples.dir" value="${dist.dir}/examples" />
-	<property name="test.dir" value="${basedir}/test" />
-	<property name="test.build.dir" value="${build.dir}/test" />
-	<property name="test.src.dir" value="${test.dir}/java" />
-	<property name="test.resources.dir" value="${test.dir}/resources" />
-
-	<!--Apache Ivy(http://ant.apache.org/ivy/history/latest-milestone/install.html) -->
-	<loadproperties srcfile="${basedir}/ivy/libraries.properties" />
-	<property name="build.ivy.lib.dir" value="${build.dir}/lib" />
-	<property name="ivy.artifact.retrieve.pattern" value="[artifact]-[revision].[ext]" />
-	<property name="ivy.install.version" value="2.1.0" />
-	<condition property="ivy.home" value="${env.IVY_HOME}">
-		<isset property="env.IVY_HOME" />
-	</condition>
-	<property name="ivy.home" value="${user.home}/.ant" />
-	<property name="ivy.jar.dir" value="${ivy.home}/lib" />
-	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
-
-	<patternset id="ignored.files">
-		<exclude name="**/CVS/**" />
-		<exclude name="**/SCCS/**" />
-		<exclude name="**/RCS/**" />
-		<exclude name="**/rcs/**" />
-		<exclude name="**/.DS_Store/**" />
-		<exclude name="**/.svn/**" />
-		<exclude name="**/.pyc/**" />
-		<exclude name="**/.pyo/**" />
-		<exclude name="**/*.pyc/**" />
-		<exclude name="**/*.pyo/**" />
-		<exclude name="**/.git/**" />
-	</patternset>
-
-	<patternset id="library.patterns">
-		<include name="*.jar" />
-		<include name="hadoop-${hadoop.version}/*.jar" />
-	</patternset>
+  <property name="hadoop.version" value="0.18" />
 
 
-	<!-- Project Libraries -->
+  <!-- Compiler options -->
+  <property name="compiler.debug" value="on" />
+  <property name="compiler.deprecation" value="off" />
+  <property name="compiler.generate.no.warnings" value="off" />
+  <property name="compiler.max.memory" value="128m" />
+  <property name="src.dir" value="${basedir}/src/java" />
+  <property name="lib.dir" value="${basedir}/lib" />
+  <property name="build.dir" value="${basedir}/build" />
+  <property name="dist.dir" value="${basedir}/dist" />
+  <property name="dist.examples.dir" value="${dist.dir}/examples" />
+  <property name="test.dir" value="${basedir}/test" />
+  <property name="test.build.dir" value="${build.dir}/test" />
+  <property name="test.src.dir" value="${test.dir}/java" />
+  <property name="test.resources.dir" value="${test.dir}/resources" />
 
-	<path id="library.commons.classpath">
-		<fileset dir="${lib.dir}">
-			<patternset refid="library.patterns" />
-		</fileset>
-		<path refid="ivy-classpath" />
-	</path>
+  <!--Apache Ivy(http://ant.apache.org/ivy/history/latest-milestone/install.html) -->
+  <loadproperties srcfile="${basedir}/ivy/libraries.properties" />
+  <property name="build.ivy.lib.dir" value="${build.dir}/lib" />
+  <property name="ivy.artifact.retrieve.pattern" value="[artifact]-[revision].[ext]" />
+  <property name="ivy.install.version" value="2.1.0" />
+  <condition property="ivy.home" value="${env.IVY_HOME}">
+    <isset property="env.IVY_HOME" />
+  </condition>
+  <property name="ivy.home" value="${user.home}/.ant" />
+  <property name="ivy.jar.dir" value="${ivy.home}/lib" />
+  <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
 
-	<path id="test.classpath">
-		<path refid="library.commons.classpath" />
-		<pathelement location="${build.dir}/classes" />
-	</path>
+  <patternset id="ignored.files">
+    <exclude name="**/CVS/**" />
+    <exclude name="**/SCCS/**" />
+    <exclude name="**/RCS/**" />
+    <exclude name="**/rcs/**" />
+    <exclude name="**/.DS_Store/**" />
+    <exclude name="**/.svn/**" />
+    <exclude name="**/.pyc/**" />
+    <exclude name="**/.pyo/**" />
+    <exclude name="**/*.pyc/**" />
+    <exclude name="**/*.pyo/**" />
+    <exclude name="**/.git/**" />
+  </patternset>
 
-	<path id="test.runtime.classpath">
-		<path refid="test.classpath" />
-		<pathelement location="${test.build.dir}/classes" />
-	</path>
-
-	<target name="init" description="Build initialization">
-	</target>
-
-	<target name="clean">
-		<delete dir="${build.dir}" />
-		<delete dir="${dist.dir}" />
-		<delete dir="${test.build.dir}" />
-	</target>
-
-	<target name="compile" depends="ivy-retrieve-common">
-		<mkdir dir="${build.dir}/classes" />
-		<javac classpathref="library.commons.classpath" destdir="${build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
-			<src path="${src.dir}" />
-		</javac>
-	</target>
-
-	<target name="compile-test" depends="compile">
-		<mkdir dir="${test.build.dir}/classes" />
-		<javac classpathref="test.classpath" destdir="${test.build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
-			<src path="${test.src.dir}" />
-		</javac>
-	</target>
-
-	<target name="dist" depends="compile, build-examples">
-		<mkdir dir="${dist.dir}" />
-		<mkdir dir="${dist.dir}/lib" />
-		<mkdir dir="${dist.examples.dir}" />
-		<copy todir="${dist.dir}/lib">
-			<fileset dir="lib" includes="*.jar" excludes="hadoop*.jar" />
-			<fileset dir="${build.dir}/lib" includes="*.jar" excludes="hadoop*.jar" />
-		</copy>
-		<copy todir="${dist.dir}">
-			<fileset file="${basedir}/README.txt" />
-		</copy>
-		<copy todir="${dist.dir}/lib">
-			<fileset dir="${lib.dir}">
-				<patternset refid="library.patterns" />
-			</fileset>
-		</copy>
-		<jar destfile="${dist.dir}/hamake-j-${hamake.version}.jar">
-			<manifest>
-				<attribute name="Main-Class" value="com.codeminders.hamake.Main" />
-			</manifest>
-			<fileset dir="${build.dir}/classes" includes="**/*.class" excludes="com/codeminders/hamake/examples/**" />
-			<fileset dir="${build.dir}" includes="lib/*.jar" />
-		</jar>
-		<mkdir dir="${dist.examples.dir}/hamakefiles" />
-		<copy todir="${dist.examples.dir}/hamakefiles">
-			<fileset dir="${test.resources.dir}">
-				<patternset includes="class-size*.xml" />
-			</fileset>			
-		</copy>
-		<mkdir dir="${dist.examples.dir}/scripts" />
-		<copy todir="${dist.examples.dir}/scripts">			
-			<fileset file="${test.resources.dir}/scripts/median.pig" />
-		</copy>
-	</target>
-
-	<target name="build-examples" depends="compile">
-		<mkdir dir="${dist.dir}/examples" />
-		<jar destfile="${dist.dir}/examples/hamake-examples-${hamake.version}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" />
-	</target>
-
-	<target name="test" description="runs hamake-j JUnit tests" depends="compile-test, dist">
-		<mkdir dir="${test.build.dir}/test_report" />
-		<junit showoutput="yes" haltonfailure="yes" fork="yes" dir="${test.resources.dir}" maxmemory="256M" printsummary="withOutAndErr">
-			<classpath>
-				<path refid="test.runtime.classpath" />
-			</classpath>
-
-			<test name="com.codeminders.hamake.AllHamakeTests" haltonfailure="no" outfile="hamake" todir="${test.build.dir}/test_report" fork="yes">
-				<formatter type="xml" />
-			</test>
-			<sysproperty key="examples.jar" value="${dist.examples.dir}/hamake-examples-${hamake.version}.jar" />
-
-		</junit>
-
-		<junitreport todir="${test.build.dir}/test_report">
-			<fileset dir="${test.build.dir}/test_report">
-				<include name="*.xml" />
-			</fileset>
-			<report todir="${test.build.dir}/test_report" format="frames" />
-		</junitreport>
-
-	</target>
-
-	<!-- TODO: replace it to run hamake -->
-	<target name="examples" depends="dist">
-		<!--<delete dir="${test.build.dir}"/>-->
-		<mkdir dir="${test.build.dir}" />
-		<exec executable="hadoop">
-			<arg value="jar" />
-			<arg value="${dist.dir}/hamake-j-${hamake.version}.jar" />
-			<arg value="-f" />
-			<arg value="file://${test.dir}/resources/class-size.xml" />
-			<arg value="-v" />
-			<arg value="-t" />
-		</exec>
-	</target>
-
-	<target name="all" depends="dist" description="build all" />
-
-	<!-- Ivy -->
-	<target name="ivy-probe-antlib">
-		<condition property="ivy.found">
-			<typefound uri="antlib:org.apache.ivy.ant" name="cleancache" />
-		</condition>
-	</target>
+  <patternset id="library.patterns">
+    <include name="*.jar" />
+    <include name="hadoop-${hadoop.version}/*.jar" />
+  </patternset>
 
 
-	<target name="download-ivy" unless="offline">
+  <!-- Project Libraries -->
 
-		<mkdir dir="${ivy.jar.dir}" />
-		<get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true" />
-	</target>
+  <path id="library.commons.classpath">
+    <fileset dir="${lib.dir}">
+      <patternset refid="library.patterns" />
+    </fileset>
+    <path refid="ivy-classpath" />
+  </path>
 
-	<target name="ivy-init" depends="download-ivy">
-		<path id="ivy.lib.path">
-			<fileset dir="${ivy.jar.dir}" includes="*.jar" />
+  <path id="test.classpath">
+    <path refid="library.commons.classpath" />
+    <pathelement location="${build.dir}/classes" />
+  </path>
 
-		</path>
-		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path" />
-	</target>
+  <path id="test.runtime.classpath">
+    <path refid="test.classpath" />
+    <pathelement location="${test.build.dir}/classes" />
+  </path>
 
-	<target name="ivy-resolve-common" depends="ivy-init">
-		<ivy:resolve conf="common" />
-	</target>
+  <target name="init" description="Build initialization">
+  </target>
 
-	<target name="ivy-retrieve-common" depends="ivy-resolve-common" description="Retrieve Ivy-managed artifacts for the compile/test configurations">
-		<ivy:retrieve pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
-		<ivy:cachepath pathid="ivy-classpath" conf="common" />
-	</target>
+  <target name="clean">
+    <delete dir="${build.dir}" />
+    <delete dir="${dist.dir}" />
+    <delete dir="${test.build.dir}" />
+  </target>
+
+  <target name="compile" depends="ivy-retrieve-common">
+    <mkdir dir="${build.dir}/classes" />
+    <javac classpathref="library.commons.classpath" destdir="${build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
+      <src path="${src.dir}" />
+    </javac>
+  </target>
+
+  <target name="compile-test" depends="compile">
+    <mkdir dir="${test.build.dir}/classes" />
+    <javac classpathref="test.classpath" destdir="${test.build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
+      <src path="${test.src.dir}" />
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile, build-examples">
+    <mkdir dir="${dist.dir}" />
+    <mkdir dir="${dist.dir}/lib" />
+    <mkdir dir="${dist.examples.dir}" />
+    <copy todir="${dist.dir}/lib">
+      <fileset dir="lib" includes="*.jar" excludes="hadoop*.jar" />
+      <fileset dir="${build.dir}/lib" includes="*.jar" excludes="hadoop*.jar" />
+    </copy>
+    <copy todir="${dist.dir}">
+      <fileset file="${basedir}/README.txt" />
+    </copy>
+    <copy todir="${dist.dir}/lib">
+      <fileset dir="${lib.dir}">
+        <patternset refid="library.patterns" />
+      </fileset>
+    </copy>
+    <jar destfile="${dist.dir}/hamake-j-${hamake.version}.jar">
+      <manifest>
+        <attribute name="Main-Class" value="com.codeminders.hamake.Main" />
+      </manifest>
+      <fileset dir="${build.dir}/classes" includes="**/*.class" excludes="com/codeminders/hamake/examples/**" />
+      <fileset dir="${build.dir}" includes="lib/*.jar" />
+    </jar>
+    <mkdir dir="${dist.examples.dir}/hamakefiles" />
+    <copy todir="${dist.examples.dir}/hamakefiles">
+      <fileset dir="${test.resources.dir}">
+        <patternset includes="class-size*.xml" />
+      </fileset>      
+    </copy>
+    <mkdir dir="${dist.examples.dir}/scripts" />
+    <copy todir="${dist.examples.dir}/scripts">     
+      <fileset file="${test.resources.dir}/scripts/median.pig" />
+    </copy>
+  </target>
+
+  <target name="build-examples" depends="compile">
+    <mkdir dir="${dist.dir}/examples" />
+    <jar destfile="${dist.dir}/examples/hamake-examples-${hamake.version}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" />
+  </target>
+
+  <target name="test" description="runs hamake-j JUnit tests" depends="compile-test, dist">
+    <mkdir dir="${test.build.dir}/test_report" />
+    <junit showoutput="yes" haltonfailure="yes" fork="yes" dir="${test.resources.dir}" maxmemory="256M" printsummary="withOutAndErr">
+      <classpath>
+        <path refid="test.runtime.classpath" />
+      </classpath>
+
+      <test name="com.codeminders.hamake.AllHamakeTests" haltonfailure="no" outfile="hamake" todir="${test.build.dir}/test_report" fork="yes">
+        <formatter type="xml" />
+      </test>
+      <sysproperty key="examples.jar" value="${dist.examples.dir}/hamake-examples-${hamake.version}.jar" />
+
+    </junit>
+
+    <junitreport todir="${test.build.dir}/test_report">
+      <fileset dir="${test.build.dir}/test_report">
+        <include name="*.xml" />
+      </fileset>
+      <report todir="${test.build.dir}/test_report" format="frames" />
+    </junitreport>
+
+  </target>
+
+  <target name="examples" depends="dist">
+    <pathconvert targetos="unix" property="classpath.unix" refid="test.classpath"/>
+    <pathconvert targetos="windows" property="classpath.windows" refid="test.classpath"/>
+
+    <!--<delete dir="${test.build.dir}"/>-->
+    <mkdir dir="${test.build.dir}" />
+    <exec executable="hadoop" osfamily="unix">
+      <env key="HADOOP_CLASSPATH" path="${classpath.unix}"/>
+      <arg value="jar" />
+      <arg value="${dist.dir}/hamake-j-${hamake.version}.jar" />
+      <arg value="-f" />
+      <arg value="file://${test.dir}/resources/class-size.xml" />
+      <arg value="-v" />
+      <arg value="-t" />
+      <arg value="-w" />
+      <arg value="file://${basedir}" />
+    </exec>
+
+    <exec executable="hadoop.bat" osfamily="windows">
+      <env key="HADOOP_CLASSPATH" path="${classpath.windows}"/>
+      <arg value="jar" />
+      <arg value="${dist.dir}/hamake-j-${hamake.version}.jar" />
+      <arg value="-f" />
+      <arg value="file:///${test.dir}/resources/class-size.xml" />
+      <arg value="-v" />
+      <arg value="-t" />
+      <arg value="-w" />
+      <arg value="file:///${basedir}" />
+    </exec>
+
+  </target>
+
+  <target name="all" depends="dist" description="build all" />
+
+  <!-- Ivy -->
+  <target name="ivy-probe-antlib">
+    <condition property="ivy.found">
+      <typefound uri="antlib:org.apache.ivy.ant" name="cleancache" />
+    </condition>
+  </target>
+
+
+  <target name="download-ivy" unless="offline">
+
+    <mkdir dir="${ivy.jar.dir}" />
+    <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true" />
+  </target>
+
+  <target name="ivy-init" depends="download-ivy">
+    <path id="ivy.lib.path">
+      <fileset dir="${ivy.jar.dir}" includes="*.jar" />
+
+    </path>
+    <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path" />
+  </target>
+
+  <target name="ivy-resolve-common" depends="ivy-init">
+    <ivy:resolve conf="common" />
+  </target>
+
+  <target name="ivy-retrieve-common" depends="ivy-resolve-common" description="Retrieve Ivy-managed artifacts for the compile/test configurations">
+    <ivy:retrieve pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
+    <ivy:cachepath pathid="ivy-classpath" conf="common" />
+  </target>
 
 </project>

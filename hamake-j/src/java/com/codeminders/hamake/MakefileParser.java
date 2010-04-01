@@ -52,8 +52,7 @@ public class MakefileParser {
         Document dom = loadMakefile(is);
         
         Element config = parseConfig(dom);
-        Map<String, String> properties = parseProperties(config);
-        properties.put("workdir", wdir);
+        Map<String, String> properties = parseProperties(config, wdir);
 
         Hamake ret = new Hamake();               
         parseTasks(ret, dom.getDocumentElement(), properties, verbose, wdir);
@@ -76,7 +75,7 @@ public class MakefileParser {
         return Utils.getMandatory(dom.getDocumentElement(), "config");
     }        
 
-    protected Map<String, String> parseProperties(Element root) throws InvalidMakefileException {
+    protected Map<String, String> parseProperties(Element root, String wdir) throws InvalidMakefileException {
         NodeList c = root.getElementsByTagName("property");
         Map<String, String> ret = new HashMap<String, String>() {
             String get(String key) {
@@ -85,6 +84,8 @@ public class MakefileParser {
                 return super.get(key);
             }
         };
+        ret.put("workdir", wdir);
+        
         for (int i = 0, sz = c.getLength(); i < sz; i++) {
             Element e = (Element) c.item(i);
             ret.put(Utils.getRequiredAttribute(e, "name", ret),
@@ -137,7 +138,7 @@ public class MakefileParser {
         List<HamakePath> outputs = parsePathList(root, "output", properties, wdir);
         List<HamakePath> deps = parsePathList(root, "dependencies", properties, wdir);
 
-        Command command = parseCommand(root, properties);
+        Command command = parseCommand(root, properties, wdir);
 
         // Sanity checks
         if (input != null) {
@@ -157,52 +158,52 @@ public class MakefileParser {
         return res;
     }
 
-    protected Command parseCommand(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException, PigNotFoundException {
+    protected Command parseCommand(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException, PigNotFoundException {
         NodeList list = root.getElementsByTagName("task");
         int size = list.getLength();
         if (size > 1)
             throw new InvalidMakefileException("Multiple elements 'task' in " + Utils.getPath(root) + " are not permitted");
         if (size == 1)
-            return parseHadoopCommand((Element) list.item(0), properties);
+            return parseHadoopCommand((Element) list.item(0), properties, wdir);
 
         list = root.getElementsByTagName("pig");
         size = list.getLength();
         if (size > 1)
             throw new InvalidMakefileException("Multiple elements 'pig' in " + Utils.getPath(root) + " are not permitted");
         if (size == 1)
-            return parsePigCommand((Element) list.item(0), properties);
+            return parsePigCommand((Element) list.item(0), properties, wdir);
 
         list = root.getElementsByTagName("exec");
         size = list.getLength();
         if (size > 1)
             throw new InvalidMakefileException("Multiple elements 'exec' in " + Utils.getPath(root) + " are not permitted");
         if (size == 1)
-            return parseExecCommand((Element) list.item(0), properties);
+            return parseExecCommand((Element) list.item(0), properties, wdir);
 
         throw new InvalidMakefileException("No commands are encountered in " + Utils.getPath(root));
     }
 
-    protected Command parseHadoopCommand(Element root, Map<String, String> properties) throws InvalidMakefileException {
+    protected Command parseHadoopCommand(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException {
         HadoopCommand res = new HadoopCommand();
-        res.setJar(Utils.getRequiredAttribute(root, "jar", properties));
+        res.setJar(HamakePath.resolve(wdir, Utils.getRequiredAttribute(root, "jar", properties)).toString());
         res.setMain(Utils.getRequiredAttribute(root, "main", properties));
         res.setParameters(parseParametersList(root, properties));
         return res;
     }
     
-    protected Command parsePigCommand(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException, PigNotFoundException {
+    protected Command parsePigCommand(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException, PigNotFoundException {
         if (!isPigAvailable)
             throw new PigNotFoundException("Pig isn't found in classpath. Please, make sure Pig classes are available in classpath.");
 
         PigCommand res = new PigCommand();
-        res.setScript(new HamakePath(Utils.getRequiredAttribute(root, "script", properties)));
+        res.setScript(new HamakePath(wdir, Utils.getRequiredAttribute(root, "script", properties)));
         res.setParameters(parseParametersList(root, properties));
         return res;
     }
 
-    protected Command parseExecCommand(Element root, Map<String, String> properties) throws InvalidMakefileException, IOException {
+    protected Command parseExecCommand(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException {
         ExecCommand res = new ExecCommand();
-        res.setBinary(new HamakePath(Utils.getRequiredAttribute(root, "binary", properties)));
+        res.setBinary(new HamakePath(wdir, Utils.getRequiredAttribute(root, "binary", properties)));
         res.setParameters(parseParametersList(root, properties));
         return res;
     }
@@ -213,7 +214,7 @@ public class MakefileParser {
         List<HamakePath> inputs = parsePathList(root, "input", properties, wdir);
         List<HamakePath> outputs = parsePathList(root, "output", properties, wdir);
 
-        Command command = parseCommand(root, properties);
+        Command command = parseCommand(root, properties, wdir);
 
         ReduceTask res = new ReduceTask();
         res.setName(name);

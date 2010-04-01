@@ -11,7 +11,7 @@
 
     <map name="jar-listings">
         <input>
-            <path location="%(lib)s/" mask="*.jar"/>
+            <path location="%(lib)s" mask="*.jar"/>
         </input>
         <dependencies/>
 
