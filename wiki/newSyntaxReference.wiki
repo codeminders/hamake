@@ -16,7 +16,7 @@ This is the root element. All other elements should be whithin that tag. The ''p
 
 Each project defines one or more tasks. A task can be a hadoop job, pig script or local script you want to be executed. When running Hamake, you can select which task(s) you want to have executed. When no tasks are given, the project's default is used.
 
-Allowed sub-elements: ''<property>'', ''<hadooptask>'', ''<pigtask>'', ''<exectask>''
+Allowed sub-elements: `<property>`, `<hadooptask>`, `<pigtask>`, `<exectask>`
 
 ===<property>===
 
@@ -37,7 +37,7 @@ Usage example:
 
 = Tasks =
 
-Task define job to be done. Turn of the task and the number of times it will be executed is determined by its data. In case you want to explicitly determine order of tasks, or to specify data the task will depend on but won't be count as input, ''<depends>'' tag can be used. Currently there are three types of tasks: hadoop job (''hadooptask''), 
+Task define job to be done. Turn of the task and the number of times it will be executed is determined by its data. In case you want to explicitly determine order of tasks, or to specify data the task will depend on but won't be count as input, `<depends>` tag can be used. Currently there are three types of tasks: hadoop job (''hadooptask''), 
 pig script (''pigtask''), script or program on machine, where hamake is running (''exectask''). Order of arguments that will be passed to Hadoop job, pig script or exec task are determined by parameters list in the body of the task. Each parameter can be one of the following:  
 
 ===<mapreduceTask>===
@@ -49,19 +49,19 @@ Launches Hadoop Map Reduce job on the !JobTracker that is determined by environm
 || disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'.  || No ||
 || main || the full name of the main class || Yes ||
 
-''mapreduceTask'' can have following sub-elements: ''<parameter>'', ''<depends>'', ''<fold>'' or ''<foreach>''.
+''mapreduceTask'' can have following sub-elements: `<parameter>`, `<depends>`, `<fold>` or `<foreach>`.
 
 Example: 
 
 {{{
 <mapreduceTask name="jar-listings" main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
-	<description>description</description>
-	<foreach>
-		<input name="jar" location="${libdir}/lib" mask="*.jar" />
-		<output name="listing" location="${outdir}/jar-listings" />
-	</foreach>
-	<parameter value="${jar}" />
-	<parameter value="${listing}" />
+  <description>description</description>
+  <foreach>
+    <input name="jar" location="${libdir}/lib" mask="*.jar" />
+    <output name="listing" location="${outdir}/jar-listings" />
+  </foreach>
+  <parameter value="${jar}" />
+  <parameter value="${listing}" />
 </mapreduceTask>
 }}}
 
@@ -73,22 +73,22 @@ Launches Hadoop Pig script on the !JobTracker that is determined by environment 
 || script || path to script file that will be run || Yes ||
 || disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'.  || No ||
 
-''pigTask'' can have following sub-elements: ''<parameter>'', ''<depends>'', ''<fold>'' or ''<foreach>''
+''pigTask'' can have following sub-elements: `<parameter>`, `<depends>`, `<fold>` or `<foreach>`
 
 Example: 
 
 {{{
 <pigTask name="pig_fold" script="${scripts}/median.pig">
-	<depends>
-		<path name="${libdir}/somefile.txt" />			
+  <depends>
+    <path name="${libdir}/somefile.txt" />      
         </depends>
-	<fold>
-		<input name="histogramDir" location="${outdir}/class-size-histogram" />
-		<output name="medianDir" location="${outdir}/class-size-median-bin" />
-	</fold>
-	<parameter value="${libdir}/somefile.txt" />
-	<parameter value="${histogramDir}" />
-	<parameter value="${log}" />
+  <fold>
+    <input name="histogramDir" location="${outdir}/class-size-histogram" />
+    <output name="medianDir" location="${outdir}/class-size-median-bin" />
+  </fold>
+  <parameter value="${libdir}/somefile.txt" />
+  <parameter value="${histogramDir}" />
+  <parameter value="${log}" />
 </pigTask>
 }}}
 
@@ -100,7 +100,7 @@ Executes script or program locally within the running VM (Hamake). It has follow
 || binary || path to script file or program that will be run || Yes ||
 || disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'.  || No ||
 
-''exectask'' can have following sub-elements: ''<parameter>'', ''<depends>'', ''<fold>'' or ''<foreach>''
+''exectask'' can have following sub-elements: `<parameter>`, `<depends>`, `<fold>` or `<foreach>`
 
 Example: 
 
@@ -114,21 +114,21 @@ Example:
 
 In Hamake you have an option between two types of input:
 
- 1. You can map a group of files at one location to another location(s) with ''<foreach>'' tag
- 2. You can reduce a group of file(s) and produce one or more folder(s) or file(s) with ''<fold>'' tag. 
+ 1. You can map a group of files at one location to another location(s) with `<foreach>` tag
+ 2. You can reduce a group of file(s) and produce one or more folder(s) or file(s) with `<fold>` tag. 
 
-''<foreach>'' assumes 1 to many file mapping between locations, processing only files which are present at source location, but not present or not current at all of destinations. If task input is ''foreach'', the task will be launched for each file from input folder and will produce one and only one file in each output folder(s). Task for each file will be launched if all of the following conditions are satisfied:
+`<foreach>` assumes 1 to many file mapping between locations, processing only files which are present at source location, but not present or not current at all of destinations. If task input is ''foreach'', the task will be launched for each file from input folder and will produce one and only one file in each output folder(s). Task for each file will be launched if all of the following conditions are satisfied:
    1. Output file is present
    2. Output file time stamp is older than input file
    3. Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
 
-''<fold>'' considers all input file(s) to be a set, and if any of them is newer than any of destination, the task will be launched.
+`<fold>` considers all input file(s) to be a set, and if any of them is newer than any of destination, the task will be launched.
 In its simplest form, 'reduce' have one input and one output.
 
 ===<foreach>===
 
 Type of input that defines one-to-many file mapping between input file(s) and one or more output files. For each file in input folder task will be launched. 
-''foreach'' has following sub-elements: ''<input>'', ''<output>''
+''foreach'' has following sub-elements: `<input>`, `<output>`
 
 You can define only one ''input'' sub-element and as many as you wish ''output'' sub-elements
 
@@ -136,25 +136,25 @@ Example:
 
 {{{
 <foreach>
-	<input name="jar" location="${outdir}/jar-listings" mask="*.jar" />
-	<output name="goodJar" location="${outdir}/jar-listings-filtered" />
-	<output name="badJar" location="${outdir}/jar-listings-bad" />
+  <input name="jar" location="${outdir}/jar-listings" mask="*.jar" />
+  <output name="goodJar" location="${outdir}/jar-listings-filtered" />
+  <output name="badJar" location="${outdir}/jar-listings-bad" />
 </foreach>
 }}}
 
 ===<fold>===
 
-Type of input that defines many-to-many mapping between input data and output data. For this input type task will be launched once with all enumerated in its ''fold'' tag input and output paths. ===fold=== has following sub-elements: ''<input>'', ''<output>''
+Type of input that defines many-to-many mapping between input data and output data. For this input type task will be launched once with all enumerated in its ''fold'' tag input and output paths. ===fold=== has following sub-elements: `<input>`, `<output>`
 
 You can define as many as you with ''input'' and ''output'' sub elements as you wish
 
 Example:
 {{{
 <fold>
-	<input name="badJarDir" location="${outdir}/jar-listings-bad" />
-	<input name="goodJarDir" location="${outdir}/jar-listings-filtered" />
-	<output name="histogramDir" location="${outdir}/class-size-histogram" />
-	<output name="log" location="${outdir}/logs" />
+  <input name="badJarDir" location="${outdir}/jar-listings-bad" />
+  <input name="goodJarDir" location="${outdir}/jar-listings-filtered" />
+  <output name="histogramDir" location="${outdir}/class-size-histogram" />
+  <output name="log" location="${outdir}/logs" />
 </fold>
 }}}
 
@@ -199,8 +199,8 @@ This tag has one attribute ''value'' where you can specify any parameter you wan
 Example:
 {{{
 <fold>
-	<input name="histogramDir" location="${outdir}/class-size-histogram" />
-	<output name="medianDir" location="${outdir}/class-size-median-bin" />
+  <input name="histogramDir" location="${outdir}/class-size-histogram" />
+  <output name="medianDir" location="${outdir}/class-size-median-bin" />
 </fold>
 <parameter value="${libdir}/somefile.txt" />
 <parameter value="${histogramDir}" />
@@ -210,7 +210,7 @@ Example:
 
 ===<depends>===
 
-Task dependencies are build implicitly by the system itself, based on task input and output. In case you want to specify it explicitly, you can use ''<depends>'' tag. Tag has following sub-elements: ''<path>'', ''<task>''
+Task dependencies are build implicitly by the system itself, based on task input and output. In case you want to specify it explicitly, you can use `<depends>` tag. Tag has following sub-elements: `<path>`, `<task>`
 
 ===<task>===
 
@@ -218,7 +218,7 @@ Defines excplicit dependency from another task, that is in the same file. It has
 
 ===<path>===
 
-Defines path, that current task depends on. this path will not be used as input path. ''<path>'' has following attributes:
+Defines path, that current task depends on. this path will not be used as input path. `<path>` has following attributes:
 
 || Attribute || Description || Required ||
 || location || path to folder where input files are located.  || Yes ||
@@ -228,7 +228,7 @@ Defines path, that current task depends on. this path will not be used as input 
 Example:
 {{{
 <depends>
-	<task name="jar-listings" />			
+  <task name="jar-listings" />      
 </depends>
 }}}
 
@@ -238,63 +238,62 @@ Example:
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="test" default="jar-listings">
-	<property name="outdir" value="build/test" />
-	<property name="libdir" value="lib" />
-	<property name="dist" value="dist" />
-	<property name="scripts" value="src/scripts" />
+  <property name="outdir" value="build/test" />
+  <property name="libdir" value="lib" />
+  <property name="dist" value="dist" />
+  <property name="scripts" value="src/scripts" />
 
-	<mapreduceTask name="jar-listings"
-		main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
-		<description>description</description>
-		<foreach>
-			<input name="jar" location="${libdir}/lib" mask="*.jar" />
-			<output name="listing" location="${outdir}/jar-listings" />
-		</foreach>
-		<parameter value="${jar}" />
-		<parameter value="${listing}" />
-	</mapreduceTask>
+  <mapreduceTask name="jar-listings"
+    main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
+    <description>description</description>
+    <foreach>
+      <input name="jar" location="${libdir}/lib" mask="*.jar" />
+      <output name="listing" location="${outdir}/jar-listings" />
+    </foreach>
+    <parameter value="${jar}" />
+    <parameter value="${listing}" />
+  </mapreduceTask>
 
-	<mapreduceTask name="filter-listing" jar="${dist}/hamake-examples-1.0.jar"
-		main="com.codeminders.hamake.examples.JarListingFilter">
-		<depends>
-			<task name="jar-listings" />			
-		</depends>
-		<foreach>
-			<input name="jar" location="${outdir}/jar-listings"
-				mask="*.jar" />
-			<output name="goodJar" location="${outdir}/jar-listings-filtered" />
-			<output name="badJar" location="${outdir}/jar-listings-bad" />
-		</foreach>
-		<parameter value="${jar}" />
-		<parameter value="${goodJar}" />
-		<parameter value="${badJar}" />
-	</mapreduceTask>
+  <mapreduceTask name="filter-listing" jar="${dist}/hamake-examples-1.0.jar"
+    main="com.codeminders.hamake.examples.JarListingFilter">
+    <depends>
+      <task name="jar-listings" />      
+    </depends>
+    <foreach>
+      <input name="jar" location="${outdir}/jar-listings"
+        mask="*.jar" />
+      <output name="goodJar" location="${outdir}/jar-listings-filtered" />
+      <output name="badJar" location="${outdir}/jar-listings-bad" />
+    </foreach>
+    <parameter value="${jar}" />
+    <parameter value="${goodJar}" />
+    <parameter value="${badJar}" />
+  </mapreduceTask>
 
-	<mapreduceTask name="histogram" jar="${dist}/hamake-examples-1.0.jar"
-		main="com.codeminders.hamake.examples.ClassSizeHistogram">
-		<fold>
-			<input name="badJarDir" location="${outdir}/jar-listings-bad" />
-			<input name="goodJarDir" location="${outdir}/jar-listings-filtered" />
-			<output name="histogramDir" location="${outdir}/class-size-histogram" />
-			<output name="log" location="${outdir}/logs" />
-		</fold>
-		<parameter value="${goodJarDir}" />
-		<parameter value="${histogramDir}" />
-		<parameter value="${log}" />
-	</mapreduceTask>
+  <mapreduceTask name="histogram" jar="${dist}/hamake-examples-1.0.jar"
+    main="com.codeminders.hamake.examples.ClassSizeHistogram">
+    <fold>
+      <input name="badJarDir" location="${outdir}/jar-listings-bad" />
+      <input name="goodJarDir" location="${outdir}/jar-listings-filtered" />
+      <output name="histogramDir" location="${outdir}/class-size-histogram" />
+      <output name="log" location="${outdir}/logs" />
+    </fold>
+    <parameter value="${goodJarDir}" />
+    <parameter value="${histogramDir}" />
+    <parameter value="${log}" />
+  </mapreduceTask>
 
-	<pigTask name="pig_fold" script="${scripts}/median.pig">
-		<depends>
-			<path name="${libdir}/somefile.txt" />			
-		</depends>
-		<fold>
-			<input name="histogramDir" location="${outdir}/class-size-histogram" />
-			<output name="medianDir" location="${outdir}/class-size-median-bin" />
-		</fold>
-		<parameter value="${libdir}/somefile.txt" />
-		<parameter value="${histogramDir}" />
-		<parameter value="${log}" />
-	</pigTask>
+  <pigTask name="pig_fold" script="${scripts}/median.pig">
+    <depends>
+      <path name="${libdir}/somefile.txt" />      
+    </depends>
+    <fold>
+      <input name="histogramDir" location="${outdir}/class-size-histogram" />
+      <output name="medianDir" location="${outdir}/class-size-median-bin" />
+    </fold>
+    <parameter value="${libdir}/somefile.txt" />
+    <parameter value="${histogramDir}" />
+    <parameter value="${log}" />
+  </pigTask>
 </project>
 }}}
-
