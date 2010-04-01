@@ -9,7 +9,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
-import java.net.URI;
 
 public class HamakePath {
 	
@@ -25,7 +24,11 @@ public class HamakePath {
     public HamakePath(String loc) throws IOException {
     	this(null, loc, null, null, 0);
     }
-    
+
+    public HamakePath(String wdir, String loc) throws IOException {
+    	this(wdir, loc, null, null, 0);
+    }
+
     public HamakePath(String loc, int gen) throws IOException {
     	this(null, loc, null, null, gen);
     }
@@ -34,15 +37,8 @@ public class HamakePath {
         this.wdir = wdir;
     	Configuration conf = new Configuration();
 
-        Path pathLoc = new Path(loc);
+        Path pathLoc = resolve(wdir, loc);
 
-        if (!pathLoc.isAbsolute() && !StringUtils.isEmpty(wdir))
-            pathLoc = new Path(wdir, loc);
-
-//        if (pathLoc.toUri().getScheme() == null)
-//            fs = FileSystem.get(URI.create("/"), conf);
-//        else
-//            fs = pathLoc.getFileSystem(conf);
         fs = pathLoc.getFileSystem(conf);
 
         setLoc(pathLoc.toString());
@@ -52,6 +48,16 @@ public class HamakePath {
         setFilename(filename);
         setMask(mask);
         setGen(gen);
+    }
+
+    public static Path resolve(String wdir, String loc)
+    {
+        Path pathLoc = new Path(loc);
+
+        if (!pathLoc.isAbsolute() && !StringUtils.isEmpty(wdir))
+            pathLoc = new Path(wdir, loc);
+
+        return pathLoc;
     }
 
     public boolean intersects(HamakePath other) {

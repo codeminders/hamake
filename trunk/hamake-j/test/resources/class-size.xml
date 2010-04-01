@@ -4,14 +4,14 @@
 
     <config>
         <property name="output"  value="build/test"/>
-        <property name="lib"     value="lib"/>
-        <property name="dist"    value="dist"/>
+        <property name="lib"     value="build/lib"/>
+        <property name="dist"    value="dist/examples"/>
         <property name="scripts" value="test/resources/scripts"/>
     </config>
 
     <map name="jar-listings">
         <input>
-            <path location="lib" mask="*.jar"/>
+            <path location="%(lib)s" mask="*.jar"/>
         </input>
         <dependencies/>
 
@@ -69,10 +69,6 @@
         </output>
 
         <pig script="%(scripts)s/median.pig">
-        <!--
-            <pigparam name="infile" value="%(output)s/class-size-histogram"/>
-            <pigparam name="outfile" value="%(output)s/class-size-median-bin"/>
-            -->
             <pathparam type="inputfile" name="infile" />
             <pathparam type="outputfile" name="outfile" />
         </pig>
