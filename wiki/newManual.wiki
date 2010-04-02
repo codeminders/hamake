@@ -20,7 +20,7 @@ To run Hamake
 Basically, the Hamake utility simply executes series of user-defined code that submits MapReduce jobs to the Hadoop cluster. The Hamake is responsible for analyzing and collecting input data for user-defined MR code. It not allows user to send Map or Reduce jobs separately. 
 
 == Hamake tasks ==
-The Hamake operates by the tasks which has to be implemented by the user. These tasks declared in the [newSyntaxReference XML file] and may depend on each other by means of their input and output.
+The Hamake operates by the tasks which has to be implemented by the user. These tasks declared in the [newSyntaxReference workflow script] (XML file) and may depend on each other by means of their input and output.
     Example: 
 {{{ 
 <mapreduceTask name="jar-listings" main="com.codeminders.hamake.examples.JarListing" jar="hamake-examples-1.0.jar">
@@ -52,15 +52,22 @@ Link direction points to the root task (head vertex) that must be executed prior
 == Task execution ==
 In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. It means the Hamake builds the execution path on base of tasks dependencies graph. 
 
-Here how it is working:
- # traverse tasks dependencies graph from start vertex, discovering tasks with no input or where input already available
- # execute found tasks
- # mark executed tasks as completed
- # traverse tasks dependencies graph from start vertex, discovering completed tasks
+Here how Hamake defines tasks for executing:
+ # traverse tasks dependencies graph from start vertexes towards parents, discovering tasks with no input or where input already available
+ # execute found tasks and mark they as completed
+ # traverse tasks dependencies graph from start vertexes towards parents, discovering completed tasks
  # get incomplete children of found tasks
- # execute child tasks
- # mark executed tasks as completed
- # if graph has incomplete task(s) repeat from step 4
+ # execute child tasks and mark they as completed
+ # if graph has incomplete task(s) repeat from step 3
+
+Start vertexes can be defined by two ways:
+ # list of start task names can be specified in Hamake command-line parameters
+   Example: {{{hadoop jar hamake-j-1.0.jar jar-listings filter-listings}}}
+ # {{{default}}} attribute of {{{project}}} element in the Hamake  [newSyntaxReference workflow script] specifies the only start task name. This attribute takes into account only if there were not specified start tasks in the Hamake command-line.
+   Example: {{{<project name="test" default="jar-listings">}}}
+
+
+
 
 Hence, the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. 
 
