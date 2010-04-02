@@ -20,7 +20,7 @@ To run Hamake
 Basically, the Hamake utility simply executes series of user-defined code that submits MapReduce jobs to the Hadoop cluster. The Hamake is responsible for analyzing and collecting input data for user-defined MR code. It not allows user to send Map or Reduce jobs separately. 
 
 == Hamake tasks ==
-The Hamake operates by the tasks which are MR code mostly and has to be implemented by the user. These tasks declared in the [newSyntaxReference XML file] and may depend to each other by means of input and output data.
+The Hamake operates by the tasks which has to be implemented by the user. These tasks declared in the [newSyntaxReference XML file] and may depend on each other by means of their input and output.
     Example: 
 {{{ 
 <mapreduceTask name="jar-listings" main="com.codeminders.hamake.examples.JarListing" jar="hamake-examples-1.0.jar">
@@ -43,12 +43,14 @@ The Hamake operates by the tasks which are MR code mostly and has to be implemen
 
 }}}
 
-In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" task will be obtained.
+In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" will be obtained. Easy to see that tasks connected in such a way form [http://en.wikipedia.org/wiki/Graph_%28mathematics%29 graph] structure, where vertices defined by the tasks and links by the task dependencies.
+
+[http://en.wikipedia.org/wiki/File:6n-graf.svg]
 
 == Task execution ==
-In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. It means the Hamake builds the execution path on base of dependencies between output of one tasks and input of others. So, the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. 
+In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. It means the Hamake builds the execution path on base of dependencies between output of one tasks and input of others. 
 
-Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
+Hence, the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. Execution of some tasks may be omitted if they are were executed early and input data was not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
 
 Some tasks can be executed in parallel, if they have fresh input data and not depend to each other.
 
@@ -60,13 +62,14 @@ At the moment following tasks variety available:
 || pig || Launches PigLatin script ||
 || exec || Executes script or program locally within the running VM (Hamake) ||
 
-*describe how FSs are recognized in XML?*
-*task dependencies*
-*external data dependencies*
-*task types*
-*execution part of the graph*
-*default target*
-*cycle dependencies*
+*describe how FSs are recognized in XML?*<br>
+*task dependencies*<br>
+*external data dependencies*<br>
+*task types*<br>
+*execution part of the graph*<br>
+*default target*<br>
+*cycle dependencies*<br>
+*working directory*
 
 == Command Line Parameters ==
 
