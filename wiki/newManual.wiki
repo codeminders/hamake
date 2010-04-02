@@ -43,11 +43,7 @@ The Hamake operates by the tasks which has to be implemented by the user. These 
 
 }}}
 
-In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" will be obtained. Easy to see that tasks connected in such a way form [http://en.wikipedia.org/wiki/Digraph_%28mathematics%29 directed graph] structure, where vertexes are defined by the tasks, dependencies define links and their direction. 
-
-[http://upload.wikimedia.org/wikipedia/commons/0/08/Directed_acyclic_graph.png]
-
-Link direction points to the root task (head vertex) that must be executed prior to the current task (tail vertex).
+In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" will be obtained. Easy to see that tasks connected in such a way form [http://en.wikipedia.org/wiki/Digraph_%28mathematics%29 directed graph] structure, where vertexes are defined by the tasks, dependencies define links and their direction. Link direction points to the root task (head vertex) that must be executed prior to the current task (tail vertex).
 
 == Task execution ==
 In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. It means the Hamake builds the execution path on base of tasks dependencies graph, so the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. 
@@ -71,7 +67,9 @@ Besides task-to-task dependencies, Hamake allows to set up dependency on externa
 A few words about data freshness...<br>
 Execution of some tasks may be omitted if they were executed early and inputs were not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
 
-Failed task stops subsequent execution of its branch. For example, if graph is tree of two independent branches and the root in the point A, <br>
+Each task is executed in separate thread, therefore tasks with no dependencies can be executed in parallel.
+
+Task failing stops subsequent execution of its branch. For example, if graph is tree of two independent branches and the root in the point A, <br>
 branch 1:  A<-B<-C<br>
 branch 2:  A<-D<-E<br>
 Assume, failure was occurred in vertex B. Hamake:
@@ -80,23 +78,17 @@ Assume, failure was occurred in vertex B. Hamake:
 
 Tasks dependencies graph is entirely stored in the memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as by the JVM heap upper limit (2Gb).
 
-Each task is executed in separate thread, therefore tasks with no dependencies can be executed in parallel.
-
-Some tasks can be executed in parallel, if they have fresh input data and not depend to each other.
-
-
+== Type of tasks ==
 At the moment following tasks variety available:
 || *Task* || *Description* ||
-|| mapreduce || Launches MapReduce job ||
-|| pig || Launches PigLatin script ||
-|| exec || Executes script or program locally within the running VM (Hamake) ||
+|| mapreduce || Copies MR job jar to local temporary location then submits it to JobTracker specified in Hadoop configuration ||
+|| pig || Copies PigLatin script to local temporary location then executes this script. MR jobs are submitted to JobTracker specified in Hadoop configuration ||
+|| exec || Executes specified script or program locally ||
 
 *describe how FSs are recognized in XML?*<br>
-*external data dependencies*<br>
 *task types*<br>
 *cycle dependencies*<br>
-*working directory*
-*if task failed*
+*working directory*<br>
 
 == Command Line Parameters ==
 
