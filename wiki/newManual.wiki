@@ -66,10 +66,17 @@ Start vertexes can be defined by two ways:
  # {{{default}}} attribute of {{{project}}} element in the Hamake  [newSyntaxReference workflow script] specifies the only start task. This attribute is taken into account only in case start tasks were note specified in the Hamake command-line.
    Example: {{{<project name="test" default="jar-listings">}}}
 
-Besides task-to-task dependencies, Hamake allows to set up dependency on external resources. Such dependency defines set of file system paths treated as additional task input. Task will be executed only if all the inputs contain fresh data.
+Besides task-to-task dependencies, Hamake allows to set up dependency on external resources. Such dependency defines set of file system paths treated as additional task input. Task will be executed only if all its inputs contain fresh data.
 
-A few words about data freshness...
+A few words about data freshness...<br>
 Execution of some tasks may be omitted if they were executed early and inputs were not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
+
+Failed task stops subsequent execution of its branch. For example, if graph is tree of two independent branches, the root in point A, <br>
+first branch:  A<-B<-C<br>
+second branch:  A<-D<-E<br>
+Assume, failure occurred in vertex B, in this case:
+ * task at vertex C will not be executed
+ * tasks D and E will be executed
 
 Tasks dependencies graph is entirely stored in the memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as by the JVM heap upper limit (2Gb).
 
@@ -87,8 +94,6 @@ At the moment following tasks variety available:
 *describe how FSs are recognized in XML?*<br>
 *external data dependencies*<br>
 *task types*<br>
-*execution part of the graph*<br>
-*default target*<br>
 *cycle dependencies*<br>
 *working directory*
 *if task failed*
