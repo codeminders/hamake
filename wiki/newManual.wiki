@@ -50,7 +50,7 @@ In the example above task "filter-listings" depends on result of "jar-listings" 
 Link direction points to the root task (head vertex) that must be executed prior to the current task (tail vertex).
 
 == Task execution ==
-In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. It means the Hamake builds the execution path on base of tasks dependencies graph. 
+In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. It means the Hamake builds the execution path on base of tasks dependencies graph, so the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. 
 
 Here how Hamake defines tasks for executing:
  # traverse tasks dependencies graph from start vertexes towards parents, discovering tasks with no input or where input already available
@@ -66,18 +66,17 @@ Start vertexes can be defined by two ways:
  # {{{default}}} attribute of {{{project}}} element in the Hamake  [newSyntaxReference workflow script] specifies the only start task. This attribute is taken into account only in case start tasks were note specified in the Hamake command-line.
    Example: {{{<project name="test" default="jar-listings">}}}
 
+Besides task-to-task dependencies, Hamake allows to set up dependency on external resources. Such dependency defines set of file system paths treated as additional task input. Task will be executed only if all the inputs contain fresh data.
 
+A few words about data freshness...
+Execution of some tasks may be omitted if they were executed early and inputs were not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
 
-
-Hence, the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. 
+Tasks dependencies graph is entirely stored in the memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as by the JVM heap upper limit (2Gb).
 
 Each task is executed in separate thread, therefore tasks with no dependencies can be executed in parallel.
 
-Execution of some tasks may be omitted if they are were executed early and input data was not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
-
 Some tasks can be executed in parallel, if they have fresh input data and not depend to each other.
 
-The Hamake builds dependencies tree of tasks outputs and inputs and entirely stored the tree in memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as JVM heap upper limit (2Gb).
 
 At the moment following tasks variety available:
 || *Task* || *Description* ||
@@ -86,7 +85,6 @@ At the moment following tasks variety available:
 || exec || Executes script or program locally within the running VM (Hamake) ||
 
 *describe how FSs are recognized in XML?*<br>
-*task dependencies*<br>
 *external data dependencies*<br>
 *task types*<br>
 *execution part of the graph*<br>
