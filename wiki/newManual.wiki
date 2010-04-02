@@ -43,9 +43,9 @@ The Hamake operates by the tasks which has to be implemented by the user. These 
 
 }}}
 
-In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" will be obtained. Easy to see that tasks connected in such a way form [http://en.wikipedia.org/wiki/Cycle_graph#Directed_cycle_graph directed cycle graph] structure, where vertices are defined by the tasks and dependencies define links and their direction. 
+In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" will be obtained. Easy to see that tasks connected in such a way form [http://en.wikipedia.org/wiki/Digraph_%28mathematics%29 directed graph] structure, where vertices are defined by the tasks and dependencies define links and their direction. 
 
-[http://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Directed.svg/200px-Directed.svg.png]
+[http://upload.wikimedia.org/wikipedia/commons/0/08/Directed_acyclic_graph.png]
 
 Link direction points to the root task (head vertice) that must be executed prior to the current task (tail vertice).
 
