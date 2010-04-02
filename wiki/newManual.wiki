@@ -44,7 +44,7 @@ Hamake operates by the tasks which are MR code and has to be implemented by the 
 
 In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" task will be obtained.
 
-In general, the Hamake not strictly follow [wiki:Dataflow] programming paradigm. It means the Hamake builds the execution path on base of dependencies between output of one tasks and input of others. So, the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. 
+In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. It means the Hamake builds the execution path on base of dependencies between output of one tasks and input of others. So, the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. 
 
 Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
 
