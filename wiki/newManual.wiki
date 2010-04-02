@@ -61,9 +61,9 @@ Here how Hamake defines tasks for executing:
  # if graph has incomplete task(s) repeat from step 3
 
 Start vertexes can be defined by two ways:
- # list of start task names can be specified in Hamake command-line parameters
+ # list of start tasks can be specified in Hamake command-line parameters
    Example: {{{hadoop jar hamake-j-1.0.jar jar-listings filter-listings}}}
- # {{{default}}} attribute of {{{project}}} element in the Hamake  [newSyntaxReference workflow script] specifies the only start task name. This attribute takes into account only if there were not specified start tasks in the Hamake command-line.
+ # {{{default}}} attribute of {{{project}}} element in the Hamake  [newSyntaxReference workflow script] specifies the only start task. This attribute is taken into account only in case start tasks were note specified in the Hamake command-line.
    Example: {{{<project name="test" default="jar-listings">}}}
 
 
