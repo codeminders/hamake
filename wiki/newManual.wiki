@@ -17,9 +17,9 @@ To run Hamake
     Example: {{{hadoop jar hamake-j-1.0.jar}}}
 
 
-Basically, the Hamake utility simply executes series of user-defined code that submits MapReduce jobs to the Hadoop cluster. The Hamake is responsible for analyzing and collecting input data for user-defined MR code. The Hamake not allows user to send Map or Reduce jobs separately. 
+Basically, the Hamake utility simply executes series of user-defined code that submits MapReduce jobs to the Hadoop cluster. The Hamake is responsible for analyzing and collecting input data for user-defined MR code. It not allows user to send Map or Reduce jobs separately. 
 
-Hamake operates by the tasks which are MR code and has to be implemented by the user. These tasks declared in the [newSyntaxReference XML file] and may depend to each other by means of input and output data.
+The Hamake operates by the tasks which are MR code mostly and has to be implemented by the user. These tasks declared in the [newSyntaxReference XML file] and may depend to each other by means of input and output data.
     Example: 
 {{{ 
 <mapreduceTask name="jar-listings" main="com.codeminders.hamake.examples.JarListing" jar="hamake-examples-1.0.jar">
@@ -48,9 +48,9 @@ In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflo
 
 Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
 
-Some tasks can be executed in parallel, if they have fresh input data and don't have dependencies between each other.
+Some tasks can be executed in parallel, if they have fresh input data and not depend to each other.
 
-The Hamake builds dependency tree of tasks outputs and inputs and entirely stored the tree in memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as JVM heap upper limit (2Gb).
+The Hamake builds dependencies tree of tasks outputs and inputs and entirely stored the tree in memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as JVM heap upper limit (2Gb).
 
 describe how FSs are recognized in XML?
 
