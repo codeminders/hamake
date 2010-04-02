@@ -19,7 +19,7 @@ To run Hamake
 
 Basically, the Hamake utility simply executes series of user-defined code that submits MapReduce jobs to the Hadoop cluster. The Hamake is responsible for analyzing and collecting input data for user-defined MR code. The Hamake not allows user to send Map or Reduce jobs separately. 
 
-Hamake operates by the tasks which are MR code and has to be implemented by the user. These tasks declared in the [http://code.google.com/p/hamake/wiki/HaMakefileSyntax XML file] and may depend to each other by means of input and output data.
+Hamake operates by the tasks which are MR code and has to be implemented by the user. These tasks declared in the [newSyntaxReference XML file] and may depend to each other by means of input and output data.
     Example: 
 {{{ 
 <mapreduceTask name="jar-listings" main="com.codeminders.hamake.examples.JarListing" jar="hamake-examples-1.0.jar">
