@@ -43,16 +43,30 @@ The Hamake operates by the tasks which has to be implemented by the user. These 
 
 }}}
 
-In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" will be obtained. Easy to see that tasks connected in such a way form [http://en.wikipedia.org/wiki/Digraph_%28mathematics%29 directed graph] structure, where vertices are defined by the tasks and dependencies define links and their direction. 
+In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" will be obtained. Easy to see that tasks connected in such a way form [http://en.wikipedia.org/wiki/Digraph_%28mathematics%29 directed graph] structure, where vertexes are defined by the tasks, dependencies define links and their direction. 
 
 [http://upload.wikimedia.org/wikipedia/commons/0/08/Directed_acyclic_graph.png]
 
-Link direction points to the root task (head vertice) that must be executed prior to the current task (tail vertice).
+Link direction points to the root task (head vertex) that must be executed prior to the current task (tail vertex).
 
 == Task execution ==
-In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. It means the Hamake builds the execution path on base of dependencies between output of one tasks and input of others. 
+In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. It means the Hamake builds the execution path on base of tasks dependencies graph. 
 
-Hence, the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. Execution of some tasks may be omitted if they are were executed early and input data was not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
+Here how it is working:
+ # traverse tasks dependencies graph from start vertex, discovering tasks with no input or where input already available
+ # execute found tasks
+ # mark executed tasks as completed
+ # traverse tasks dependencies graph from start vertex, discovering completed tasks
+ # get incomplete children of found tasks
+ # execute child tasks
+ # mark executed tasks as completed
+ # if graph has incomplete task(s) repeat from step 4
+
+Hence, the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. 
+
+Each task is executed in separate thread, therefore tasks with no dependencies can be executed in parallel.
+
+Execution of some tasks may be omitted if they are were executed early and input data was not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
 
 Some tasks can be executed in parallel, if they have fresh input data and not depend to each other.
 
@@ -72,6 +86,7 @@ At the moment following tasks variety available:
 *default target*<br>
 *cycle dependencies*<br>
 *working directory*
+*if task failed*
 
 == Command Line Parameters ==
 
