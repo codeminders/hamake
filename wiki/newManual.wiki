@@ -43,9 +43,11 @@ The Hamake operates by the tasks which has to be implemented by the user. These 
 
 }}}
 
-In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" will be obtained. Easy to see that tasks connected in such a way form [http://en.wikipedia.org/wiki/Graph_%28mathematics%29 graph] structure, where vertices defined by the tasks and links by the task dependencies.
+In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" will be obtained. Easy to see that tasks connected in such a way form [http://en.wikipedia.org/wiki/Cycle_graph#Directed_cycle_graph directed cycle graph] structure, where vertices are defined by the tasks and dependencies define links and their direction. 
 
-[http://en.wikipedia.org/wiki/File:6n-graf.svg]
+[http://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Directed.svg/200px-Directed.svg.png]
+
+Link direction points to the root task (head vertice) that must be executed prior to the current task (tail vertice).
 
 == Task execution ==
 In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. It means the Hamake builds the execution path on base of dependencies between output of one tasks and input of others. 
