@@ -71,12 +71,12 @@ Besides task-to-task dependencies, Hamake allows to set up dependency on externa
 A few words about data freshness...<br>
 Execution of some tasks may be omitted if they were executed early and inputs were not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
 
-Failed task stops subsequent execution of its branch. For example, if graph is tree of two independent branches, the root in point A, <br>
-first branch:  A<-B<-C<br>
-second branch:  A<-D<-E<br>
-Assume, failure occurred in vertex B, in this case:
- * task at vertex C will not be executed
- * tasks D and E will be executed
+Failed task stops subsequent execution of its branch. For example, if graph is tree of two independent branches and the root in the point A, <br>
+branch 1:  A<-B<-C<br>
+branch 2:  A<-D<-E<br>
+Assume, failure was occurred in vertex B. Hamake:
+ * will not execute task C
+ * will execute D and E tasks
 
 Tasks dependencies graph is entirely stored in the memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as by the JVM heap upper limit (2Gb).
 
