@@ -3,10 +3,10 @@
 <project name="test">
 
     <config>
-        <property name="output"  value="s3://hamake/build/test"/>
-        <property name="lib"     value="s3://hamake/lib"/>
-        <property name="dist"    value="s3://hamake/dist"/>
-        <property name="scripts" value="s3://hamake/test/resources/scripts"/>
+        <property name="output"  value="s3://hamake/test/"/>
+        <property name="lib"     value="s3://hamake/lib/"/>
+        <property name="dist"    value="s3://hamake/"/>
+        <property name="scripts" value="s3://hamake/"/>
     </config>
 
     <map name="jar-listings">
@@ -57,24 +57,5 @@
         </task>
         
     </reduce>
-
-<!--
-    <map name="map">
-        <input>
-            <path location="%(output)s/class-size-histogram"/>
-        </input>
-        <dependencies/>
-
-        <output>
-            <path location="%(output)s/class-size-median-bin"/>
-        </output>
-
-        <pig script="%(scripts)s/median.pig">
-            <pathparam type="inputfile" name="infile" />
-            <pathparam type="outputfile" name="outfile" />
-        </pig>
-    </map>
--->
-
 
 </project>
