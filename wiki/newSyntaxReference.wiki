@@ -107,16 +107,16 @@ Example:
 </input>
 }}}
 
-===`<foreachOutput>`===
+===`<output>`===
 
-This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify as many as you with output folders with `<folder>` tag
+This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify as many as you with output folders with `<dir>` tag
 
 Example:
 {{{
-<foreachOutput>
+<output>
 	<dir id="goodJar" dir="${outdir}/jar-listings-filtered" />
 	<dir id="badJar" dir="${outdir}/jar-listings-bad" />
-</foreachOutput>
+</output>
 }}}
 
 ==`<fold>`==
@@ -159,7 +159,7 @@ Example:
 
 ===`<output>`===
 
-This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify one or more file(s) with `<file>` tag or folder(s) with `<folder>` tag
+This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify one or more file(s) with `<file>` tag or folder(s) with `<dir>` tag
 
 Example:
 {{{
