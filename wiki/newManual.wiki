@@ -1,25 +1,66 @@
-=== Hamake Manual ===
 version 1.0
 
-== Overview ==
+=Introduction=
 
 Hamake is a lightweight utility and workflow engine for running Hadoop Map Reduce jobs and Pig scrips on a dataset stored on HDFS. 
 
-== Installation ==
+==Why Hamake?==
 
-== Running Hamake ==
+Hadoop jobs are not run alone by themselfs. Usually you require multiple Hadoop jobs to achieve some result. Also sometines you would like to filter your data first and process only files that have changed. Hamake helps you to organize your Hadoop map-reduce jobs or Pig scripts in a workflow, that will be launched and controlled from a single machine. The order of execution of Hadoop map-reduce jobs or Pig scripts in hamake is based on dataflow programming model and is controlled by data, not by tasks themselfs. Hamake is very simple in installation and configuration. In fact all you need to install Hamake is to copy a single jar file to the directory of your choise. 
+
+=Installation=
+
 Hamake runs in Hadoop environment. Please make sure you have installed Hadoop on the machine where you are going to run Hamake and added Hadoop bin directory in PATH environment variable.
 
 {{{
 export PATH=$PATH:$HADOOP_HOME/bin
 }}}
-To run Hamake 
-    Example: {{{hadoop jar hamake-j-1.0.jar}}}
+In contrast to similar software Hamake does not require dedicated server or complex installation. To install Hamake just unpack Hamake distribution archive and copy hamake-j.jar file from the folder where you have unpacked distribution archive to the directory of your choise. Next you should describe workflow definitions in a special-formatted hamake-file and launch the process with _hadoop_ command:   
+    Example: {{{hadoop jar hamake-j-1.0.jar path_to_hamake-file}}}
 
+=Using Hamake=
 
-Basically, the Hamake utility simply executes series of user-defined code that submits MapReduce jobs to the Hadoop cluster. The Hamake is responsible for analyzing and collecting input data for user-defined MR code. It not allows user to send Map or Reduce jobs separately. 
+Hamake is a workflow engine. Hamake is dataflow based. To understand how does it work here are simple steps:
+ # You define your tasks in a special XML-formatted file (hamake-file) and launch Hamake as Hadoop job giving hamake-file as an argument.
+ # Hamake arranges tasks from hamake-file in a direct acyclic graph
+ # Tasks are launched as soon as new data is availible for them
+ # In case all wend down well, you recieve your output
+ # In case some tasks failed, Hamake output error message and tries to finish as many tasks as it can
 
-== Hamake tasks ==
+To get familiar with hamake-file syntax please visit TODO:link_to_hamake_file_syntax_page page. 
+
+==Direct Acyclic Graph==
+
+Frankly speaking, Hamake does not strictly follows [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. Hamake runs tasks based on Direct Acyclic Graph (DAG) that is built by Hamake when you start it. Tasks are then executed in order beginning from the root nodes to leaf nodes. Task is considered to be ready for execution as soon as its parents have finished processing data. Graph is build based on task input and output where graph edge is data and graph node is task. If output of task A intercepts with input of task B the task B is considered to be dependent on task A.
+
+Here how Hamake builds DAG:
+ # At the beginning Hamake loads all tasks from hamake-file into memory and searches for tasks that has no input or input data that does not intercept with other tasks output data. This tasks becomes root tasks.
+ # Hamake selects root tasks to start with and launches them in parallel
+ # As soon as some task has finished, it is marked as completed and the child task is launched
+ # When no tasks are left, Hamake exits 
+
+Root tasks to start with can be defined by two ways:
+ # list of start tasks can be specified in Hamake command-line parameters
+   Example: {{{hadoop jar hamake-j-1.0.jar jar-listings filter-listings}}}
+ # {{{default}}} attribute of {{{project}}} element in the Hamake  [newSyntaxReference workflow script] specifies the only start task. This attribute is taken into account only in case start tasks were note specified in the Hamake command-line.
+   Example: {{{<project name="test" default="jar-listings">}}}
+
+Besides task-to-task dependencies, Hamake allows to set up dependency on external resources. Such dependency defines set of file system paths treated as additional task input. Task will be executed only if all its inputs contain fresh data.
+
+A few words about data freshness...<br>
+Execution of some tasks may be omitted if they were executed early and inputs were not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
+
+Each task is executed in separate thread, therefore tasks with no dependencies can be executed in parallel.
+
+Task failing stops subsequent execution of its branch. For example, if graph is tree of two independent branches and the root in the point A, <br>
+branch 1:  A<-B<-C<br>
+branch 2:  A<-D<-E<br>
+Assume, failure was occurred in vertex B. Hamake:
+ * will not execute task C
+ * will execute D and E tasks
+
+Tasks dependencies graph is entirely stored in the memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as by the JVM heap upper limit (2Gb).
+
 The Hamake operates by the tasks which has to be implemented by the user. These tasks declared in the [newSyntaxReference workflow script] (XML file) and may depend on each other by means of their input and output.
     Example: 
 {{{ 
@@ -45,47 +86,18 @@ The Hamake operates by the tasks which has to be implemented by the user. These 
 
 In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" will be obtained. Easy to see that tasks connected in such a way form [http://en.wikipedia.org/wiki/Digraph_%28mathematics%29 directed graph] structure, where vertexes are defined by the tasks, dependencies define links and their direction. Link direction points to the root task (head vertex) that must be executed prior to the current task (tail vertex).
 
-== Task execution ==
-In general, the Hamake not strictly follow [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. It means the Hamake builds the execution path on base of tasks dependencies graph, so the time of task execution is due to the data state but not the sequence of the tasks declared in the XML script. 
+==Tasks Submission==
 
-Here how Hamake defines tasks for executing:
- # traverse tasks dependencies graph from start vertexes towards parents, discovering tasks with no input or where input already available
- # execute found tasks and mark they as completed
- # traverse tasks dependencies graph from start vertexes towards parents, discovering completed tasks
- # get incomplete children of found tasks
- # execute child tasks and mark they as completed
- # if graph has incomplete task(s) repeat from step 3
+Basically, the Hamake utility simply executes series of user-defined code that submits MapReduce jobs to the Hadoop cluster. The Hamake is responsible for analyzing and collecting input data for user-defined MR code. It not allows user to send Map or Reduce jobs separately. 
 
-Start vertexes can be defined by two ways:
- # list of start tasks can be specified in Hamake command-line parameters
-   Example: {{{hadoop jar hamake-j-1.0.jar jar-listings filter-listings}}}
- # {{{default}}} attribute of {{{project}}} element in the Hamake  [newSyntaxReference workflow script] specifies the only start task. This attribute is taken into account only in case start tasks were note specified in the Hamake command-line.
-   Example: {{{<project name="test" default="jar-listings">}}}
-
-Besides task-to-task dependencies, Hamake allows to set up dependency on external resources. Such dependency defines set of file system paths treated as additional task input. Task will be executed only if all its inputs contain fresh data.
-
-A few words about data freshness...<br>
-Execution of some tasks may be omitted if they were executed early and inputs were not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
-
-Each task is executed in separate thread, therefore tasks with no dependencies can be executed in parallel.
-
-Task failing stops subsequent execution of its branch. For example, if graph is tree of two independent branches and the root in the point A, <br>
-branch 1:  A<-B<-C<br>
-branch 2:  A<-D<-E<br>
-Assume, failure was occurred in vertex B. Hamake:
- * will not execute task C
- * will execute D and E tasks
-
-Tasks dependencies graph is entirely stored in the memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as by the JVM heap upper limit (2Gb).
-
-== Type of tasks ==
+==Type of tasks==
 At the moment following tasks variety available:
 || *Task* || *Description* ||
 || mapreduce || Copies MR job jar to local temporary location then submits it to JobTracker specified in Hadoop configuration ||
 || pig || Copies PigLatin script to local temporary location then executes this script. MR jobs are submitted to JobTracker specified in Hadoop configuration ||
 || exec || Executes specified script or program locally ||
 
-== Working directory ==
+==Working directory==
 Hamake resolves all relative paths defined in workflow script by preceding their with working directory. Working directory can be defined in the Hamake command-line by -w option.
    Example: {{{hadoop jar hamake-j-1.0.jar -w /home/hadoop/scripts}}}
 
@@ -93,16 +105,17 @@ If working directory was not specified, it will be defined by the Hamake as:
  * user home directory, if Hadoop default FS is local FS (`file://`)
  * /user/<user name>, if Hadoop default FS is HDFS (hdfs://)
 
-== Paths ==
+==Paths==
 The Hamake takes into account schema part of the paths used in workflow script. Thus, for example, if Hamake works on Amazon Elastic MapReduce, it is possible to specify paths to data stored on S3:
 {{{
 <property name="output"  value="s3://hamake/test/"/>
 }}}
 
+=Running Hamake=
 
-*cycle dependencies*<br>
 
 
-== Command Line Parameters ==
+=Hamake tasks=
 
-=== Using additional libraries and resources ===
+
+=Task execution=
