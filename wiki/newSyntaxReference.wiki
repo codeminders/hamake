@@ -47,14 +47,14 @@ A fileset is a group of files. These files can be found in a directory tree star
 
 ==`<dir>`==
 
-A folder on HDFS of local FS. To define a folder on local FS use _file:///_ prefix
+A folder on HDFS or local FS. To define a folder on local FS use _file:///_ prefix
 || *Attribute* || *Description* || *Required* ||
 || id || the ID of the element. || Yes ||
 || location || path to folder on HDFS or localFS || Yes ||
 
 ==`<file>`==
 
-A file on HDFS of local FS. To define a file on local FS use _file:///_ prefix
+A file on HDFS or local FS. To define a file on local FS use _file:///_ prefix
 || *Attribute* || *Description* || *Required* ||
 || id || the ID of the element. || Yes ||
 || location || path to file on HDFS or localFS || Yes ||
@@ -109,7 +109,7 @@ Example:
 
 ===`<output>`===
 
-This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify as many as you with output folders with `<dir>` tag
+This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify as many as you wish output folders with `<dir>` tag
 
 Example:
 {{{
@@ -124,7 +124,7 @@ Example:
 Type of input that defines many-to-many mapping between input data and output data. `<fold>` considers all input file(s) to be a set, and if any of them is newer than any of destination, input dataset will be processed.
 In its simplest form, 'reduce' have one input and one output. `<fold>` has following sub-elements: *`<input>`*, *`<output>`*, *`<depends>`*, *`<mapreduce>`* or *`<pig>`* or *`<exec>`* 
 
-You can define as many as you with _input_ and _output_ sub elements as you wish
+You can define as many as you wish _input_ and _output_ sub elements as you wish
 
 Example:
 {{{
@@ -258,7 +258,7 @@ Task dependencies are build implicitly by the system itself, based on task input
 Example:
 {{{
 <depends>
-	<fileset id="${libdir}/somefile.txt" />
+	<file id="${libdir}/somefile.txt" />
 </depends>
 }}}
 
