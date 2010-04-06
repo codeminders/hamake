@@ -3,22 +3,22 @@
 This page describes proposed syntax of hamake 
 
 = Introduction =
-Hamake is based on dataflow programming model - order of execution of tasks is controlled by data and not by tasks themselfs. That means that task A will be called before task B in case input path of task B intercepts with output path of task A. Nevertheless, hamake slightly deviates from that rule - you can explicitly make task B dependent from task A by using `<depends>` tag
+Hamake is based on dataflow programming model - order of execution of tasks is controlled by data and not by tasks themselfs. That means that task A will be called before task B in case input path of task B intercepts with output path of task A. For a particular task, it will be triggered only if input data has been renewed or validity period of output data has been expired. Also you can make one task dependent on another with help of _`<depends>`_ tag.
 
 = Root Tags Description =
 
-===`<project>`===
+==`<project>`==
 
-This is the root element. All other elements should be whithin that tag. The _project_ has following attributes:
+This is the root element. All other elements should be whithin this tag. The _project_ has following attributes:
 || *Attribute* || *Description* || *Required* ||
 || name || the name of the project. || No ||
-|| default || the default target to use when no target is supplied. || No ||
+|| default || the default target to start with when no start targets are supplied. || No ||
 
-Each project defines one or more tasks. A task can be a hadoop job, pig script or local script you want to be executed. When running Hamake, you can select which task(s) you want to have executed. When no tasks are given, the project's default is used.
+Each project defines one or more dataset to be processed. Each dataset define task that will process this dataset. Task can be Hadoop map-reduce job, Pig script or local program (script). When running Hamake, you can select which dataset(s) you want to start with. When no datasets are given, the project's default is used.
 
-Allowed sub-elements: `<property>`, `<fold>`, `<foreach>`
+Allowed sub-elements: *`<property>`*, *`<fold>`*, *`<foreach>`*, *`<fileset>`*, *`<folder>`*, *`<file>`*
 
-===`<property>`===
+==`<property>`==
 
 Sets a property (by name and value), in the project. Properties are named values, which can be used in hamakefile. They work like macros. Once defined, they can be used in any string attribute, using the variable syntax ${variable_name}. 
 
@@ -35,12 +35,146 @@ Usage example:
 <parameter value="${dfsroot}/data" />
 }}}
 
+==`<fileset>`==
+
+A fileset is a group of files. These files can be found in a directory tree starting in a base directory and are matched by mask or be a single file. 
+
+|| *Attribute* || *Description* || *Required* ||
+|| id || the ID of the element. || Yes ||
+|| dir || the root of the directory tree of this FileSet. || Either dir or file must be specified ||
+|| file || shortcut for specifying a single-file fileset. || Either dir or file must be specified ||
+|| mask || the default target to start with when no start targets are supplied. || No ||
+
+==`<folder>`==
+
+A folder on HDFS of local FS. To define a folder on local FS use _file:///_ prefix
+|| *Attribute* || *Description* || *Required* ||
+|| id || the ID of the element. || Yes ||
+|| location || path to folder on HDFS or localFS || Yes ||
+
+==`<file>`==
+
+A file on HDFS of local FS. To define a file on local FS use _file:///_ prefix
+|| *Attribute* || *Description* || *Required* ||
+|| id || the ID of the element. || Yes ||
+|| location || path to file on HDFS or localFS || Yes ||
+
+=Datasets=
+
+In Hamake you first define a dataset that should be processed, after that you define tasks for a concrete dataset. Dataset consist of input data and output data. For input data you have an option between two types:
+
+  # You can map a group of files at one location to another location(s) with `<foreach>` tag
+  # You can reduce a group of file(s) and produce one or more folder(s) or file(s) with `<fold>` tag.
+
+Output data depends on input data type. If it is _foreach_ - you should define one directory where output files will be located. In case of _fold_ you can define any amount of files or folders where task output data will be written.
+
+==`<foreach>`==
+
+Type of input that defines one-to-many file mapping between input file(s) and one or more output files. This assumes processing only files which are present at source location, but not present or not current at all of destinations. If task input is _foreach_, there will be one output file in all output folders for each file from input folder. Each input file will be processed by task, that is specified whithin _`<foreach>`_ tag, if all of the following conditions are satisfied:
+  #Output file is present
+  #Output file time stamp is older than input file
+  #Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
+ 
+_foreach_ has following sub-elements: *`<foreachInput>`*, *`<foreachOutput>`*, *`<depends>`*,  *`<mapreduce>`* or *`<pig>`* or *`<exec>`*
+
+Example:
+
+{{{
+<foreach name="filter-listing">
+	<foreachInput>
+		<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
+	</foreachInput>
+	<foreachOutput>
+		<fileset id="goodJar" dir="${outdir}/jar-listings-filtered" />
+		<fileset id="badJar" dir="${outdir}/jar-listings-bad" />
+	</foreachOutput>		
+	<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
+		<parameter value="${jar}" />
+		<parameter value="${goodJar}" />
+		<parameter value="${badJar}" />
+	</mapreduce>
+</foreach>
+}}}
+
+===`<foreachInput>`===
+
+This tag defines input dataset for `<foreach>` element. As an input you can specify one and only one fileset with `<fileset>` tag
+
+Example:
+{{{
+<foreachInput>
+	<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
+</foreachInput>
+}}}
+
+===`<foreachOutput>`===
+
+This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify as many as you with output folders with `<folder>` tag
+
+Example:
+{{{
+<foreachOutput>
+	<folder id="goodJar" dir="${outdir}/jar-listings-filtered" />
+	<folder id="badJar" dir="${outdir}/jar-listings-bad" />
+</foreachOutput>
+}}}
+
+==`<fold>`==
+
+Type of input that defines many-to-many mapping between input data and output data. `<fold>` considers all input file(s) to be a set, and if any of them is newer than any of destination, input dataset will be processed.
+In its simplest form, 'reduce' have one input and one output. `<fold>` has following sub-elements: *`<foldInput>`*, *`<foldOutput>`*, *`<depends>`*, *`<mapreduce>`* or *`<pig>`* or *`<exec>`* 
+
+You can define as many as you with _input_ and _output_ sub elements as you wish
+
+Example:
+{{{
+<fold name="histogram">
+	<foldInput>
+		<fileset id="badJarDir" dir="${outdir}/jar-listings-bad" />
+		<fileset id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
+	</foldInput>
+	<foldOutput>
+		<folder id="histogramDir" dir="${outdir}/class-size-histogram" />
+		<file id="logFile" file="${outdir}/logs/histogram.log" />
+	</foldOutput>
+	<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
+		<parameter value="${goodJarDir}" />
+		<parameter value="${histogramDir}" />
+		<parameter value="${logFile}" />
+	</mapreduce>
+</fold>
+}}}
+
+===`<foldInput>`===
+
+This tag defines input dataset for `<fold>` element. As an input you can specify one or more file(s) `<fileset>` tag
+
+Example:
+{{{
+<foldInput>
+	<fileset id="badJarDir" dir="${outdir}/jar-listings-bad" />
+	<fileset id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
+</foldInput>
+}}}
+
+===`<foldOutput>`===
+
+This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify one or more file(s) with `<file>` tag or folder(s) with `<folder>` tag
+
+Example:
+{{{
+<foldOutput>
+	<folder id="histogramDir" dir="${outdir}/class-size-histogram" />
+	<file id="logFile" file="${outdir}/logs/histogram.log" />
+</foldOutput>
+}}}
+
 = Tasks =
 
-Task define job to be done. Turn of the task and the number of times it will be executed is determined by its data. In case you want to explicitly determine order of tasks, or to specify data the task will depend on but won't be count as input, `<depends>` tag can be used. Currently there are three types of tasks: hadoop job (_hadoopTask_), 
-pig script (_pigTask_), script or program on machine, where hamake is running (_execTask_). Order of arguments that will be passed to Hadoop job, pig script or exec task are determined by parameters list in the body of the task. Each parameter can be one of the following:  
+Task define job to be done. Turn of the task and the number of times it will be executed is determined by its data. In case you want to explicitly determine order of tasks, or to specify data the task will depend on but won't be count as input, `<depends>` tag can be used. Currently there are three types of tasks: hadoop job (_hadoop_), 
+pig script (_pig_), script or program on machine, where hamake is running (_exec_). Order of arguments that will be passed to Hadoop job, pig script or exec task are determined by parameters list in the body of the task. Each parameter can be one of the following:  
 
-===`<mapreduceTask>`===
+==`<mapreduce>`==
 
 Launches Hadoop Map Reduce job on the !JobTracker that is determined by environment of the running VM (Hamake). This tag has following attributes
 || *Attribute* || *Description* || *Required* ||
@@ -49,42 +183,42 @@ Launches Hadoop Map Reduce job on the !JobTracker that is determined by environm
 || disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'.  || No ||
 || main || the full name of the main class || Yes ||
 
-_mapreduceTask_ can have following sub-elements: `<parameter>`, `<depends>`
+_mapreduce_ can have following sub-elements: *`<parameter>`*, *`<description>`*
 
 Example: 
 
 {{{
-<mapreduceTask name="jar-listings" main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
+<mapreduce name="jar-listings" main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
   <description>description</description>
   <parameter value="${jar}" />
   <parameter value="${listing}" />
-</mapreduceTask>
+</mapreduce>
 }}}
 
-===`<pigTask>`===
+==`<pig>`==
 
-Launches Hadoop Pig script on the !JobTracker that is determined by environment of the running VM (Hamake). _pigTask_ has following attributes
+Launches Hadoop Pig script on the !JobTracker that is determined by environment of the running VM (Hamake). _pig_ has following attributes
 || *Attribute* || *Description* || *Required* ||
 || name || the name of the task. Used for reporting and can be specified as build target || Yes ||
 || script || path to script file that will be run || Yes ||
 || disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'.  || No ||
 
-_pigTask_ can have following sub-elements: `<parameter>`, `<depends>`
+_pig_ can have following sub-elements: *`<parameter>`*, *`<description>`*
 
 Example: 
 
 {{{
-<pigTask name="pig_fold" script="${scripts}/median.pig">
+<pig name="pig_fold" script="${scripts}/median.pig">
   <depends>
     <path name="${libdir}/somefile.txt" />      
   </depends>
   <parameter value="${libdir}/somefile.txt" />
   <parameter value="${histogramDir}" />
   <parameter value="${log}" />
-</pigTask>
+</pig>
 }}}
 
-===`<execTask>`===
+==`<exec>`==
 
 Executes script or program locally within the running VM (Hamake). It has following attributes
 || *Attribute* || *Description* || *Required* ||
@@ -92,100 +226,20 @@ Executes script or program locally within the running VM (Hamake). It has follow
 || binary || path to script file or program that will be run || Yes ||
 || disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'.  || No ||
 
-_exectask_ can have following sub-elements: `<parameter>`, `<depends>`
+_exec_ can have following sub-elements: *`<parameter>`*, *`<description>`*
 Example: 
 
 {{{
-<execTask name="createFile" binary="/usr/bin/touch">
+<exec name="createFile" binary="/usr/bin/touch">
    <parameter value="/tmp/x0"/>
-</execTask>
-}}}
-
-= Task Input and Output =
-
-In Hamake you have an option between two types of input:
-
- 1. You can map a group of files at one location to another location(s) with `<foreach>` tag
- 2. You can reduce a group of file(s) and produce one or more folder(s) or file(s) with `<fold>` tag. 
-
-`<foreach>` assumes 1 to many file mapping between locations, processing only files which are present at source location, but not present or not current at all of destinations. If task input is _foreach_, the task will be launched for each file from input folder and will produce one and only one file in each output folder(s). Task for each file will be launched if all of the following conditions are satisfied:
-   1. Output file is present
-   2. Output file time stamp is older than input file
-   3. Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
-
-`<fold>` considers all input file(s) to be a set, and if any of them is newer than any of destination, the task will be launched.
-In its simplest form, 'reduce' have one input and one output.
-
-===`<foreach>`===
-
-Type of input that defines one-to-many file mapping between input file(s) and one or more output files. For each file in input folder task will be launched. 
-_foreach_ has following sub-elements: `<input>`, `<output>`
-
-You can define only one _input_ sub-element and as many as you wish _output_ sub-elements
-
-Example:
-
-{{{
-<foreach>
-  <input name="jar" location="${outdir}/jar-listings" mask="*.jar" />
-  <output name="goodJar" location="${outdir}/jar-listings-filtered" />
-  <output name="badJar" location="${outdir}/jar-listings-bad" />
-  ...
-</foreach>
-}}}
-
-===`<fold>`===
-
-Type of input that defines many-to-many mapping between input data and output data. For this input type task will be launched once with all enumerated in its _fold_ tag input and output paths. ===fold=== has following sub-elements: `<input>`, `<output>`
-
-You can define as many as you with _input_ and _output_ sub elements as you wish
-
-Example:
-{{{
-<fold>
-  <input name="badJarDir" location="${outdir}/jar-listings-bad" />
-  <input name="goodJarDir" location="${outdir}/jar-listings-filtered" />
-  <output name="histogramDir" location="${outdir}/class-size-histogram" />
-  <output name="log" location="${outdir}/logs" />
-  ...
-</fold>
-}}}
-
-===`<input>`===
-
-This tag defines input folder or file(s) of the task. Tag has following attributes:
-
-|| *Attribute* || *Description* || *Required* ||
-|| name || name of the variable that will hold path to file or folder and can be used in task parameters.  || Yes ||
-|| location || path to folder where input files are located.  || Yes ||
-|| mask || filename glob mask.  || No ||
-
-Example:
-{{{
-<input name="histogramDir" location="${outdir}/class-size-histogram" />
-}}}
-
-===`<output>`===
-
-This tag defines output folder or file(s) of the task. Tag has following attributes:
-
-|| *Attribute* || *Description* || *Required* ||
-|| name || name of the variable that will hold path to file or folder and can be used in task parameters.  || Yes ||
-|| location || path to folder where input files are located.  || Yes ||
-|| filename || filename.  || No ||
-|| validity_period || for how many seconds this output considered valid. In other words, this is maximum allowed difference between input file timestamp and output file timestamp. The period is a number followed by optional letter. Following letters are understood: 's': seconds (optional), 'm': minutes, 'h': hours, 'd': days, 'w': weeks  || No ||
-|| generation ||  "generation" of the file. || No ||
-
-Example:
-{{{
-<output name="medianDir" location="${outdir}/class-size-median-bin" validity_period="1m" />
+</exec>
 }}}
 
 = Task Parameters =
 
 Arguments are passed to Hadoop Map Reduce job, Pig script or program according to task parameters. Also in parameters you can define task input and output data. Please remember that the order of parameters in task body is important.
 
-===`<parameter>`===
+==`<parameter>`==
 
 This tag has one attribute _value_ where you can specify any parameter you want as String value. Also you can pass here input and output of the task by specifying its name as variable
 
@@ -197,27 +251,14 @@ Example:
 
 = Explicit Task Dependencies =
 
-===`<depends>`===
+==`<depends>`==
 
-Task dependencies are build implicitly by the system itself, based on task input and output. In case you want to specify it explicitly, you can use `<depends>` tag. Tag has following sub-elements: `<path>`, `<task>`
-
-===`<task>`===
-
-Defines excplicit dependency from another task, that is in the same file. It has the same meaning as Apache Ant _depends_ attribute of _target_ tag. The only attribute this tag has is _name_ - name of the task current task depends on.
-
-===`<path>`===
-
-Defines path, that current task depends on. this path will not be used as input path. `<path>` has following attributes:
-
-|| *Attribute* || *Description* || *Required* ||
-|| location || path to folder where input files are located.  || Yes ||
-|| filename || filename.  || No ||
-|| validity_period || for how many seconds this output considered valid. In other words, this is maximum allowed difference between input file timestamp and output file timestamp. The period is a number followed by optional letter. Following letters are understood: 's': seconds (optional), 'm': minutes, 'h': hours, 'd': days, 'w': weeks  || No ||
+Task dependencies are build implicitly by the system itself, based on task input and output. In case you want to specify it explicitly, you can use `<depends>` tag whithin `<foreach>` or `<fold>` elements. Tag has following sub-elements: *`<fileset>`*
 
 Example:
 {{{
 <depends>
-  <task name="jar-listings" />      
+	<fileset id="${libdir}/somefile.txt" />
 </depends>
 }}}
 
@@ -231,54 +272,70 @@ Example:
 	<property name="libdir" value="lib" />
 	<property name="dist" value="dist" />
 	<property name="scripts" value="src/scripts" />
-
-	<foreach>
-		<input name="jar" location="${libdir}/lib" mask="*.jar" />
-		<output name="listing" location="${outdir}/jar-listings" />
-		<mapreduceTask name="jar-listings" main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
+	
+	<fileset id="projectaInput" dir="${libdir}/lib" mask="*.jar" />
+	<fileset id="projectOutput" dir="${outdir}/class-size-median-bin" />
+	
+	<foreach name="jar-listings">
+		<foreachInput>
+			<fileset refid="projectInput"/>
+		</foreachInput>
+		<foreachOutput>
+			<dir id="listing" location="${outdir}/jar-listings" />
+		</foreachOutput>
+		<mapreduce main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
 			<description>description</description>
 			<parameter value="${jar}" />
 			<parameter value="${listing}" />
-		</mapreduceTask>
+		</mapreduce>
 	</foreach>
 
-	<foreach>
-		<input name="jar" location="${outdir}/jar-listings" mask="*.jar" />
-		<output name="goodJar" location="${outdir}/jar-listings-filtered" />
-		<output name="badJar" location="${outdir}/jar-listings-bad" />
-		<mapreduceTask name="filter-listing" jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
-			<depends>
-				<task name="jar-listings" />
-			</depends>
+	<foreach name="filter-listing">
+		<foreachInput>
+			<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
+		</foreachInput>
+		<foreachOutput>
+			<fileset id="goodJar" dir="${outdir}/jar-listings-filtered" />
+			<fileset id="badJar" dir="${outdir}/jar-listings-bad" />
+		</foreachOutput>		
+		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
 			<parameter value="${jar}" />
 			<parameter value="${goodJar}" />
 			<parameter value="${badJar}" />
-		</mapreduceTask>
+		</mapreduce>
 	</foreach>
 
-	<fold>
-		<input name="badJarDir" location="${outdir}/jar-listings-bad" />
-		<input name="goodJarDir" location="${outdir}/jar-listings-filtered" />
-		<output name="histogramDir" location="${outdir}/class-size-histogram" />
-		<output name="log" location="${outdir}/logs" />
-		<mapreduceTask name="histogram" jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
+	<fold name="histogram">
+		<foldInput>
+			<fileset id="badJarDir" dir="${outdir}/jar-listings-bad" />
+			<fileset id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
+		</foldInput>
+		<foldOutput>
+			<fileset id="histogramDir" dir="${outdir}/class-size-histogram" />
+			<fileset id="logFile" file="${outdir}/logs/histogram.log" />
+		</foldOutput>
+		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
 			<parameter value="${goodJarDir}" />
 			<parameter value="${histogramDir}" />
-			<parameter value="${log}" />
-		</mapreduceTask>
+			<parameter value="${logFile}" />
+		</mapreduce>
 	</fold>
 
-	<fold>
-		<input name="histogramDir" location="${outdir}/class-size-histogram" />
-		<output name="medianDir" location="${outdir}/class-size-median-bin" />
-		<pigTask name="pig_fold" script="${scripts}/median.pig">
-			<depends>
-				<path name="${libdir}/somefile.txt" />
-			</depends>
+	<fold name="pig_fold" >
+		<depends>
+			<fileset id="${libdir}/somefile.txt" />
+		</depends>
+		<foldInput>
+			<fileset id="histogramDir" dir="${outdir}/class-size-histogram" />
+		</foldInput>
+		<foldOutput>
+			<fileset refid="projectOutput"/>
+		</foldOutput>
+		<pig script="${scripts}/median.pig">
 			<parameter value="${libdir}/somefile.txt" />
 			<parameter value="${histogramDir}" />
 			<parameter value="${log}" />
-		</pigTask>
+		</pig>
 	</fold>
 </project>
 }}}
