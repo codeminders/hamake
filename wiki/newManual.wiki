@@ -87,13 +87,19 @@ At the moment following tasks variety available:
 
 == Working directory ==
 Hamake resolves all relative paths defined in workflow script by preceding their with working directory. Working directory can be defined in the Hamake command-line by -w option.
-   Example: {{{{hadoop jar hamake-j-1.0.jar -w /home/hadoop/scripts}}}
+   Example: {{{hadoop jar hamake-j-1.0.jar -w /home/hadoop/scripts}}}
 
 If working directory was not specified, it will be defined by the Hamake as:
  * user home directory, if Hadoop default FS is local FS (`file://`)
  * /user/<user name>, if Hadoop default FS is HDFS (hdfs://)
 
-*describe how FSs are recognized in XML?*<br>
+== Paths ==
+The Hamake takes into account schema part of the paths used in workflow script. Thus, for example, if Hamake works on Amazon Elastic MapReduce, it is possible to specify paths to data stored on S3:
+{{{
+<property name="output"  value="s3://hamake/test/"/>
+}}}
+
+
 *cycle dependencies*<br>
 
 
