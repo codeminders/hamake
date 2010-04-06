@@ -147,7 +147,7 @@ Example:
 
 ===`<input>`===
 
-This tag defines input dataset for `<fold>` element. As an input you can specify one or more file(s) `<fileset>` tag
+This tag defines input dataset for `<fold>` element. As an input you can specify one or more `<fileset>` or `<dir>` tag(s)
 
 Example:
 {{{
@@ -171,7 +171,7 @@ Example:
 
 = Tasks =
 
-Task define job to be done. Turn of the task and the number of times it will be executed is determined by its data. In case you want to explicitly determine order of tasks, or to specify data the task will depend on but won't be count as input, `<depends>` tag can be used. Currently there are three types of tasks: hadoop job (_hadoop_), 
+Task define job to be done. Sequence of the task and the number of times it will be executed is determined by its data. In case you want to specify external data a task will depends on, `<depends>` tag can be used. Currently there are three types of tasks: hadoop job (_hadoop_), 
 pig script (_pig_), script or program on machine, where hamake is running (_exec_). Order of arguments that will be passed to Hadoop job, pig script or exec task are determined by parameters list in the body of the task. Each parameter can be one of the following:  
 
 ==`<mapreduce>`==
@@ -249,11 +249,11 @@ Example:
 <parameter value="${histogramDir}" />
 }}}
 
-= Explicit Task Dependencies =
+= Task Dependencies =
 
 ==`<depends>`==
 
-Task dependencies are build implicitly by the system itself, based on task input and output. In case you want to specify it explicitly, you can use `<depends>` tag whithin `<foreach>` or `<fold>` elements. Tag has following sub-elements: *`<dir>`*, *`<file>`*
+Task dependencies are build implicitly by the system itself, based on task input and output. In case you want to specify some external data a task will depend on, you can use `<depends>` tag whithin `<foreach>` or `<fold>` elements. Tag has following sub-elements: *`<dir>`*, *`<file>`*
 
 Example:
 {{{
