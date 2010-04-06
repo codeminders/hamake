@@ -75,19 +75,19 @@ Type of input that defines one-to-many file mapping between input file(s) and on
   #Output file time stamp is older than input file
   #Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
  
-_foreach_ has following sub-elements: *`<foreachInput>`*, *`<foreachOutput>`*, *`<depends>`*,  *`<mapreduce>`* or *`<pig>`* or *`<exec>`*
+_foreach_ has following sub-elements: *`<input>`*, *`<output>`*, *`<depends>`*,  *`<mapreduce>`* or *`<pig>`* or *`<exec>`*
 
 Example:
 
 {{{
 <foreach name="filter-listing">
-	<foreachInput>
+	<input>
 		<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
-	</foreachInput>
-	<foreachOutput>
+	</input>
+	<output>
 		<dir id="goodJar" dir="${outdir}/jar-listings-filtered" />
 		<dir id="badJar" dir="${outdir}/jar-listings-bad" />
-	</foreachOutput>		
+	</output>		
 	<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
 		<parameter value="${jar}" />
 		<parameter value="${goodJar}" />
@@ -96,15 +96,15 @@ Example:
 </foreach>
 }}}
 
-===`<foreachInput>`===
+===`<input>`===
 
 This tag defines input dataset for `<foreach>` element. As an input you can specify one and only one fileset with `<fileset>` tag
 
 Example:
 {{{
-<foreachInput>
+<input>
 	<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
-</foreachInput>
+</input>
 }}}
 
 ===`<foreachOutput>`===
@@ -122,21 +122,21 @@ Example:
 ==`<fold>`==
 
 Type of input that defines many-to-many mapping between input data and output data. `<fold>` considers all input file(s) to be a set, and if any of them is newer than any of destination, input dataset will be processed.
-In its simplest form, 'reduce' have one input and one output. `<fold>` has following sub-elements: *`<foldInput>`*, *`<foldOutput>`*, *`<depends>`*, *`<mapreduce>`* or *`<pig>`* or *`<exec>`* 
+In its simplest form, 'reduce' have one input and one output. `<fold>` has following sub-elements: *`<input>`*, *`<output>`*, *`<depends>`*, *`<mapreduce>`* or *`<pig>`* or *`<exec>`* 
 
 You can define as many as you with _input_ and _output_ sub elements as you wish
 
 Example:
 {{{
 <fold name="histogram">
-	<foldInput>
+	<input>
 		<fileset id="badJarDir" dir="${outdir}/jar-listings-bad" />
 		<fileset id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
-	</foldInput>
-	<foldOutput>
+	</input>
+	<output>
 		<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
 		<file id="logFile" file="${outdir}/logs/histogram.log" />
-	</foldOutput>
+	</output>
 	<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
 		<parameter value="${goodJarDir}" />
 		<parameter value="${histogramDir}" />
@@ -145,28 +145,28 @@ Example:
 </fold>
 }}}
 
-===`<foldInput>`===
+===`<input>`===
 
 This tag defines input dataset for `<fold>` element. As an input you can specify one or more file(s) `<fileset>` tag
 
 Example:
 {{{
-<foldInput>
+<input>
 	<dir id="badJarDir" dir="${outdir}/jar-listings-bad" />
 	<dir id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
-</foldInput>
+</input>
 }}}
 
-===`<foldOutput>`===
+===`<output>`===
 
 This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify one or more file(s) with `<file>` tag or folder(s) with `<folder>` tag
 
 Example:
 {{{
-<foldOutput>
+<output>
 	<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
 	<file id="logFile" file="${outdir}/logs/histogram.log" />
-</foldOutput>
+</output>
 }}}
 
 = Tasks =
@@ -277,12 +277,12 @@ Example:
 	<dir id="projectOutput" dir="${outdir}/class-size-median-bin" />
 	
 	<foreach name="jar-listings">
-		<foreachInput>
+		<input>
 			<fileset refid="projectInput"/>
-		</foreachInput>
-		<foreachOutput>
+		</input>
+		<output>
 			<dir id="listing" location="${outdir}/jar-listings" />
-		</foreachOutput>
+		</output>
 		<mapreduce main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
 			<description>description</description>
 			<parameter value="${jar}" />
@@ -291,13 +291,13 @@ Example:
 	</foreach>
 
 	<foreach name="filter-listing">
-		<foreachInput>
+		<input>
 			<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
-		</foreachInput>
-		<foreachOutput>
+		</input>
+		<output>
 			<dir id="goodJar" dir="${outdir}/jar-listings-filtered" />
 			<dir id="badJar" dir="${outdir}/jar-listings-bad" />
-		</foreachOutput>		
+		</output>		
 		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
 			<parameter value="${jar}" />
 			<parameter value="${goodJar}" />
@@ -306,14 +306,14 @@ Example:
 	</foreach>
 
 	<fold name="histogram">
-		<foldInput>
+		<input>
 			<dir id="badJarDir" dir="${outdir}/jar-listings-bad" />
 			<dir id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
-		</foldInput>
-		<foldOutput>
+		</input>
+		<output>
 			<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
 			<file id="logFile" file="${outdir}/logs/histogram.log" />
-		</foldOutput>
+		</output>
 		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
 			<parameter value="${goodJarDir}" />
 			<parameter value="${histogramDir}" />
@@ -325,12 +325,12 @@ Example:
 		<depends>
 			<file id="${libdir}/somefile.txt" />
 		</depends>
-		<foldInput>
+		<input>
 			<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
-		</foldInput>
-		<foldOutput>
+		</input>
+		<output>
 			<dir refid="projectOutput"/>
-		</foldOutput>
+		</output>
 		<pig script="${scripts}/median.pig">
 			<parameter value="${libdir}/somefile.txt" />
 			<parameter value="${histogramDir}" />
