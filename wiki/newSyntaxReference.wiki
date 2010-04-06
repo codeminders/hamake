@@ -16,7 +16,7 @@ This is the root element. All other elements should be whithin this tag. The _pr
 
 Each project defines one or more dataset to be processed. Each dataset define task that will process this dataset. Task can be Hadoop map-reduce job, Pig script or local program (script). When running Hamake, you can select which dataset(s) you want to start with. When no datasets are given, the project's default is used.
 
-Allowed sub-elements: *`<property>`*, *`<fold>`*, *`<foreach>`*, *`<fileset>`*, *`<folder>`*, *`<file>`*
+Allowed sub-elements: *`<property>`*, *`<fold>`*, *`<foreach>`*, *`<fileset>`*, *`<dir>`*, *`<file>`*
 
 ==`<property>`==
 
@@ -45,7 +45,7 @@ A fileset is a group of files. These files can be found in a directory tree star
 || file || shortcut for specifying a single-file fileset. || Either dir or file must be specified ||
 || mask || the default target to start with when no start targets are supplied. || No ||
 
-==`<folder>`==
+==`<dir>`==
 
 A folder on HDFS of local FS. To define a folder on local FS use _file:///_ prefix
 || *Attribute* || *Description* || *Required* ||
@@ -85,8 +85,8 @@ Example:
 		<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
 	</foreachInput>
 	<foreachOutput>
-		<fileset id="goodJar" dir="${outdir}/jar-listings-filtered" />
-		<fileset id="badJar" dir="${outdir}/jar-listings-bad" />
+		<dir id="goodJar" dir="${outdir}/jar-listings-filtered" />
+		<dir id="badJar" dir="${outdir}/jar-listings-bad" />
 	</foreachOutput>		
 	<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
 		<parameter value="${jar}" />
@@ -114,8 +114,8 @@ This tag defines output dataset for `<foreach>` element. Whithin this tag you ca
 Example:
 {{{
 <foreachOutput>
-	<folder id="goodJar" dir="${outdir}/jar-listings-filtered" />
-	<folder id="badJar" dir="${outdir}/jar-listings-bad" />
+	<dir id="goodJar" dir="${outdir}/jar-listings-filtered" />
+	<dir id="badJar" dir="${outdir}/jar-listings-bad" />
 </foreachOutput>
 }}}
 
@@ -134,7 +134,7 @@ Example:
 		<fileset id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
 	</foldInput>
 	<foldOutput>
-		<folder id="histogramDir" dir="${outdir}/class-size-histogram" />
+		<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
 		<file id="logFile" file="${outdir}/logs/histogram.log" />
 	</foldOutput>
 	<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
@@ -152,8 +152,8 @@ This tag defines input dataset for `<fold>` element. As an input you can specify
 Example:
 {{{
 <foldInput>
-	<fileset id="badJarDir" dir="${outdir}/jar-listings-bad" />
-	<fileset id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
+	<dir id="badJarDir" dir="${outdir}/jar-listings-bad" />
+	<dir id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
 </foldInput>
 }}}
 
@@ -164,7 +164,7 @@ This tag defines output dataset for `<foreach>` element. Whithin this tag you ca
 Example:
 {{{
 <foldOutput>
-	<folder id="histogramDir" dir="${outdir}/class-size-histogram" />
+	<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
 	<file id="logFile" file="${outdir}/logs/histogram.log" />
 </foldOutput>
 }}}
@@ -253,7 +253,7 @@ Example:
 
 ==`<depends>`==
 
-Task dependencies are build implicitly by the system itself, based on task input and output. In case you want to specify it explicitly, you can use `<depends>` tag whithin `<foreach>` or `<fold>` elements. Tag has following sub-elements: *`<fileset>`*
+Task dependencies are build implicitly by the system itself, based on task input and output. In case you want to specify it explicitly, you can use `<depends>` tag whithin `<foreach>` or `<fold>` elements. Tag has following sub-elements: *`<dir>`*, *`<file>`*
 
 Example:
 {{{
@@ -273,8 +273,8 @@ Example:
 	<property name="dist" value="dist" />
 	<property name="scripts" value="src/scripts" />
 	
-	<fileset id="projectaInput" dir="${libdir}/lib" mask="*.jar" />
-	<fileset id="projectOutput" dir="${outdir}/class-size-median-bin" />
+	<fileset id="projectInput" dir="${libdir}/lib" mask="*.jar" />
+	<dir id="projectOutput" dir="${outdir}/class-size-median-bin" />
 	
 	<foreach name="jar-listings">
 		<foreachInput>
@@ -295,8 +295,8 @@ Example:
 			<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
 		</foreachInput>
 		<foreachOutput>
-			<fileset id="goodJar" dir="${outdir}/jar-listings-filtered" />
-			<fileset id="badJar" dir="${outdir}/jar-listings-bad" />
+			<dir id="goodJar" dir="${outdir}/jar-listings-filtered" />
+			<dir id="badJar" dir="${outdir}/jar-listings-bad" />
 		</foreachOutput>		
 		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
 			<parameter value="${jar}" />
@@ -307,12 +307,12 @@ Example:
 
 	<fold name="histogram">
 		<foldInput>
-			<fileset id="badJarDir" dir="${outdir}/jar-listings-bad" />
-			<fileset id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
+			<dir id="badJarDir" dir="${outdir}/jar-listings-bad" />
+			<dir id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
 		</foldInput>
 		<foldOutput>
-			<fileset id="histogramDir" dir="${outdir}/class-size-histogram" />
-			<fileset id="logFile" file="${outdir}/logs/histogram.log" />
+			<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
+			<file id="logFile" file="${outdir}/logs/histogram.log" />
 		</foldOutput>
 		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
 			<parameter value="${goodJarDir}" />
@@ -323,13 +323,13 @@ Example:
 
 	<fold name="pig_fold" >
 		<depends>
-			<fileset id="${libdir}/somefile.txt" />
+			<file id="${libdir}/somefile.txt" />
 		</depends>
 		<foldInput>
-			<fileset id="histogramDir" dir="${outdir}/class-size-histogram" />
+			<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
 		</foldInput>
 		<foldOutput>
-			<fileset refid="projectOutput"/>
+			<dir refid="projectOutput"/>
 		</foldOutput>
 		<pig script="${scripts}/median.pig">
 			<parameter value="${libdir}/somefile.txt" />
