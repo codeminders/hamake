@@ -265,77 +265,68 @@ Example:
 == Hamakefile Complite Example ==
 
 {{{
-<?xml version="1.0" encoding="UTF-8"?>
-
 <project name="test" default="jar-listings">
-	<property name="outdir" value="build/test" />
-	<property name="libdir" value="lib" />
-	<property name="dist" value="dist" />
-	<property name="scripts" value="src/scripts" />
-	
-	<fileset id="projectInput" dir="${libdir}/lib" mask="*.jar" />
-	<dir id="projectOutput" dir="${outdir}/class-size-median-bin" />
-	
+	<property name="outdir" value="build/test"/>
+	<property name="lib" value="lib"/>
+	<property name="dist" value="dist"/>
+	<property name="scripts" value="src/scripts"/>
 	<foreach name="jar-listings">
 		<input>
-			<fileset refid="projectInput"/>
+			<fileset path="${libdir}/lib" mask="*.jar"/>
 		</input>
 		<output>
-			<dir id="listing" location="${outdir}/jar-listings" />
+			<identity path="${outdir}/jar-listings"/>
 		</output>
 		<mapreduce main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
 			<description>description</description>
-			<parameter value="${jar}" />
-			<parameter value="${listing}" />
+			<parameter value="${input}"/>
+			<parameter value="${output}"/>
 		</mapreduce>
 	</foreach>
-
 	<foreach name="filter-listing">
 		<input>
-			<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
+			<fileset path="${outdir}/jar-listings" mask="*.jar"/>
 		</input>
 		<output>
-			<dir id="goodJar" dir="${outdir}/jar-listings-filtered" />
-			<dir id="badJar" dir="${outdir}/jar-listings-bad" />
-		</output>		
+			<reproduction>
+				<identity path="${outdir}/jar-listings-filtered"/>
+				<identity path="${outdir}/jar-listings-bad"/>
+			</reproduction>
+		</output>
 		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
-			<parameter value="${jar}" />
-			<parameter value="${goodJar}" />
-			<parameter value="${badJar}" />
+			<parameter value="${input}"/>
+			<parameter value="${output}"/>
 		</mapreduce>
 	</foreach>
-
 	<fold name="histogram">
 		<input>
-			<dir id="badJarDir" dir="${outdir}/jar-listings-bad" />
-			<dir id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
+			<fileset path="${outdir}/jar-listings-bad"/>
+			<fileset path="${outdir}/jar-listings-filtered"/>
 		</input>
 		<output>
-			<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
-			<file id="logFile" file="${outdir}/logs/histogram.log" />
+			<file path="${outdir}/class-size-histogram"/>
+			<file path="${outdir}/logs/histogram.log"/>
 		</output>
 		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
-			<parameter value="${goodJarDir}" />
-			<parameter value="${histogramDir}" />
-			<parameter value="${logFile}" />
+			<parameter value="${input}"/>
+			<parameter value="${output}"/>
 		</mapreduce>
 	</fold>
-
-	<fold name="pig_fold" >
+	<fold name="pig_fold">
 		<depends>
-			<file id="${libdir}/somefile.txt" />
+			<file path="${libdir}/somefile.txt"/>
 		</depends>
 		<input>
-			<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
+			<file path="${outdir}/class-size-histogram"/>
 		</input>
 		<output>
-			<dir refid="projectOutput"/>
+			<file path="${outdir}/class-size-median-bin"/>
 		</output>
 		<pig script="${scripts}/median.pig">
-			<parameter value="${libdir}/somefile.txt" />
-			<parameter value="${histogramDir}" />
-			<parameter value="${log}" />
+			<parameter value="${input}"/>
+			<parameter value="${output}"/>
 		</pig>
 	</fold>
 </project>
+
 }}}
