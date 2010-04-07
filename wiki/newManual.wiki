@@ -59,10 +59,28 @@ Each task is executed in a separate thread, therefore tasks which does not depen
 
 In case some task has failed, Hamake will not execute subsequent tasks from the same DAG branch. For example, if graph there are two independent branches in a DAG with the root task A:
 
-http://code.google.com/p/hamake/source/browse/trunk/images/manualFigure1.gif
+A -> B -> C <BR>
+A -> E -> D
 
 In case failure has occurred during execution of task B Hamake will not execute task C but  will execute D and E tasks
 
+== Data Mapping ==
+
+When designing flow of your process with Hamake you have an option between two data mapping types:
+
+ * You can map each file from input folder to file from one or many output folder(s) with `<foreach>` tag
+ * You can map a set of file(s) or folder(s) from input to a set of output file(s) of folder(s) `<fold>` tag
+
+In case you map your files with `<foreach>` tag, for each file Hamake will produce one file in one or many corresponding output folders. Hamake will launch task for every file from inpur folder. If we view _foreach_ as a function, we can define it using Haskell language syntax as:
+{{{
+foreach:: Path -> [Path] -> [Path]
+map source dependencies targets = ...
+}}}
+`<fold>` simply maps a collection of data from input to a collection of data from output. Hamake launches simgle task to process input data and output result. If we view _fold_ as a function, we can define it using Haskell language syntax as:
+{{{
+fold:: [Path] -> [Path]
+fold source targets = ...
+}}}
 == Hamake Tasks ==
 
 Hamake operates with three types of tasks which are implemented by user. Threse are Hadoop MR jobs, Pig scripts and arbitrary program or bash script that is launched on a machine where Hamake is running. You define these tasks in hamake-file. 
@@ -75,8 +93,8 @@ TODO: add example of three types of tasks
 
 Currently you can define following types of tasks:
 || *Task* || *What Hamake Does* ||
-|| Hadoop map-reduce job || Hamake copies MR job jar to local temporary location and then submits job to JobTracker. ||
-|| pig || Hamake copies PigLatin script to local temporary location and then executes this script.||
+|| Hadoop map-reduce job || Hamake copies MR job jar to local temporary location and then submits job to !JobTracker. ||
+|| pig || Hamake copies !PigLatin script to local temporary location and then executes this script.||
 || exec || Executes specified script or program locally on the machine, where Hamake is running ||
 
 ==Working directory==
@@ -103,12 +121,12 @@ To run Hamake you should have Hadoop installed and bin folder of Hadoop should b
 
 ==Command-line options summary==
 
-hadoop jar path_to_hamake.jar/hamake-j.jar path_to_hamake-file [options] [target [target2] [target3] ...]
+hadoop jar path_to_hamake.jar/hamake-j.jar path_to_hamake-file `[options] [target [target2] [target3] ...]`
 Options:
-    -V, -version display version and exit
-    -v, -verbose verbose mode
-    -n, -dry-run execution simulation without actually executing any tasks or modifying any files.
-    -t, -test mostly for developers - make it print detailed stack traces in case of errors
-    -j, -jobs execute up to N tasks simultaneously. Applies only to independent tasks. By default N is unlimited. -j 1 will make it execute tasks one by one.
-    -f, -file specifies makefile name. If this option is omitted 'hamakefile.xml' is assumed
+    -V, -version display version and exit.<BR>
+    -v, -verbose verbose mode.<BR>
+    -n, -dry-run execution simulation without actually executing any tasks or modifying any files.<BR>
+    -t, -test mostly for developers - make it print detailed stack traces in case of errors.<BR>
+    -j, -jobs execute up to N tasks simultaneously. Applies only to independent tasks. By default N is unlimited. -j 1 will make it execute tasks one by one.<BR>
+    -f, -file specifies makefile name. If this option is omitted 'hamakefile.xml' is assumed<BR>
     -w, -workdir path to working directory
