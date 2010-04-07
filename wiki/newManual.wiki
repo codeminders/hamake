@@ -96,10 +96,21 @@ Hamake takes into account schema part of the paths used in workflow script. Thus
 }}}
 
 =Running Hamake=
+If you installed Hamake as described in _Installation_ you can run Hamake from the command-line in a following way:
+{{{
+hadoop jar path_to_hamake.jar/hamake-j.jar path_to_hamake-file
+}}}
 
+To run Hamake you should have Hadoop installed and bin folder of Hadoop should be added to system PATH environment variable.
 
+==Command-line options summary==
 
-=Hamake tasks=
-
-
-=Task execution=
+hadoop jar path_to_hamake.jar/hamake-j.jar path_to_hamake-file [options] [target [target2] [target3] ...]
+Options:
+    -V, -version display version and exit
+    -v, -verbose verbose mode
+    -n, -dry-run execution simulation without actually executing any tasks or modifying any files.
+    -t, -test mostly for developers - make it print detailed stack traces in case of errors
+    -j, -jobs execute up to N tasks simultaneously. Applies only to independent tasks. By default N is unlimited. -j 1 will make it execute tasks one by one.
+    -f, -file specifies makefile name. If this option is omitted 'hamakefile.xml' is assumed
+    -w, -workdir path to working directory
