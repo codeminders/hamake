@@ -39,75 +39,58 @@ Hamake builds and runs DAG in a following way:
  # As soon as some task has finished, it is marked as completed and the child task is launched
  # When no tasks are left, Hamake exits 
 
+Graph is stored in the memory of the machine where Hamake is running, so the number of tasks are limited by the upper bound of the JVM heap.
+
 You can control how many root tasks are selected by two ways:
  * You can list leaf tasks you would like to end with as Hamake command-line parameters
    Example: {{{hadoop jar hamake-j-1.0.jar jar-listings filter-listings}}}
  * You can specify default leaf task you would like to end with in hamake-file. This attribute is taken into account only in case you have not specified leaf tasks to start with as Hamake command-line parameters.
    Example: {{{<project name="test" default="jar-listings">}}}
 
-Lets imagine you would like to process huge amount of log files with Hadoop. You have one map-reduce job that collects log files from your web servers on HDFS, one map-reduce job that filters your log files based on IP addresses and several map- and would like to 
-In Hamake you can also define allows to set up dependency on external resources. Such dependency defines set of file system paths treated as additional task input. Task will be executed only if all its inputs contain fresh data.
+==Hamake Dependency Mechanism==
 
-A few words about data freshness...<br>
-Execution of some tasks may be omitted if they were executed early and inputs were not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
+In Hamake first task depends on second if input data of first task is an output data of a second. If first task depends on second it will be launched as soon as second task has finished. Tasks may be skipped if they have been executed earlier and thier output is fresh enough. In other words, Hamake runs tasks incrementally, task won't be executed if input data are older than output data.
 
-Each task is executed in separate thread, therefore tasks with no dependencies can be executed in parallel.
+Lets imagine you have three map-reduce jobs you would like to combine in a workflow. First job collects log files from your servers on HDFS. Second job extracts top N of most active users and puts this list in a distributed cache. Third job counts recommendations for a user based on extracted user list and collected log files. In dataflow programming model you can put third job dependent on the second job by specifying that output folder of the second job will be an input of the third job. But how can you put third job dependent on the first one?
 
-Task failing stops subsequent execution of its branch. For example, if graph is tree of two independent branches and the root in the point A, <br>
-branch 1:  A<-B<-C<br>
-branch 2:  A<-D<-E<br>
-Assume, failure was occurred in vertex B. Hamake:
- * will not execute task C
- * will execute D and E tasks
+In Hamake you can also define some task to be dependent on external resources. In case of such dependency task will be executed only if external data is present and fresh. Also please note that external resources will not get into task input. Thus, you can define third task to be dependent on the first one by specifying its output folder as external resource.
 
-Tasks dependencies graph is entirely stored in the memory of the machine where Hamake is executed, so the number of tasks are limited by the resource of this machine as well as by the JVM heap upper limit (2Gb).
+Each task is executed in a separate thread, therefore tasks which does not depends on each other will be executed in parallel.
 
-The Hamake operates by the tasks which has to be implemented by the user. These tasks declared in the [newSyntaxReference workflow script] (XML file) and may depend on each other by means of their input and output.
-    Example: 
-{{{ 
-<mapreduceTask name="jar-listings" main="com.codeminders.hamake.examples.JarListing" jar="hamake-examples-1.0.jar">
-  <foreach>
-    <input name="jar" location="lib" mask="*.jar" />
-    <output name="listing" location="jar-listings" />
-  </foreach>
-  <parameter value="${jar}" />
-  <parameter value="${listing}" />
-</mapreduceTask>
+In case some task has failed, Hamake will not execute subsequent tasks from the same DAG branch. For example, if graph there are two independent branches in a DAG with the root task A:
 
-<mapreduceTask name="filter-listings" main="com.codeminders.hamake.examples.JarListingFilter" jar="hamake-examples-1.0.jar">
-  <foreach>
-    <input name="jar" location="jar-listings"/>
-    <output name="listing" location="jar-listings-filtered" />
-  </foreach>
-  <parameter value="${jar}" />
-  <parameter value="${listing}" />
-</mapreduceTask>
+TODO: draw image:
+branch 1: A<-B<-C<br>
+branch 2: A<-D<-E
 
-}}}
+In case failure has occurred during execution of task B Hamake will not execute task C but  will execute D and E tasks
 
-In the example above task "filter-listings" depends on result of "jar-listings" task, so it will be executed just after results of "jar-listings" will be obtained. Easy to see that tasks connected in such a way form [http://en.wikipedia.org/wiki/Digraph_%28mathematics%29 directed graph] structure, where vertexes are defined by the tasks, dependencies define links and their direction. Link direction points to the root task (head vertex) that must be executed prior to the current task (tail vertex).
+== Hamake Tasks ==
+
+Hamake operates with three types of tasks which are implemented by user. Threse are Hadoop MR jobs, Pig scripts and arbitrary program or bash script that is launched on a machine where Hamake is running. You define these tasks in hamake-file. 
+
+Example: 
+TODO: add example of three types of tasks
+
 
 ==Tasks Submission==
 
-Basically, the Hamake utility simply executes series of user-defined code that submits MapReduce jobs to the Hadoop cluster. The Hamake is responsible for analyzing and collecting input data for user-defined MR code. It not allows user to send Map or Reduce jobs separately. 
-
-==Type of tasks==
-At the moment following tasks variety available:
-|| *Task* || *Description* ||
-|| mapreduce || Copies MR job jar to local temporary location then submits it to JobTracker specified in Hadoop configuration ||
-|| pig || Copies PigLatin script to local temporary location then executes this script. MR jobs are submitted to JobTracker specified in Hadoop configuration ||
-|| exec || Executes specified script or program locally ||
+Currently you can define following types of tasks:
+|| *Task* || *What Hamake Does* ||
+|| Hadoop map-reduce job || Hamake copies MR job jar to local temporary location and then submits job to JobTracker. ||
+|| pig || Hamake copies PigLatin script to local temporary location and then executes this script.||
+|| exec || Executes specified script or program locally on the machine, where Hamake is running ||
 
 ==Working directory==
-Hamake resolves all relative paths defined in workflow script by preceding their with working directory. Working directory can be defined in the Hamake command-line by -w option.
+Hamake resolves all non-absolute paths defined in hamake-file relative to working directory. Working directory can be defined as the Hamake command-line argument with _-w_ option.
    Example: {{{hadoop jar hamake-j-1.0.jar -w /home/hadoop/scripts}}}
 
-If working directory was not specified, it will be defined by the Hamake as:
+If working directory has been omitted, it will be determined by Hamake as:
  * user home directory, if Hadoop default FS is local FS (`file://`)
  * /user/<user name>, if Hadoop default FS is HDFS (hdfs://)
 
 ==Paths==
-The Hamake takes into account schema part of the paths used in workflow script. Thus, for example, if Hamake works on Amazon Elastic MapReduce, it is possible to specify paths to data stored on S3:
+Hamake takes into account schema part of the paths used in workflow script. Thus, for example, if Hamake works on Amazon Elastic MapReduce, it is possible to specify paths to data stored on S3:
 {{{
 <property name="output"  value="s3://hamake/test/"/>
 }}}
