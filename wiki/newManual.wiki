@@ -59,9 +59,7 @@ Each task is executed in a separate thread, therefore tasks which does not depen
 
 In case some task has failed, Hamake will not execute subsequent tasks from the same DAG branch. For example, if graph there are two independent branches in a DAG with the root task A:
 
-TODO: draw image:
-branch 1: A<-B<-C<br>
-branch 2: A<-D<-E
+http://code.google.com/p/hamake/source/browse/trunk/images/manualFigure1.gif
 
 In case failure has occurred during execution of task B Hamake will not execute task C but  will execute D and E tasks
 
