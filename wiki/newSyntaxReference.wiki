@@ -288,10 +288,10 @@ Example:
 			<fileset path="${outdir}/jar-listings" mask="*.jar"/>
 		</input>
 		<output>
-			<reproduction>
+			<composition>
 				<identity path="${outdir}/jar-listings-filtered"/>
 				<identity path="${outdir}/jar-listings-bad"/>
-			</reproduction>
+			</composition>
 		</output>
 		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
 			<parameter value="${input}"/>
