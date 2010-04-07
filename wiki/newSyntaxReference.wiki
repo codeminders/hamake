@@ -313,9 +313,9 @@ Example:
 		</mapreduce>
 	</fold>
 	<fold name="pig_fold">
-		<depends>
+		<dependency>
 			<file path="${libdir}/somefile.txt"/>
-		</depends>
+		</dependency>
 		<input>
 			<file path="${outdir}/class-size-histogram"/>
 		</input>
