@@ -20,7 +20,7 @@ In contrast to similar software Hamake does not require dedicated server or comp
 
 =Using Hamake=
 
-Hamake is a workflow engine. Hamake is dataflow based. To understand how does it work here are simple steps:
+Hamake is a workflow engine. To understand how it works here are simple steps:
  # You define your tasks in a special XML-formatted file (hamake-file) and launch Hamake as Hadoop job giving hamake-file as an argument.
  # Hamake arranges tasks from hamake-file in a direct acyclic graph
  # Tasks are launched as soon as new data is availible for them
@@ -31,21 +31,22 @@ To get familiar with hamake-file syntax please visit TODO:link_to_hamake_file_sy
 
 ==Direct Acyclic Graph==
 
-Frankly speaking, Hamake does not strictly follows [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. Hamake runs tasks based on Direct Acyclic Graph (DAG) that is built by Hamake when you start it. Tasks are then executed in order beginning from the root nodes to leaf nodes. Task is considered to be ready for execution as soon as its parents have finished processing data. Graph is build based on task input and output where graph edge is data and graph node is task. If output of task A intercepts with input of task B the task B is considered to be dependent on task A.
+Frankly speaking, Hamake does not strictly follows [http://en.wikipedia.org/wiki/Dataflow Dataflow] programming paradigm. Hamake runs tasks based on _Direct Acyclic Graph_ (DAG) that it builds at the beginning. Graph is build based on task input and output where graph edge is data and graph node is a task. If output of task A intercepts with input of task B the task B is considered to be dependent on task A. Tasks are then executed in order from root nodes to leaf nodes. Task is considered to be ready for execution as soon as its parents have finished processing data. 
 
-Here how Hamake builds DAG:
- # At the beginning Hamake loads all tasks from hamake-file into memory and searches for tasks that has no input or input data that does not intercept with other tasks output data. This tasks becomes root tasks.
+Hamake builds and runs DAG in a following way:
+ # At the beginning Hamake loads all tasks from hamake-file into memory and searches for tasks that has no input or input data that does not intercept with other tasks output. This tasks becomes _root tasks_.
  # Hamake selects root tasks to start with and launches them in parallel
  # As soon as some task has finished, it is marked as completed and the child task is launched
  # When no tasks are left, Hamake exits 
 
-Root tasks to start with can be defined by two ways:
- # list of start tasks can be specified in Hamake command-line parameters
+You can control how many root tasks are selected by two ways:
+ * You can list leaf tasks you would like to end with as Hamake command-line parameters
    Example: {{{hadoop jar hamake-j-1.0.jar jar-listings filter-listings}}}
- # {{{default}}} attribute of {{{project}}} element in the Hamake  [newSyntaxReference workflow script] specifies the only start task. This attribute is taken into account only in case start tasks were note specified in the Hamake command-line.
+ * You can specify default leaf task you would like to end with in hamake-file. This attribute is taken into account only in case you have not specified leaf tasks to start with as Hamake command-line parameters.
    Example: {{{<project name="test" default="jar-listings">}}}
 
-Besides task-to-task dependencies, Hamake allows to set up dependency on external resources. Such dependency defines set of file system paths treated as additional task input. Task will be executed only if all its inputs contain fresh data.
+Lets imagine you would like to process huge amount of log files with Hadoop. You have one map-reduce job that collects log files from your web servers on HDFS, one map-reduce job that filters your log files based on IP addresses and several map- and would like to 
+In Hamake you can also define allows to set up dependency on external resources. Such dependency defines set of file system paths treated as additional task input. Task will be executed only if all its inputs contain fresh data.
 
 A few words about data freshness...<br>
 Execution of some tasks may be omitted if they were executed early and inputs were not changed. In other words, Hamake executes tasks incrementally, it means the task won't be executed if input data are older than output data. 
