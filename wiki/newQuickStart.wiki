@@ -1,6 +1,6 @@
 =Introduction=
 
-Hamake is a lightweight utility for running Hadoop Map Reduce jobs and Pig scrips on a dataset stored on HDFS. Dataset could be either individual files or directories containing groups of files. Hamake helps to organize your Hadoop Map Reduce jobs and Pig script in a workflow and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them. To start working with Hamake all you need is to describe your Hadoop map-reduce jobs, Pig scripts or local scripts as tasks along with their input and output data in ''hamakefile'' using simple XML syntax and launch Hamake giving path to your hamake-file as an argument.
+Hamake is a lightweight utility and workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs in a workflow and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them. To start working with Hamake all you need is to describe your Hadoop map-reduce jobs, Pig scripts or local scripts as tasks along with their input and output data in ''hamakefile'' using simple XML syntax and launch Hamake giving path to your hamake-file as an argument.
 
 ==Features==
 
@@ -63,7 +63,7 @@ copy <distributive>/examples/hamakefiles/class-size-s3.xml to s3n://hamake/
 elastic-mapreduce --create --jar s3n://hamake/hamake-j-1.0.jar --main-class com.codeminders.hamake.Main --args -t,-v,-f,s3n://hamake/class-size-s3.xml
 }}}
 
-Hamake is executed as single job within Amazon EMR job flow, it uses Amazon's Hadoop configuration and submits MR jobs directly to JobTracker. At the moment Hamake allows to execute MR tasks only within Amazon EMR.
+Hamake is executed as single job within Amazon EMR job flow, it uses Amazon's Hadoop configuration and submits MR jobs directly to !JobTracker. At the moment Hamake allows to execute MR tasks only within Amazon EMR.
 
 ==Creating Your First Hamake-File==
 
