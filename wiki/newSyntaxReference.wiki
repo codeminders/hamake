@@ -62,18 +62,21 @@ In Hamake you first define a dataflow transformation rules (DTR) along with data
   # `<fold>` - get whole set of input files, execute specified task for this set, save result file(s) to output location(s)
 
 Understanding DTR: 
- * _foreach_ DTR is like a loop over file set from task execution point of view, or one-to-one mapping from data point of view
- * _foreach_ DTR generates the same number of elements on output as it was on input
- * _foreach_ DTR allows to specify input data set from different locations (folders on FS). Output data, as well, can be stored in a set of locations. But it is assumed that there is a way to map each input item on appropriate output item.
+ * _foreach_ DTR is like an one-to-one mapping, from data point of view
+ * _foreach_ DTR specify mapping of input item on each output location
+ * _foreach_ DTR allows to specify input data set from different locations
  * _fold_ DTR similar to JOIN operation over input data set
- * _fold_ DTR can produce one or more output files
+ * _fold_ DTR allows to specify input data set from different locations
+ * _fold_ DTR can produce one or more output files for whole input data set
 
 ==`<foreach>`==
 
-Dataflow transformation rule that defines one-to-many file mapping between input file(s) and one or more output files. This assumes processing only files which are present at source location, but not present or not current at all of destinations. If task input is _foreach_, there will be one output file in all output folders for each file from input folder. Each input file will be processed by task, that is specified whithin _`<foreach>`_ tag, if all of the following conditions are satisfied:
-  # Output file is present
-  # Output file time stamp is older than input file
-  # Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
+Dataflow transformation rule which maps a group of files at one location to another location(s). This DTR assumes 1 to 1 file mapping between locations, and can process them incrementally, converting only files which are present at source location, but not present or not current at all of destinations.
+
+The task have one input path, and one or more dependent paths and one or more output paths. One input file must produce one output file per output location. Output location file considered to be current if all of the following conditions are satisfied:
+   1. Output file is present
+   2. Output file time stamp is older than input file
+   3. Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
  
 _foreach_ has following sub-elements: *`<input>`*, *`<output>`*, *`<dependency>`*,  *`<mapreduce>`* or *`<pig>`* or *`<exec>`*
 
