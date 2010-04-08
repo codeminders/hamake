@@ -36,7 +36,7 @@ public class TestHamake {
 	 @Test
 	 public void testLocalCpHamakefile() throws IOException,
 	 ParserConfigurationException, SAXException,
-	 InvalidMakefileException, InterruptedException {
+	 InvalidMakefileException, InterruptedException, PigNotFoundException {
 	 // generate input and output folders folders
 	 File tempInDir = TestHelperUtils.generateTemporaryDirectory(tempDir
 	 .getAbsolutePath());
@@ -89,7 +89,7 @@ public class TestHamake {
 	 @Test
 	 public void test2BranchesLocalCpHamakefile() throws IOException,
 	 ParserConfigurationException, SAXException,
-	 InvalidMakefileException, InterruptedException {
+	 InvalidMakefileException, InterruptedException, PigNotFoundException {
 	 // generate input and output folders folders
 	 File tempInDir = TestHelperUtils.generateTemporaryDirectory(tempDir
 	 .getAbsolutePath());
@@ -173,7 +173,7 @@ public class TestHamake {
 	@Test	
 	public void testSystemExitIsProhibited() throws IOException,
 			ParserConfigurationException, SAXException,
-			InvalidMakefileException, InterruptedException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+			InvalidMakefileException, InterruptedException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, PigNotFoundException {
 		SecurityManager securityManager = System.getSecurityManager();
 		@SuppressWarnings(value = { "unused" })		
 		SecurityManager manager = new SecurityManager(){			
