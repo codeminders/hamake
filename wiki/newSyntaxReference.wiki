@@ -74,9 +74,9 @@ Understanding DTR:
 Dataflow transformation rule which maps a group of files at one location to another location(s). This DTR assumes 1 to 1 file mapping between locations, and can process them incrementally, converting only files which are present at source location, but not present or not current at all of destinations.
 
 The task have one input path, and one or more dependent paths and one or more output paths. One input file must produce one output file per output location. Output location file considered to be current if all of the following conditions are satisfied:
-   1. Output file is present
-   2. Output file time stamp is older than input file
-   3. Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
+   #. Output file is present
+   #. Output file time stamp is older than input file
+   #. Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
  
 _foreach_ has following sub-elements: *`<input>`*, *`<output>`*, *`<dependency>`*,  *`<mapreduce>`* or *`<pig>`* or *`<exec>`*
 
