@@ -1,6 +1,8 @@
+<wiki:toc max_depth="2" />
+
 =Introduction=
 
-Hamake is a lightweight utility and workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs in a workflow and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them. To start working with Hamake all you need is to describe your Hadoop map-reduce jobs, Pig scripts or local scripts as tasks along with their input and output data in ''hamakefile'' using simple XML syntax and launch Hamake giving path to your hamake-file as an argument.
+Hamake is a lightweight workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them. To start working with Hamake all you need is to describe your Hadoop map-reduce jobs, Pig scripts or local scripts along with their input and output data in _hamake-file_ using simple XML syntax and launch Hamake giving path to your _hamake-file_ as an argument.
 
 ==Features==
 
@@ -20,8 +22,8 @@ export PATH=$PATH:$HADOOP_HOME/bin
 =Quick Start=
 
 ==Running Hamake Example==
-First you should create your hamakefile that desribes tasks, tasks input and output data. Syntax of hamakefile is described here: LINK_TO_THE_HAMAKEFILE_SYNTAX.
-As an example you can take class-size.xml file from example folder of the Hamake distribution. To generate data for class-size.xml example, launch following script from the root of Hamake distribution:
+Hamake runs Hadoop MR jobs, Pig scripts and local scripts based on hamake-file.
+As an example you can take class-size.xml hamake-file from example folder of the Hamake distribution. To generate data for class-size.xml example, launch following script from the root of Hamake distribution:
 {{{
 #!/bin/sh
 hadoop fs -rmr /user/$USERNAME/build
