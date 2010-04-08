@@ -68,5 +68,52 @@ elastic-mapreduce --create --jar s3n://hamake/hamake-j-1.0.jar --main-class com.
 Hamake is executed as single job within Amazon EMR job flow, it uses Amazon's Hadoop configuration and submits MR jobs directly to !JobTracker. At the moment Hamake allows to execute MR tasks only within Amazon EMR.
 
 ==Creating Your First Hamake-File==
+This example will give you a short introduction of hamake-file syntax. To get more insight into it, please visit TODO:link_to_hamakefile-syntax-reference.
 
-TODO: write step-by-step example as soon as new syntax will be ready
+First of all, if you haven't done it already, please install hamake. After that create file _first_hamakefile.xml_ with following content:
+{{{
+<project name="hamakefile-startup">
+	<property name="tempDir" value="/tmp" />
+	<fold name="fold1">
+		<description>list all files in a directory</description>
+		<input>
+			<file path="${tempDir}/hamake-tmp" />
+		</input>
+		<output>
+			<file path="${tempDir}/out.txt" />
+		</output>
+		<exec binary="ls">
+			<parameter value="${input}"/>
+			<constparam value=">" />
+			<parameter value="${output}"/>
+		</exec>
+	</fold>	
+	<foreach name="foreach1">
+		<description>copy files from one folder to another</description>
+		<dependencies />
+		<input>
+			<fileset path="${tempDir}/in" />
+		</input>
+		<output>
+			<identity path="${tempDir}/hamake-tmp" />
+		</output>
+		<exec binary="cp">
+			<parameter value="${input}"/>
+			<parameter value="${output}"/>
+		</exec>
+	</foreach>
+</project>
+}}}
+
+This simple hamake-file has only 2 transformation rules:
+ * _foreach_ that copies all files from /tmp/in folder to /tmp/hamake-tmp folder
+ * _fold_ that lists all file in /tmp/hamake-tmp folder and outputs result of _ls_ command execution to /tmp/out.txt file. You can change base directory from _/tmp_ to the directory of your choise in the _tempDir_ property.
+
+To run the example execute command:
+hadoop jar ```pwd```/hamake-j-1.0.jar -f ```pwd```/first_hamakefile.xml
+
+you should see following output:
+
+TODO: add output as soon as new syntax will be implemented
+
+Please note that _foreach1_ transformation rule has been launched before _fold1_. This has happened, because _foreach1_ depends on _fold1_
