@@ -100,22 +100,29 @@ Example:
 
 ===`<input>`===
 
-This tag defines input dataset of `<foreach>` dataflow transformation rule. As an input you can specify one and only one fileset with `<fileset>` tag
+This tag defines input dataset. 
+_foreach_ DTR allows to specify any number of input filesets.
 
 Example:
 {{{
 <input>
-	<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
+    <fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
+    <fileset id="zip" dir="${outdir}/jar-listings" mask="*.zip" />
 </input>
 }}}
 
 ===`<output>`===
 
-This tag defines output dataset of `<foreach>` dataflow transformation rule. As an output you can specify mapping function(s) that will be applied to each input file. This element has sub elements: *`<composition>`* or *`<identity>`*
+This tag defines output dataset.
+_foreach_ DTR allows to specify here mapping function(s) ONLY. This function will be applied to each input file and produce mapped file on output location. At the moment, there are only two mapping functions: 
+ * identity - produce file with same name in different location (folder)
+ * composition - complex output to several locations (see tag composition description)
 
-If your data was not changed a long time, but you need to execute some task for sure even for unmodified data, there is {{{expiration}}} attribute that specifies data consistency period. When this period expires, the Hamake would consider input as modified.
-Expiration period is defined as: `<value><measure unit>`, <br>
-where: value is an integer value and measure unit is one of
+This element has sub elements: *`<composition>`* or *`<identity>`*
+
+If you need to execute some task for sure even for unmodified input data, there is {{{expiration}}} attribute that specifies data consistency period. When this period expires, the Hamake would consider input as modified.
+Expiration period is defined as: `<integer number><measure unit>`, <br>
+measure unit is one of:
  * s - seconds
  * m - minutes
  * h - hours
@@ -128,29 +135,29 @@ where: value is an integer value and measure unit is one of
 Example:
 {{{
 <output expiration="1w">
-	<identity path="${outdir}/jar-listings-filtered"/>
+    <identity path="${outdir}/jar-listings-filtered"/>
 </output>
-}}}
-
-===`<composition>`===
-
-This element defines composit output mapping function for `<foreach>` element. Whithin this tag you can specify one or more *`<identity>`* tags
-
-Example:
-{{{
-<composition>
-	<identity path="${outdir}/jar-listings-filtered"/>
-	<identity path="${outdir}/jar-listings-bad"/>
-</composition>
 }}}
 
 ===`<identity>`===
 
-Defines identify output mapping function. This function will create file with the same in the folder specified as path attribute.
+Defines identity output mapping function. This function will create file with the same in the folder specified as path attribute.
 
 Example:
 {{{
 <identity path="${outdir}/jar-listings-filtered"/>
+}}}
+
+===`<composition>`===
+
+This element defines composite output mapping function. Within this tag you can specify one or more *`<identity>`* tags
+
+Example:
+{{{
+<composition>
+    <identity path="${outdir}/jar-listings-filtered"/>
+    <identity path="${outdir}/jar-listings-bad"/>
+</composition>
 }}}
 
 ==`<fold>`==
@@ -179,31 +186,33 @@ Example:
 
 ===`<input>`===
 
-This tag defines input dataset of `<fold>` element. As an input you can specify one or more `<file>` tag(s)
+This tag defines input dataset. 
+_fold_ DTR allows to specify here one or more folders (`<file>` tag(s) only).
 
 Example:
 {{{
 <input>
-	<file path="${outdir}/class-size-histogram"/>
+    <file path="${outdir}/class-size-histogram"/>
 </input>
 }}}
 
 ===`<output>`===
 
-This tag defines output dataset for `<fold>` element. Whithin this tag you can specify one or more file(s) or folder(s) with `<file>` tag
+This tag defines output dataset. 
+_fold_ DTR allows to specify here one or more files or folders.
 
 Example:
 {{{
 <output>
-	<file path="${outdir}/class-size-histogram"/>
-	<file path="${outdir}/logs/histogram.log"/>
+    <file path="${outdir}/class-size-histogram"/>
+    <file path="${outdir}/logs/histogram.log"/>
 </output>
 }}}
 
 = Tasks =
 
 Task defines job to be done. Sequence of the task and the number of times it will be called is determined by dataflow transformation rule. In case you want to specify external data a task will depends on, `<dependency>` tag can be used. Currently there are three types of tasks: hadoop job (_hadoop_), 
-pig script (_pig_), script or program on machine, where hamake is running (_exec_). Order of arguments that will be passed to Hadoop job, pig script or exec task are determined by parameters list in the body of the task. 
+pig script (_pig_), script or program on machine, where hamake is running (_exec_). Order of arguments that will be passed to Hadoop job, pig script or exec task are determined by order of parameters list in the body of the task. 
 
 ==`<mapreduce>`==
 
