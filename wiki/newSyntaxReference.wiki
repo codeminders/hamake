@@ -260,9 +260,9 @@ Task dependencies are build implicitly by the system itself, based on input and 
 
 Example:
 {{{
-<depends>
+<dependency>
 	<file id="${libdir}/somefile.txt" />
-</depends>
+</dependency>
 }}}
 
 = Hamakefile Complite Example =
