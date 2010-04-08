@@ -27,7 +27,7 @@ Hamake is a workflow engine. To understand how it works here are simple steps:
  # In case all wend down well, you recieve your output
  # In case some tasks failed, Hamake output error message and tries to finish as many tasks as it can
 
-To get familiar with hamake-file syntax please visit TODO:link_to_hamake_file_syntax_page page. 
+To get familiar with hamake-file syntax please visit [http://code.google.com/p/hamake/wiki/newSyntaxReference Syntax Reference] page. 
 
 ==Direct Acyclic Graph==
 
