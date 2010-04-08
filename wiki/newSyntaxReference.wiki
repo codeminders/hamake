@@ -265,8 +265,7 @@ Example:
 </depends>
 }}}
 
-== Hamakefile Complite Example ==
-
+= Hamakefile Complite Example =
 {{{
 <project name="test" default="jar-listings">
 	<property name="outdir" value="build/test"/>
