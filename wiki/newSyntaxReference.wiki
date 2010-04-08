@@ -278,6 +278,8 @@ This tag has one attribute _value_ where you can specify any parameter you want 
 
 Example:
 {{{
+<parameter value="${input}" />
+<parameter value="${output}" />
 <parameter value="${libdir}/somefile.txt" />
 <parameter value="${histogramDir}" />
 }}}
@@ -286,12 +288,12 @@ Example:
 
 ==`<dependency>`==
 
-Task dependencies are build implicitly by the system itself, based on input and output data of dataflow transformation rule. In case you want to specify some external data a dataflow transformation rule will depend on, you can use `<dependency>` tag whithin `<foreach>` or `<fold>` elements. Tag has one sub-element *`<file>`*
+In case you want to specify some external data a dataflow transformation rule will depend on, you can use `<dependency>` tag whithin `<foreach>` or `<fold>` elements. Tag has one sub-element *`<file>`*
 
 Example:
 {{{
 <dependency>
-	<file id="${libdir}/somefile.txt" />
+    <file id="${libdir}/somefile.txt" />
 </dependency>
 }}}
 
