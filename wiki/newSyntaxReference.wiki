@@ -50,9 +50,19 @@ A fileset is a group of files. These files can be found in specified directory a
 ==`<file>`==
 
 A file or directory on file system. The actual file system depends on the path schema (e.g. `file:///` results in a file or folder on local FS)
+
+{{{expiration}}} attribute specifies data consistency period. When this period expires, the Hamake would consider this path as inconsistent and will try to renew data stored by this path. Expiration period is defined as: `<integer number><measure unit>`, <br>
+measure unit is one of:
+ * s - seconds
+ * m - minutes
+ * h - hours
+ * d - days
+ * w - weeks
+
 || *Attribute* || *Description* || *Required* ||
 || id || the ID of the element. || No ||
 || path || path to file system || Yes ||
+|| expiration || data consistency timeout || No ||
 
 =Dataflow Transformation Rules=
 
@@ -120,21 +130,9 @@ _foreach_ DTR allows to specify here mapping function(s) ONLY. This function wil
 
 This element has sub elements: *`<composition>`* or *`<identity>`*
 
-If you need to execute some task for sure even for unmodified input data, there is {{{expiration}}} attribute that specifies data consistency period. When this period expires, the Hamake would consider input as modified.
-Expiration period is defined as: `<integer number><measure unit>`, <br>
-measure unit is one of:
- * s - seconds
- * m - minutes
- * h - hours
- * d - days
- * w - weeks
-
-|| *Attribute* || *Description* || *Required* ||
-|| expiration || input/output data consistency timeout || No ||
-
 Example:
 {{{
-<output expiration="1w">
+<output>
     <identity path="${outdir}/jar-listings-filtered"/>
 </output>
 }}}
