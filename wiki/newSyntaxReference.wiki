@@ -1,9 +1,9 @@
-= !HaMakefileSyntax =
+This page describes proposed syntax of hamake-file 
 
-This page describes proposed syntax of hamake 
+<wiki:toc max_depth="1" />
 
 = Introduction =
-Hamake is based on dataflow programming model - order of execution of tasks is controlled by data and not by tasks themselfs. That means that task A will be called before task B in case input path of task B intercepts with output path of task A. For a particular task, it will be triggered only if input data has been renewed or validity period of output data has been expired. Also you can make one task dependent on another with help of _`<depends>`_ tag.
+Hamake is based on dataflow programming model - order of execution of tasks is controlled by data and not by tasks themselfs. Contrary to Apache ant or make in hamake-file you describe your data first, then tasks. Task A will be called before task B in case input path of task B intercepts with output path of task A. For a particular task, it will be triggered only if input data has been renewed or validity period of output data has been expired.
 
 = Root Tags Description =
 
@@ -12,15 +12,15 @@ Hamake is based on dataflow programming model - order of execution of tasks is c
 This is the root element. All other elements should be whithin this tag. The _project_ has following attributes:
 || *Attribute* || *Description* || *Required* ||
 || name || the name of the project. || No ||
-|| default || the default target to start with when no start targets are supplied. || No ||
+|| default || the default dataflow transformation rule to start with when no start dataflow transformation rules are given as Hamake command-line parameters. || No ||
 
-Each project defines one or more dataset to be processed. Each dataset define task that will process this dataset. Task can be Hadoop map-reduce job, Pig script or local program (script). When running Hamake, you can select which dataset(s) you want to start with. When no datasets are given, the project's default is used.
+Each project defines one or more dataflow transformation rules. Each dataflow transformation rule define mapping of your data and task that will process this data. Task can be Hadoop map-reduce job, Pig script or local program (script). When running Hamake, you can select which transformation rule(s) you want to start with. When no transformation rules are given, the project's default is used.
 
-Allowed sub-elements: *`<property>`*, *`<fold>`*, *`<foreach>`*, *`<fileset>`*, *`<dir>`*, *`<file>`*
+Allowed sub-elements: *`<property>`*, *`<fold>`*, *`<foreach>`*, *`<fileset>`*, *`<file>`*
 
 ==`<property>`==
 
-Sets a property (by name and value), in the project. Properties are named values, which can be used in hamakefile. They work like macros. Once defined, they can be used in any string attribute, using the variable syntax ${variable_name}. 
+Sets a property (by name and value), in the project. Properties are named values, which can be used in hamake-file. They work like macros. Once defined, they can be used in any string attribute, using the variable syntax ${variable_name}. 
 
 Definition example
 
@@ -40,65 +40,56 @@ Usage example:
 A fileset is a group of files. These files can be found in a directory tree starting in a base directory and are matched by mask or be a single file. 
 
 || *Attribute* || *Description* || *Required* ||
-|| id || the ID of the element. || Yes ||
-|| dir || the root of the directory tree of this FileSet. || Either dir or file must be specified ||
-|| file || shortcut for specifying a single-file fileset. || Either dir or file must be specified ||
-|| mask || the default target to start with when no start targets are supplied. || No ||
-
-==`<dir>`==
-
-A folder on HDFS or local FS. To define a folder on local FS use _file:///_ prefix
-|| *Attribute* || *Description* || *Required* ||
-|| id || the ID of the element. || Yes ||
-|| location || path to folder on HDFS or localFS || Yes ||
+|| id || the ID of the element. || No ||
+|| path || the root of the directory tree of this !FileSet. || Yes ||
+|| mask ||  filename glob mask. || No ||
 
 ==`<file>`==
 
-A file on HDFS or local FS. To define a file on local FS use _file:///_ prefix
+A file or directory on file system. The actual file system depends on the prefix (e.g. `file:///` results in a file or folder on local FS)
 || *Attribute* || *Description* || *Required* ||
-|| id || the ID of the element. || Yes ||
-|| location || path to file on HDFS or localFS || Yes ||
+|| id || the ID of the element. || No ||
+|| path || path to file system || Yes ||
 
-=Datasets=
+=Dataflow Transformation Rules=
 
-In Hamake you first define a dataset that should be processed, after that you define tasks for a concrete dataset. Dataset consist of input data and output data. For input data you have an option between two types:
+In Hamake you first define a dataflow transformation rules (DTR) along with data that should be processed, after that you define tasks for a concrete dataflow transformation rule. DTR maps your input data onto output data. Currently you have an option between two mapping types:
 
   # You can map a group of files at one location to another location(s) with `<foreach>` tag
   # You can reduce a group of file(s) and produce one or more folder(s) or file(s) with `<fold>` tag.
 
-Output data depends on input data type. If it is _foreach_ - you should define one directory where output files will be located. In case of _fold_ you can define any amount of files or folders where task output data will be written.
+In case of _foreach_ you define one or more mapping functions as an output. In case of _fold_ you can define any amount of files or folders as an output.
 
 ==`<foreach>`==
 
-Type of input that defines one-to-many file mapping between input file(s) and one or more output files. This assumes processing only files which are present at source location, but not present or not current at all of destinations. If task input is _foreach_, there will be one output file in all output folders for each file from input folder. Each input file will be processed by task, that is specified whithin _`<foreach>`_ tag, if all of the following conditions are satisfied:
-  #Output file is present
-  #Output file time stamp is older than input file
-  #Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
+Dataflow transformation rule that defines one-to-many file mapping between input file(s) and one or more output files. This assumes processing only files which are present at source location, but not present or not current at all of destinations. If task input is _foreach_, there will be one output file in all output folders for each file from input folder. Each input file will be processed by task, that is specified whithin _`<foreach>`_ tag, if all of the following conditions are satisfied:
+  # Output file is present
+  # Output file time stamp is older than input file
+  # Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
  
-_foreach_ has following sub-elements: *`<input>`*, *`<output>`*, *`<depends>`*,  *`<mapreduce>`* or *`<pig>`* or *`<exec>`*
+_foreach_ has following sub-elements: *`<input>`*, *`<output>`*, *`<dependency>`*,  *`<mapreduce>`* or *`<pig>`* or *`<exec>`*
 
 Example:
 
 {{{
-<foreach name="filter-listing">
+<foreach name="jar-listings">
 	<input>
-		<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
+		<fileset path="${libdir}/lib" mask="*.jar"/>
 	</input>
 	<output>
-		<dir id="goodJar" dir="${outdir}/jar-listings-filtered" />
-		<dir id="badJar" dir="${outdir}/jar-listings-bad" />
-	</output>		
-	<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
-		<parameter value="${jar}" />
-		<parameter value="${goodJar}" />
-		<parameter value="${badJar}" />
+		<identity path="${outdir}/jar-listings"/>
+	</output>
+	<mapreduce main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
+		<description>description</description>
+		<parameter value="${input}"/>
+		<parameter value="${output}"/>
 	</mapreduce>
 </foreach>
 }}}
 
 ===`<input>`===
 
-This tag defines input dataset for `<foreach>` element. As an input you can specify one and only one fileset with `<fileset>` tag
+This tag defines input dataset of `<foreach>` dataflow transformation rule. As an input you can specify one and only one fileset with `<fileset>` tag
 
 Example:
 {{{
@@ -109,70 +100,87 @@ Example:
 
 ===`<output>`===
 
-This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify as many as you wish output folders with `<dir>` tag
+This tag defines output dataset of `<foreach>` dataflow transformation rule. As an output you can specify mapping function(s) that will be applied to each input file. This element has sub elements: *`<composition>`* or *`<identity>`*
 
 Example:
 {{{
 <output>
-	<dir id="goodJar" dir="${outdir}/jar-listings-filtered" />
-	<dir id="badJar" dir="${outdir}/jar-listings-bad" />
+	<identity path="${outdir}/jar-listings-filtered"/>
 </output>
+}}}
+
+===`<composition>`===
+
+This element defines composit output mapping function for `<foreach>` element. Whithin this tag you can specify one or more *`<identity>`* tags
+
+Example:
+{{{
+<composition>
+	<identity path="${outdir}/jar-listings-filtered"/>
+	<identity path="${outdir}/jar-listings-bad"/>
+</composition>
+}}}
+
+===`<identity>`===
+
+Defines identify output mapping function. This function will create file with the same in the folder specified as path attribute.
+
+Example:
+{{{
+<identity path="${outdir}/jar-listings-filtered"/>
 }}}
 
 ==`<fold>`==
 
-Type of input that defines many-to-many mapping between input data and output data. `<fold>` considers all input file(s) to be a set, and if any of them is newer than any of destination, input dataset will be processed.
-In its simplest form, 'reduce' have one input and one output. `<fold>` has following sub-elements: *`<input>`*, *`<output>`*, *`<depends>`*, *`<mapreduce>`* or *`<pig>`* or *`<exec>`* 
-
-You can define as many as you wish _input_ and _output_ sub elements as you wish
+Dataflow transformation rule that defines many-to-many mapping between input data and output data. `<fold>` considers all input file(s) to be a set, and if any of them is newer than any of destination, input dataset will be processed.
+In its simplest form, `fold` have one input and one output. `<fold>` has following sub-elements: *`<input>`*, *`<output>`*, *`<dependency>`*, *`<mapreduce>`* or *`<pig>`* or *`<exec>`* 
 
 Example:
 {{{
-<fold name="histogram">
+<fold name="pig_fold">
+	<dependency>
+		<file path="${libdir}/somefile.txt"/>
+	</dependency>
 	<input>
-		<fileset id="badJarDir" dir="${outdir}/jar-listings-bad" />
-		<fileset id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
+		<file path="${outdir}/class-size-histogram"/>
 	</input>
 	<output>
-		<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
-		<file id="logFile" file="${outdir}/logs/histogram.log" />
+		<file path="${outdir}/class-size-median-bin"/>
 	</output>
-	<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
-		<parameter value="${goodJarDir}" />
-		<parameter value="${histogramDir}" />
-		<parameter value="${logFile}" />
-	</mapreduce>
+	<pig script="${scripts}/median.pig">
+		<parameter value="${input}"/>
+		<parameter value="${output}"/>
+	</pig>
 </fold>
 }}}
 
 ===`<input>`===
 
-This tag defines input dataset for `<fold>` element. As an input you can specify one or more `<fileset>` or `<dir>` tag(s)
+This tag defines input dataset of `<fold>` element. As an input you can specify one or more `<file>` tag(s)
 
 Example:
 {{{
 <input>
-	<dir id="badJarDir" dir="${outdir}/jar-listings-bad" />
-	<dir id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
+	<file path="${outdir}/class-size-histogram"/>
 </input>
 }}}
 
 ===`<output>`===
 
-This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify one or more file(s) with `<file>` tag or folder(s) with `<dir>` tag
+This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify one or more file(s) or folder(s) with `<file>` tag
 
 Example:
 {{{
 <output>
-	<dir id="histogramDir" dir="${outdir}/class-size-histogram" />
-	<file id="logFile" file="${outdir}/logs/histogram.log" />
+	<file path="${outdir}/class-size-histogram"/>
+	<file path="${outdir}/logs/histogram.log"/>
 </output>
 }}}
 
 = Tasks =
 
-Task define job to be done. Sequence of the task and the number of times it will be executed is determined by its data. In case you want to specify external data a task will depends on, `<depends>` tag can be used. Currently there are three types of tasks: hadoop job (_hadoop_), 
-pig script (_pig_), script or program on machine, where hamake is running (_exec_). Order of arguments that will be passed to Hadoop job, pig script or exec task are determined by parameters list in the body of the task. Each parameter can be one of the following:  
+Task defines job to be done. Sequence of the task and the number of times it will be called is determined by dataflow transformation rule. In case you want to specify external data a task will depends on, `<dependency>` tag can be used. Currently there are three types of tasks: hadoop job (_hadoop_), 
+pig script (_pig_), script or program on machine, where hamake is running (_exec_). Order of arguments that will be passed to Hadoop job, pig script or exec task are determined by parameters list in the body of the task. 
 
 ==`<mapreduce>`==
 
@@ -188,10 +196,9 @@ _mapreduce_ can have following sub-elements: *`<parameter>`*, *`<description>`*
 Example: 
 
 {{{
-<mapreduce name="jar-listings" main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
-  <description>description</description>
-  <parameter value="${jar}" />
-  <parameter value="${listing}" />
+<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
+	<parameter value="${input}"/>
+	<parameter value="${output}"/>
 </mapreduce>
 }}}
 
@@ -208,13 +215,9 @@ _pig_ can have following sub-elements: *`<parameter>`*, *`<description>`*
 Example: 
 
 {{{
-<pig name="pig_fold" script="${scripts}/median.pig">
-  <depends>
-    <path name="${libdir}/somefile.txt" />      
-  </depends>
-  <parameter value="${libdir}/somefile.txt" />
-  <parameter value="${histogramDir}" />
-  <parameter value="${log}" />
+<pig script="${scripts}/median.pig">
+	<parameter value="${input}"/>
+	<parameter value="${output}"/>
 </pig>
 }}}
 
@@ -251,9 +254,9 @@ Example:
 
 = Task Dependencies =
 
-==`<depends>`==
+==`<dependency>`==
 
-Task dependencies are build implicitly by the system itself, based on task input and output. In case you want to specify some external data a task will depend on, you can use `<depends>` tag whithin `<foreach>` or `<fold>` elements. Tag has following sub-elements: *`<dir>`*, *`<file>`*
+Task dependencies are build implicitly by the system itself, based on input and output data of dataflow transformation rule. In case you want to specify some external data a dataflow transformation rule will depend on, you can use `<dependency>` tag whithin `<foreach>` or `<fold>` elements. Tag has one sub-element *`<file>`*
 
 Example:
 {{{
