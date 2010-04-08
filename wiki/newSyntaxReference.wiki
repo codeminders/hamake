@@ -102,9 +102,21 @@ Example:
 
 This tag defines output dataset of `<foreach>` dataflow transformation rule. As an output you can specify mapping function(s) that will be applied to each input file. This element has sub elements: *`<composition>`* or *`<identity>`*
 
+If your data was not changed a long time, but you need to execute some task for sure even for unmodified data, there is {{{expiration}}} attribute that specifies data consistency period. When this period expires, the Hamake would consider input as modified.
+Expiration period is defined as: `<value><measure unit>`, <br>
+where: value is an integer value and measure unit is one of
+ * s - seconds
+ * m - minutes
+ * h - hours
+ * d - days
+ * w - weeks
+
+|| *Attribute* || *Description* || *Required* ||
+|| expiration || input/output data consistency timeout || No ||
+
 Example:
 {{{
-<output>
+<output expiration="1w">
 	<identity path="${outdir}/jar-listings-filtered"/>
 </output>
 }}}
@@ -167,7 +179,7 @@ Example:
 
 ===`<output>`===
 
-This tag defines output dataset for `<foreach>` element. Whithin this tag you can specify one or more file(s) or folder(s) with `<file>` tag
+This tag defines output dataset for `<fold>` element. Whithin this tag you can specify one or more file(s) or folder(s) with `<file>` tag
 
 Example:
 {{{
