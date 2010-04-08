@@ -19,7 +19,7 @@ import com.codeminders.hamake.tasks.ReduceTask;
 public class TestMakefileParser {
 	
 	@Test
-	public void testSyntax() throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, InvalidMakefileException{
+	public void testSyntax() throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException{
 		MakefileParser parser = new MakefileParser();
 		Hamake make = new Hamake();
 		File localHamakeFile = new File("hamakefile-testsyntax.xml");
