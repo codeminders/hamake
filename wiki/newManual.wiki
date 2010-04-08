@@ -2,7 +2,7 @@ version 1.0
 
 =Introduction=
 
-Hamake is a lightweight utility and workflow engine for running Hadoop Map Reduce jobs and Pig scrips on a dataset stored on HDFS. 
+Hamake is a lightweight utility and workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs in a workflow and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them.
 
 ==Why Hamake?==
 
