@@ -17,7 +17,7 @@ This is the root element. All other elements should be whithin this tag. The _pr
 Each project defines one or more dataflow transformation rules. Each dataflow transformation rule defines two things:
  # mapping of your input data on output data, that make possible to build data dependency graph
  # the way of input data processing: a) process each input item individually; b) process whole set of input items in conjunction.
-Task can be Hadoop map-reduce job, Pig script or local program (script). When running Hamake, you can select which transformation rule(s) you want to start with. When no transformation rules are given, the project's default is used.
+There are three kind of tasks (processing) available: Hadoop map-reduce job, Pig script and local program (script). When running Hamake, you can select which transformation rule(s) you want to start with. When no transformation rules are given, the project's default is used.
 
 Allowed sub-elements: *`<property>`*, *`<fold>`*, *`<foreach>`*, *`<fileset>`*, *`<file>`*
 
