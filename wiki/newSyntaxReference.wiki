@@ -37,7 +37,7 @@ Usage example:
 
 ==`<fileset>`==
 
-A fileset is a group of files. These files can be found in a directory tree starting in a base directory and are matched by mask or be a single file. 
+A fileset is a group of files. These files can be found in specified directory and are matched by mask or be a single file. If mask is omitted, all the files at specified path are fit.
 
 || *Attribute* || *Description* || *Required* ||
 || id || the ID of the element. || No ||
