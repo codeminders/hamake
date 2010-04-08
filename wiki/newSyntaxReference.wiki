@@ -3,7 +3,7 @@ This page describes proposed syntax of hamake-file
 <wiki:toc max_depth="1" />
 
 = Introduction =
-Hamake is a lightweight utility and workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs in a workflow and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them. Contrary to Apache ant or make in hamake-file you describe your data first, then tasks. Task A will be called before task B in case input path of task B intercepts with output path of task A. For a particular task, it will be triggered only if input data has been renewed or validity period of output data has been expired.
+Hamake is a lightweight utility and workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs in a workflow and launch them based on dataflow principles - your tasks will be executed as soon as new data will be available for them. Contrary to Apache Ant or Make utilities, hamake-file declare data sources and destinations for each task and only source data state influences the moment of task launch. Task A will be called before task B in case input path of task B intercepts with output path of task A. For a particular task, it will be triggered only if input data has been renewed or validity period of output data has been expired.
 
 = Root Tags Description =
 
