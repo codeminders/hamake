@@ -40,7 +40,7 @@ Usage example:
 
 ==`<fileset>`==
 
-A fileset is a group of files. These files can be found in specified directory and are matched by mask or be a single file. If mask is omitted, all the files at specified path are fit.
+A fileset is a group of files. These files can be found in specified directory and are matched by mask or be a single file. If mask is omitted, all the files at specified directory are fit.
 
 || *Attribute* || *Description* || *Required* ||
 || id || the ID of the element. || No ||
@@ -49,7 +49,7 @@ A fileset is a group of files. These files can be found in specified directory a
 
 ==`<file>`==
 
-A file or directory on file system. The actual file system depends on the prefix (e.g. `file:///` results in a file or folder on local FS)
+A file or directory on file system. The actual file system depends on the path schema (e.g. `file:///` results in a file or folder on local FS)
 || *Attribute* || *Description* || *Required* ||
 || id || the ID of the element. || No ||
 || path || path to file system || Yes ||
@@ -58,10 +58,15 @@ A file or directory on file system. The actual file system depends on the prefix
 
 In Hamake you first define a dataflow transformation rules (DTR) along with data that should be processed, after that you define tasks for a concrete dataflow transformation rule. DTR maps your input data onto output data. Currently you have an option between two mapping types:
 
-  # You can map a group of files at one location to another location(s) with `<foreach>` tag
-  # You can reduce a group of file(s) and produce one or more folder(s) or file(s) with `<fold>` tag.
+  # `<foreach>` - one-by-one get files from input, execute specified task for each input file and save result file to appropriate output location
+  # `<fold>` - get whole set of input files, execute specified task for this set, save result file(s) to output location(s)
 
-In case of _foreach_ you define one or more mapping functions as an output. In case of _fold_ you can define any amount of files or folders as an output.
+Understanding DTR: 
+ * _foreach_ DTR is like a loop over file set from task execution point of view, or one-to-one mapping from data point of view
+ * _foreach_ DTR generates the same number of elements on output as it was on input
+ * _foreach_ DTR allows to specify input data set from different locations (folders on FS). Output data, as well, can be stored in a set of locations. But it is assumed that there is a way to map each input item on appropriate output item.
+ * _fold_ DTR similar to JOIN operation over input data set
+ * _fold_ DTR can produce one or more output files
 
 ==`<foreach>`==
 
