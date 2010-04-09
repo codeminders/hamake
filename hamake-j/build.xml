@@ -21,6 +21,7 @@
   <property name="test.build.dir" value="${build.dir}/test" />
   <property name="test.src.dir" value="${test.dir}/java" />
   <property name="test.resources.dir" value="${test.dir}/resources" />
+  <property name="test.current.hamakefiles.dir" value="${test.resources.dir}/hamakefiles/pythonsyntax" />
 
   <!--Apache Ivy(http://ant.apache.org/ivy/history/latest-milestone/install.html) -->
   <loadproperties srcfile="${basedir}/ivy/libraries.properties" />
@@ -121,7 +122,7 @@
     </jar>
     <mkdir dir="${dist.examples.dir}/hamakefiles" />
     <copy todir="${dist.examples.dir}/hamakefiles">
-      <fileset dir="${test.resources.dir}">
+      <fileset dir="${test.current.hamakefiles.dir}">
         <patternset includes="class-size*.xml" />
       </fileset>      
     </copy>
@@ -147,6 +148,7 @@
         <formatter type="xml" />
       </test>
       <sysproperty key="examples.jar" value="${dist.examples.dir}/hamake-examples-${hamake.version}.jar" />
+      <sysproperty key="hamakefiles.dir" value="${test.current.hamakefiles.dir}" />
 
     </junit>
 
@@ -170,7 +172,7 @@
       <arg value="jar" />
       <arg value="${dist.dir}/hamake-j-${hamake.version}.jar" />
       <arg value="-f" />
-      <arg value="file://${test.dir}/resources/class-size.xml" />
+      <arg value="file://${test.current.hamakefiles.dir}/class-size.xml" />
       <arg value="-v" />
       <arg value="-t" />
       <arg value="-w" />
@@ -182,7 +184,7 @@
       <arg value="jar" />
       <arg value="${dist.dir}/hamake-j-${hamake.version}.jar" />
       <arg value="-f" />
-      <arg value="file:///${test.dir}/resources/class-size.xml" />
+      <arg value="file:///${test.current.hamakefiles.dir}/class-size.xml" />
       <arg value="-v" />
       <arg value="-t" />
       <arg value="-w" />
@@ -202,7 +204,7 @@
       <arg value="jar" />
       <arg value="${dist.dir}/hamake-j-${hamake.version}.jar" />
       <arg value="-f" />
-      <arg value="file://${test.dir}/resources/class-size.xml" />
+      <arg value="file://${test.current.hamakefiles.dir}/class-size.xml" />
       <arg value="-v" />
       <arg value="-t" />
     </exec>
@@ -212,7 +214,7 @@
       <arg value="jar" />
       <arg value="${dist.dir}/hamake-j-${hamake.version}.jar" />
       <arg value="-f" />
-      <arg value="file:///${test.dir}/resources/class-size.xml" />
+      <arg value="file:///${test.current.hamakefiles.dir}/class-size.xml" />
       <arg value="-v" />
       <arg value="-t" />
     </exec>
