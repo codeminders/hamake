@@ -86,7 +86,7 @@ public class Main {
         if (line.hasOption('w'))
             wdir = line.getOptionValue('w');
 
-        MakefileParser makefileParser = new MakefileParser();
+        PhytonSyntaxParser makefileParser = new PhytonSyntaxParser();
 
         Hamake make = null;        
 
