@@ -148,7 +148,7 @@ Example:
 
 ===`<composition>`===
 
-This element defines composite output mapping function. Within this tag you can specify one or more *`<identity>`* tags
+This element allows to define multiple output for _foreach_ DTR. Within this tag you can specify one or more *`<identity>`* tags
 
 Example:
 {{{
