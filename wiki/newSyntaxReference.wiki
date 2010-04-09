@@ -100,7 +100,7 @@ This tag defines output dataset.
 _foreach_ DTR allows to specify here mapping function(s) only. This function will be applied to each input file and produce mapped file on output location. At the moment, there are only two mapping functions: 
  * identity - produce file with same name in different location (folder)
  * composition - complex output to several locations (see tag composition description)
-`<output>` has a single optional attribute - _validity_period_. It specifies for now many seconds this output considered valid (optional). In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
+`<output>` has a single optional attribute - _validity_period_. It specifies for now many seconds this output considered valid. In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
  * s - seconds
  * m - minutes
  * h - hours
@@ -176,7 +176,7 @@ Example:
 ===`<output>`===
 
 This tag defines output dataset. 
-_fold_ DTR allows to specify here one or more files or folders. This tag has a single optional attribute - _validity_period_. It specifies for now many seconds this output considered valid (optional). In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
+_fold_ DTR allows to specify here one or more files or folders. This tag has a single optional attribute - _validity_period_. It specifies for now many seconds this output considered valid. In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
  * s - seconds
  * m - minutes
  * h - hours
@@ -199,13 +199,13 @@ With `<file>` you can specify a file or a directory on FS. With `<fileset>` you 
 
 ==`<fileset>`==
 
-A fileset is a group of files. In case mask has been  files can be found in specified directory and are matched by mask or be a single file. If mask is omitted, all the files at specified directory are fit.
+A fileset is a group of files. Files are taken from a specified directory and are matched by mask. If mask is omitted, all the files from specified directory are fit.
 
 || *Attribute* || *Description* || *Required* ||
 || id || the ID of the element. || No ||
 || path || the root directory of this !FileSet. || Yes ||
 || mask ||  filename glob mask. || No ||
-|| generation || "generation" of files in fileset. The generation mechanism is described in more depth in Hamake manual.|| No ||
+|| generation || "generation" of files in fileset. The generation mechanism is described in more depth in Hamake manual. || No ||
 
 ==`<file>`==
 
@@ -213,23 +213,22 @@ A file or directory on file system. The actual file system depends on the path s
 
 || *Attribute* || *Description* || *Required* ||
 || id || the ID of the element. || No ||
-|| path || path to file system || Yes ||
+|| path || path on file system || Yes ||
 || mask ||  filename glob mask. || No ||
 || variant || how path will be passed as a task argument. Can be _list_, _path_, _mask_ || no ||
 || generation || "generation" of files in fileset. The generation mechanism is described in more depth in Hamake manual. || No ||
 
 In `<file>` you can optionally control how Hamake will pass path as an argument to a task:
 
- * _list_ - unfold path and path all files from the folder. In case you have specified file in _path_ attribute, only that file will be passed
+ * _list_ - unfold path and pass all files as a batch from the folder. In case you have specified file as _path_ attribute, only that file will be passed
  * _path_ - pass folder or file as it is
- * _mask_ - pass file with mask. In case there is no _mask_ attribute, no mask will be joined
+ * _mask_ - pass folder that is followed by slash that is followed by mask. In case there is no _mask_ attribute or you have specified file as _path_ attribute, path will be passed as it is
 
-In case there is no _variant_ attribute, _path_ is default.
+In case there is no _variant_ attribute, _path_ variant is default.
 
 = Tasks =
 
-In Hamake there are three kind of tasks available: Hadoop map-reduce job, Pig script and local program (script). Task defines job to be done. Sequence of the task and the number of times it will be called is determined by dataflow transformation rule. In case you want to specify external data a task will depends on, `<dependency>` tag can be used. Currently there are three types of tasks: hadoop job (_hadoop_), 
-pig script (_pig_), script or program on machine, where hamake is running (_exec_). Order of arguments that will be passed to Hadoop job, pig script or exec task are determined by order of parameters list in the body of the task. 
+In Hamake there are three kind of tasks available: Hadoop map-reduce job, Pig script and local program (script). Task defines job to be done. Sequence of the task and the number of times it will be called is determined by dataflow transformation rule. Order of arguments that will be passed to Hadoop job, pig script or exec task are determined by order of parameters list in the body of the task. 
 
 ==`<mapreduce>`==
 
@@ -293,11 +292,11 @@ Arguments are passed to Hadoop Map Reduce job, Pig script or program according t
 
 ==`<jobconf>`==
 
-With this element you can set Hadoop or Pig JobConf parameter for your task. This element has following attributes:
+With this element you can set Hadoop or Pig !JobConf parameter for your task. This element has following attributes:
 
 || *Attribute* || *Description* || *Required* ||
-|| name || name of the JobConf parameter || Yes ||
-|| value || value of the JobConf parameter || Yes ||
+|| name || name of the !JobConf parameter || Yes ||
+|| value || value of the !JobConf parameter || Yes ||
 
 
 ==`<parameter>`==
