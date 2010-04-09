@@ -2,7 +2,7 @@
 
 =Introduction=
 
-Hamake is a lightweight workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them. To start working with Hamake all you need is to describe your Hadoop map-reduce jobs, Pig scripts or local scripts along with their input and output data in _hamake-file_ using simple XML syntax and launch Hamake giving path to your _hamake-file_ as an argument.
+Hamake is a lightweight workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them. Hamake will let you to describe and execute your Hadoop map-reduce jobs, Pig scripts or local scripts along with their input and output data using dataflow approach.
 
 ==Features==
 
@@ -68,7 +68,7 @@ elastic-mapreduce --create --jar s3n://hamake/hamake-j-1.0.jar --main-class com.
 Hamake is executed as single job within Amazon EMR job flow, it uses Amazon's Hadoop configuration and submits MR jobs directly to !JobTracker. At the moment Hamake allows to execute MR tasks only within Amazon EMR.
 
 ==Creating Your First Hamake-File==
-This example will give you a short introduction of hamake-file syntax. To get more insight into it, please visit TODO:link_to_hamakefile-syntax-reference.
+This example will give you a short introduction to hamake-file syntax. To get more insight into it, please visit TODO:link_to_hamakefile-syntax-reference.
 
 First of all, if you haven't done it already, please install hamake. After that create file _first_hamakefile.xml_ with following content:
 {{{
@@ -105,9 +105,15 @@ First of all, if you haven't done it already, please install hamake. After that 
 </project>
 }}}
 
+This hamake-file starts with `<project>` tag. Whithin _project_ element you can change base directory from _/tmp_ to the directory of your choise in _tempDir_ property. 
+
 This simple hamake-file has only 2 transformation rules:
  * _foreach_ that copies all files from /tmp/in folder to /tmp/hamake-tmp folder
- * _fold_ that lists all file in /tmp/hamake-tmp folder and outputs result of _ls_ command execution to /tmp/out.txt file. You can change base directory from _/tmp_ to the directory of your choise in the _tempDir_ property.
+ * _fold_ that lists all file in /tmp/hamake-tmp folder and outputs result of _ls_ command execution to /tmp/out.txt file. 
+
+Each transformation rule is described in `<descrition>` tag and has defined input and output data whithin `<input>` and `<output>` tags. For every transformation rule you define task that will be launched as `<exec>` task 
+
+
 
 To run the example execute command:
 hadoop jar ```pwd```/hamake-j-1.0.jar -f ```pwd```/first_hamakefile.xml
