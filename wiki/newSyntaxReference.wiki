@@ -3,7 +3,7 @@ This page describes proposed syntax of hamake-file
 <wiki:toc max_depth="1" />
 
 = Introduction =
-Hamake is a lightweight utility and workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs in a workflow and launch them based on dataflow principles - your tasks will be executed as soon as new data will be available for them. Contrary to Apache Ant or Make utilities, hamake-file declare data sources and destinations for each task and only source data state influences the moment of task launch. Task A will be called before task B in case input path of task B intercepts with output path of task A. For a particular task, it will be triggered only if input data has been renewed or validity period of output data has been expired.
+Hamake is a lightweight workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them. Contrary to Apache Ant or Make utilities, hamake-file declare data sources and destinations for each task and only source data state influences the moment of task launch. Task A will be called before task B in case input path of task B intercepts with output path of task A. For a particular task, it will be triggered only if input data has been renewed or validity period of output data has been expired.
 
 = Root Tags Description =
 
@@ -37,32 +37,6 @@ Usage example:
 {{{
 <parameter value="${dfsroot}/data" />
 }}}
-
-==`<fileset>`==
-
-A fileset is a group of files. These files can be found in specified directory and are matched by mask or be a single file. If mask is omitted, all the files at specified directory are fit.
-
-|| *Attribute* || *Description* || *Required* ||
-|| id || the ID of the element. || No ||
-|| path || the root of the directory tree of this !FileSet. || Yes ||
-|| mask ||  filename glob mask. || No ||
-
-==`<file>`==
-
-A file or directory on file system. The actual file system depends on the path schema (e.g. `file:///` results in a file or folder on local FS)
-
-{{{expiration}}} attribute specifies data consistency period. When this period expires, the Hamake would consider this path as inconsistent and will try to renew data stored by this path. Expiration period is defined as: `<integer number><measure unit>`, <br>
-measure unit is one of:
- * s - seconds
- * m - minutes
- * h - hours
- * d - days
- * w - weeks
-
-|| *Attribute* || *Description* || *Required* ||
-|| id || the ID of the element. || No ||
-|| path || path to file system || Yes ||
-|| expiration || data consistency timeout || No ||
 
 =Dataflow Transformation Rules=
 
@@ -127,6 +101,12 @@ This tag defines output dataset.
 _foreach_ DTR allows to specify here mapping function(s) ONLY. This function will be applied to each input file and produce mapped file on output location. At the moment, there are only two mapping functions: 
  * identity - produce file with same name in different location (folder)
  * composition - complex output to several locations (see tag composition description)
+`<output>` has a single attribute - _validity_period_. It specifies for now many seconds this output considered valid (optional). In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
+ * s - seconds
+ * m - minutes
+ * h - hours
+ * d - days
+ * w - weeks
 
 This element has sub elements: *`<composition>`* or *`<identity>`*
 
@@ -197,7 +177,12 @@ Example:
 ===`<output>`===
 
 This tag defines output dataset. 
-_fold_ DTR allows to specify here one or more files or folders.
+_fold_ DTR allows to specify here one or more files or folders. This tag has a single attribute - _validity_period_. It specifies for now many seconds this output considered valid (optional). In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
+ * s - seconds
+ * m - minutes
+ * h - hours
+ * d - days
+ * w - weeks
 
 Example:
 {{{
@@ -206,6 +191,41 @@ Example:
     <file path="${outdir}/logs/histogram.log"/>
 </output>
 }}}
+
+= Hamake Path Handling =
+
+To specify path in Hamake you can use two tags: `<file>` and `<fileset>`
+
+With `<file>` you can specify a file or a directory on FS. With `<fileset>` you can specify a group of files.
+
+==`<fileset>`==
+
+A fileset is a group of files. In case mask has been  files can be found in specified directory and are matched by mask or be a single file. If mask is omitted, all the files at specified directory are fit.
+
+|| *Attribute* || *Description* || *Required* ||
+|| id || the ID of the element. || No ||
+|| path || the root directory of this !FileSet. || Yes ||
+|| mask ||  filename glob mask. || No ||
+|| generation || "generation" of files in fileset. The generation mechanism is described in more depth in Hamake manual.|| No ||
+
+==`<file>`==
+
+A file or directory on file system. The actual file system depends on the path schema (e.g. `file:///` results in a file or folder on local FS).
+
+|| *Attribute* || *Description* || *Required* ||
+|| id || the ID of the element. || No ||
+|| path || path to file system || Yes ||
+|| mask ||  filename glob mask. || No ||
+|| variant || how path will be passed as a task argument. Can be _list_, _path_, _mask_ || no ||
+|| generation || "generation" of files in fileset. The generation mechanism is described in more depth in Hamake manual. || No ||
+
+In `<file>` you can optionally control how Hamake will pass path as an argument to a task:
+
+ * _list_ - unfold path and path all files from the folder. In case you have specified file in _path_ attribute, only that file will be passed
+ * _path_ - pass folder or file as it is
+ * _mask_ - pass file with mask. In case there is no _mask_ attribute, no mask will be joined
+
+In case there is no _variant_ attribute, _path_ is default.
 
 = Tasks =
 
@@ -273,11 +293,17 @@ Example:
 Arguments are passed to Hadoop Map Reduce job, Pig script or program according to task parameters. Also in parameters you can define task input and output data. Please remember that the order of parameters in task body is important.
 
 ==`<jobconf>`==
-TODO: describe
+
+With this element you can set Hadoop or Pig JobConf parameter for your task. This element has following attributes:
+
+|| *Attribute* || *Description* || *Required* ||
+|| name || name of the JobConf parameter || Yes ||
+|| value || value of the JobConf parameter || Yes ||
+
 
 ==`<parameter>`==
 
-This tag has one attribute _value_ where you can specify any parameter you want as String value. Also you can pass here input and output of the task by specifying its name as variable
+This tag has one attribute _value_ where you can specify any parameter you want as String value. Also you can pass here input and output of the task by specifying special built in ${input} and ${output} variables. In case of `<foreach>` a task will recieve a single file  in place of ${input} variable. In case of `<fold>`   
 
 Example:
 {{{
@@ -356,7 +382,7 @@ Example:
 		<input>
 			<file path="${outdir}/class-size-histogram"/>
 		</input>
-		<output>
+		<output validity_period="1h">
 			<file path="${outdir}/class-size-median-bin"/>
 		</output>
 		<pig script="${scripts}/median.pig">
