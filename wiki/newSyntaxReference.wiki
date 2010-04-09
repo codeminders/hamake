@@ -301,7 +301,7 @@ With this element you can set Hadoop or Pig !JobConf parameter for your task. Th
 
 ==`<parameter>`==
 
-This tag has one attribute _value_ where you can specify any parameter you want as String value. Also you can pass here input and output of the task by specifying special built in ${input} and ${output} variables. In case of `<foreach>` a task will recieve a single file  in place of ${input} variable. In case of `<fold>`   
+This tag has one attribute _value_ where you can specify any parameter you want as String value. Also you can pass here input and output of the task by specifying special built in ${input} and ${output} variables. In case of `<foreach>` a task will recieve a single file  in place of ${input} variable. In case of `<fold>` all enumerated files and folders from input or output will be passed as a whole. To pass only a single file or folder as a parameter use _file_ id (e.g. value="${myfile}")
 
 Example:
 {{{
