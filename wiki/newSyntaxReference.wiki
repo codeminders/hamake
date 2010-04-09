@@ -111,7 +111,7 @@ Example:
 ===`<input>`===
 
 This tag defines input dataset. 
-_foreach_ DTR allows to specify any number of input filesets.
+_foreach_ DTR allows to specify here any number of input filesets.
 
 Example:
 {{{
@@ -271,6 +271,9 @@ Example:
 = Task Parameters =
 
 Arguments are passed to Hadoop Map Reduce job, Pig script or program according to task parameters. Also in parameters you can define task input and output data. Please remember that the order of parameters in task body is important.
+
+==`<jobconf>`==
+TODO: describe
 
 ==`<parameter>`==
 
