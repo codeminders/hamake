@@ -1,5 +1,7 @@
 version 1.0
 
+<wiki:toc max_depth="2" />
+
 =Introduction=
 
 Hamake is a lightweight utility and workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs in a workflow and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them.
@@ -64,6 +66,10 @@ A -> E -> D
 
 In case failure has occurred during execution of task B Hamake will not execute task C but  will execute D and E tasks
 
+== Path Generation ==
+
+Since Hamake operates on direct acyclic graph there is a mechanism that helps to prevent cyclic dependencies in your hamak-file. This mechanism is called _generation_.   _generation_ is a natural number that explicitly indicates that one path differs from another. To indicate that output path is not the same as input path you should set output _generation_ to be greater then input _generation_. Every path in Hamake has its _generation_ number. By default it is 0. If you have some DTR that outputs data to the same location where other DTR gets its data, you should specify _generation_ attribute of the output data location tag or the the branch will be silently ignored. 
+
 == Data Mapping ==
 
 When designing flow of your process with Hamake you have an option between two data mapping types:
@@ -81,6 +87,7 @@ map source dependencies targets = ...
 fold:: [Path] -> [Path]
 fold source targets = ...
 }}}
+
 == Hamake Tasks ==
 
 Hamake operates with three types of tasks which are implemented by user. Threse are Hadoop MR jobs, Pig scripts and arbitrary program or bash script that is launched on a machine where Hamake is running. You define these tasks in hamake-file. 
