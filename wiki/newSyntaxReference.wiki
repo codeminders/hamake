@@ -3,7 +3,7 @@ This page describes proposed syntax of hamake-file
 <wiki:toc max_depth="1" />
 
 = Introduction =
-Hamake is a lightweight workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them. Contrary to Apache Ant or Make utilities, hamake-file declare data sources and destinations for each task and only source data state influences the moment of task launch. Task A will be called before task B in case input path of task B intercepts with output path of task A. For a particular task, it will be triggered only if input data has been renewed or validity period of output data has been expired.
+Hamake is a lightweight workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs and launch them based on dataflow principles - your tasks will be executed as soon as new data will be availible for them. Contrary to Apache Ant or Make utilities, in hamake-file you declare your data sources and destinations first. Tasks are bound to your data. Task A will be called before task B in case input path of task B intercepts with output path of task A. For a particular task, it will be triggered only if input data has been renewed or validity period of output data has been expired.
 
 = Root Tags Description =
 
@@ -11,19 +11,20 @@ Hamake is a lightweight workflow engine for Hadoop. Hamake helps to organize you
 
 This is the root element. All other elements should be whithin this tag. The _project_ has following attributes:
 || *Attribute* || *Description* || *Required* ||
-|| name || the name of the project. || No ||
-|| default || the default dataflow transformation rule to start with when no start dataflow transformation rules are given as Hamake command-line parameters. || No ||
+|| name || the name of the project. || Yes ||
+|| default || the default dataflow transformation rule to start with when no transformation rules are given as Hamake command-line arguments. || No ||
 
-Each project defines one or more dataflow transformation rules. Each dataflow transformation rule defines two things:
- # mapping of your input data on output data, that make possible to build data dependency graph
- # the way of input data processing: a) process each input item individually; b) process whole set of input items in conjunction.
-There are three kind of tasks (processing) available: Hadoop map-reduce job, Pig script and local program (script). When running Hamake, you can select which transformation rule(s) you want to start with. When no transformation rules are given, the project's default is used.
+Each project defines one or more dataflow transformation rules. Each transformation rule defines two things:
+ # mapping of your input data onto output data, thus you define data dependency graph
+ # the way your input data is processed: a) process each input file individually; b) process a set of input items in conjunction. 
+
+When running Hamake, you can select which transformation rule(s) you want to start with. When no transformation rules are given, the project's default is used.
 
 Allowed sub-elements: *`<property>`*, *`<fold>`*, *`<foreach>`*, *`<fileset>`*, *`<file>`*
 
 ==`<property>`==
 
-Sets a property (by name and value), in the project. Properties are named values, which can be used in hamake-file. They work like macros. Once defined, they can be used in any string attribute, using the variable syntax ${variable_name}. 
+Sets a property (by name and value), in the project. Properties are named values, which can be used in hamake-file. They work like macros. Once defined, they can be used in any string attribute, using the Apache Ant variable syntax ${variable_name}. 
 
 Definition example
 
@@ -42,22 +43,20 @@ Usage example:
 
 In Hamake you first define a dataflow transformation rules (DTR) along with data that should be processed, after that you define tasks for a concrete dataflow transformation rule. DTR maps your input data onto output data. Currently you have an option between two mapping types:
 
-  # `<foreach>` - one-by-one get files from input, execute specified task for each input file and save result file to appropriate output location
-  # `<fold>` - get whole set of input files, execute specified task for this set, save result file(s) to output location(s)
+  # `<foreach>` - get files one-by-one from input, execute specified task for each input file and save result file to appropriate output location
+  # `<fold>` - get a set of input files as a whole, execute specified task for the set, save resulted file(s) to output location(s)
 
 Understanding DTR: 
- * _foreach_ DTR is like an one-to-one mapping, from data point of view
- * _foreach_ DTR specify mapping of input item on each output location
- * _foreach_ DTR allows to specify input data set from different locations
- * _fold_ DTR similar to JOIN operation over input data set
- * _fold_ DTR allows to specify input data set from different locations
- * _fold_ DTR can produce one or more output files for whole input data set
+ * _foreach_ DTR is like one-to-one mapping, from data point of view
+ * _foreach_ DTR specify mapping of input files onto each output location
+ * _foreach_ DTR allows to combine input files from different locations
+ * _fold_ DTR is similar to JOIN operation over input data set
+ * _fold_ DTR allows to combine input data sets from different locations
+ * _fold_ DTR can produce one or more output items for an input data set
 
 ==`<foreach>`==
 
-Dataflow transformation rule which maps a group of files at one location to another location(s). This DTR assumes 1 to 1 file mapping between locations, and can process them incrementally, converting only files which are present at source location, but not present or not current at all of destinations.
-
-The task have one input path, and one or more dependent paths and one or more output paths. One input file must produce one output file per output location. Output location file considered to be current if all of the following conditions are satisfied:
+Dataflow transformation rule which maps a group of files at one location(s) to another location(s). This DTR assumes 1 to 1 file mapping between locations, and can process them incrementally, converting only files which are present at source location(s), but not present or not current at all of destinations. Each input file will produce one output file per output location. Output location file considered to be current if all of the following conditions are satisfied:
    #. Output file is present
    #. Output file time stamp is older than input file
    #. Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
@@ -98,10 +97,10 @@ Example:
 ===`<output>`===
 
 This tag defines output dataset.
-_foreach_ DTR allows to specify here mapping function(s) ONLY. This function will be applied to each input file and produce mapped file on output location. At the moment, there are only two mapping functions: 
+_foreach_ DTR allows to specify here mapping function(s) only. This function will be applied to each input file and produce mapped file on output location. At the moment, there are only two mapping functions: 
  * identity - produce file with same name in different location (folder)
  * composition - complex output to several locations (see tag composition description)
-`<output>` has a single attribute - _validity_period_. It specifies for now many seconds this output considered valid (optional). In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
+`<output>` has a single optional attribute - _validity_period_. It specifies for now many seconds this output considered valid (optional). In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
  * s - seconds
  * m - minutes
  * h - hours
@@ -112,7 +111,7 @@ This element has sub elements: *`<composition>`* or *`<identity>`*
 
 Example:
 {{{
-<output>
+<output validity="1m">
     <identity path="${outdir}/jar-listings-filtered"/>
 </output>
 }}}
@@ -128,7 +127,7 @@ Example:
 
 ===`<composition>`===
 
-This element allows to define multiple output for _foreach_ DTR. Within this tag you can specify one or more *`<identity>`* tags
+This element allows to define multiple mapping functiona of _foreach_ DTR. Within this tag you can specify one or more *`<identity>`* tags
 
 Example:
 {{{
@@ -165,7 +164,7 @@ Example:
 ===`<input>`===
 
 This tag defines input dataset. 
-_fold_ DTR allows to specify here one or more folders (`<file>` tag(s) only).
+_fold_ DTR allows to specify here one or more folders or files. It has only one sub-element: `<file>`.
 
 Example:
 {{{
@@ -177,7 +176,7 @@ Example:
 ===`<output>`===
 
 This tag defines output dataset. 
-_fold_ DTR allows to specify here one or more files or folders. This tag has a single attribute - _validity_period_. It specifies for now many seconds this output considered valid (optional). In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
+_fold_ DTR allows to specify here one or more files or folders. This tag has a single optional attribute - _validity_period_. It specifies for now many seconds this output considered valid (optional). In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
  * s - seconds
  * m - minutes
  * h - hours
@@ -229,7 +228,7 @@ In case there is no _variant_ attribute, _path_ is default.
 
 = Tasks =
 
-Task defines job to be done. Sequence of the task and the number of times it will be called is determined by dataflow transformation rule. In case you want to specify external data a task will depends on, `<dependency>` tag can be used. Currently there are three types of tasks: hadoop job (_hadoop_), 
+In Hamake there are three kind of tasks available: Hadoop map-reduce job, Pig script and local program (script). Task defines job to be done. Sequence of the task and the number of times it will be called is determined by dataflow transformation rule. In case you want to specify external data a task will depends on, `<dependency>` tag can be used. Currently there are three types of tasks: hadoop job (_hadoop_), 
 pig script (_pig_), script or program on machine, where hamake is running (_exec_). Order of arguments that will be passed to Hadoop job, pig script or exec task are determined by order of parameters list in the body of the task. 
 
 ==`<mapreduce>`==
