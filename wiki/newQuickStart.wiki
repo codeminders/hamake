@@ -16,14 +16,13 @@ To install Hamake simply copy hamake-j-1.0.jar to the directory of your choise a
 
 {{{
 cp hamake-j-1.0.jar /tmp
-export PATH=$PATH:$HADOOP_HOME/bin
 }}}
 
 =Quick Start=
 
 ==Running Hamake Example==
 Hamake runs Hadoop MR jobs, Pig scripts and local scripts based on hamake-file.
-As an example you can take class-size.xml hamake-file from example folder of the Hamake distribution. To generate data for class-size.xml example, launch following script from the root of Hamake distribution:
+As an example you can take class-size.xml hamake file from example folder of the Hamake distribution. To generate data for class-size.xml example, launch following script from the root of Hamake distribution:
 {{{
 #!/bin/sh
 hadoop fs -rmr /user/$USERNAME/build
@@ -54,10 +53,10 @@ It is possible to run the Hamake on [http://aws.amazon.com/elasticmapreduce/ Ama
 In order to run Hamake example on Amazon EMR, follow the steps below:
   # set up an environment on S3
 {{{
-copy <distributive>/lib/*.jar to s3n://hamake/lib
-copy <distributive>/hamake-j-1.0.jar to s3n://hamake/
-copy <distributive>/examples/hamake-examples-1.0.jar to s3n://hamake/
-copy <distributive>/examples/hamakefiles/class-size-s3.xml to s3n://hamake/
+1. copy <hamake distribuion>/lib/*.jar to s3n://hamake/lib
+2. copy <hamake distribuion>/hamake-j-1.0.jar to s3n://hamake/
+3. copy <hamake distribuion>/examples/hamake-examples-1.0.jar to s3n://hamake/
+4. copy <hamake distribuion>/examples/hamakefiles/class-size-s3.xml to s3n://hamake/
 }}}
   # [http://developer.amazonwebservices.com/connect/entry.jspa?externalID=2264&categoryID=266 download] and [http://docs.amazonwebservices.com/ElasticMapReduce/latest/DeveloperGuide/index.html?introduction.html install] Amazon EMR command-line tool
   # start the Hamake on Amazon EMR:
@@ -68,7 +67,7 @@ elastic-mapreduce --create --jar s3n://hamake/hamake-j-1.0.jar --main-class com.
 Hamake is executed as single job within Amazon EMR job flow, it uses Amazon's Hadoop configuration and submits MR jobs directly to !JobTracker. At the moment Hamake allows to execute only MR tasks within Amazon EMR.
 
 ==Creating Your First Hamake-File==
-This example will give you a short introduction to hamake-file syntax. To get more insight into it, please visit TODO:link_to_hamakefile-syntax-reference.
+This example will give you a short introduction to hamake file syntax. To get more insight into it, please visit TODO:link_to_hamakefile-syntax-reference.
 
 First of all, if you haven't done it already, please install hamake. After that create file _first_hamakefile.xml_ with following content:
 {{{
@@ -105,9 +104,9 @@ First of all, if you haven't done it already, please install hamake. After that 
 </project>
 }}}
 
-This hamake-file starts with `<project>` tag. Whithin _project_ element you can change base directory from _/tmp_ to the directory of your choise in _tempDir_ property. 
+This hamake file starts with `<project>` tag. Whithin _project_ element you can change base directory from _/tmp_ to the directory of your choise in _tempDir_ property. 
 
-This simple hamake-file has only 2 transformation rules:
+This simple hamake file has only 2 transformation rules:
  * _foreach_ that copies all files from /tmp/in folder to /tmp/hamake-tmp folder
  * _fold_ that lists all file in /tmp/hamake-tmp folder and outputs result of _ls_ command execution to /tmp/out.txt file. 
 
