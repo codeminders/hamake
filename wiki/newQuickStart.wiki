@@ -65,7 +65,7 @@ copy <distributive>/examples/hamakefiles/class-size-s3.xml to s3n://hamake/
 elastic-mapreduce --create --jar s3n://hamake/hamake-j-1.0.jar --main-class com.codeminders.hamake.Main --args -t,-v,-f,s3n://hamake/class-size-s3.xml
 }}}
 
-Hamake is executed as single job within Amazon EMR job flow, it uses Amazon's Hadoop configuration and submits MR jobs directly to !JobTracker. At the moment Hamake allows to execute MR tasks only within Amazon EMR.
+Hamake is executed as single job within Amazon EMR job flow, it uses Amazon's Hadoop configuration and submits MR jobs directly to !JobTracker. At the moment Hamake allows to execute only MR tasks within Amazon EMR.
 
 ==Creating Your First Hamake-File==
 This example will give you a short introduction to hamake-file syntax. To get more insight into it, please visit TODO:link_to_hamakefile-syntax-reference.
