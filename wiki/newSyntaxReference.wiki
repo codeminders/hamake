@@ -60,8 +60,14 @@ Dataflow transformation rule which maps a group of files at one location(s) to a
    #. Output file is present
    #. Output file time stamp is older than input file
    #. Output file time stamp is older than any of time stamps of files with same name in all dependent directories 
- 
-_foreach_ has following sub-elements: *`<input>`*, *`<output>`*, *`<dependency>`*,  *`<mapreduce>`* or *`<pig>`* or *`<exec>`*
+
+
+|| *Attribute* || *Description* || *Required* ||
+|| name || the name of the DTR. || No ||
+|| disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'. || No ||
+
+
+_foreach_ has following sub-elements: *`<input>`*, *`<output>`*, *`<dependencies>`*,  *`<mapreduce>`* or *`<pig>`* or *`<exec>`*
 
 Example:
 
@@ -100,7 +106,7 @@ This tag defines output dataset.
 _foreach_ DTR allows to specify here mapping function(s) only. This function will be applied to each input file and produce mapped file on output location. At the moment, there are only two mapping functions: 
  * identity - produce file with same name in different location (folder)
  * composition - complex output to several locations (see tag composition description)
-`<output>` has a single optional attribute - _validity_period_. It specifies for now many seconds this output considered valid. In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
+`<output>` has a single optional attribute - _expiration_. It specifies for now many seconds this output considered valid. In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
  * s - seconds
  * m - minutes
  * h - hours
@@ -111,7 +117,7 @@ This element has sub elements: *`<composition>`* or *`<identity>`*
 
 Example:
 {{{
-<output validity="1m">
+<output expiration="1m">
     <identity path="${outdir}/jar-listings-filtered"/>
 </output>
 }}}
@@ -119,6 +125,10 @@ Example:
 ===`<identity>`===
 
 Defines identity output mapping function. This function will create file with the same in the folder specified as path attribute.
+
+|| *Attribute* || *Description* || *Required* ||
+|| path || Path of folder, where output files will go. || Yes ||
+|| generation || "generation" of files in fileset. The generation mechanism is described in more depth in Hamake manual. || No ||
 
 Example:
 {{{
@@ -140,14 +150,22 @@ Example:
 ==`<fold>`==
 
 Dataflow transformation rule that defines many-to-many mapping between input data and output data. `<fold>` considers all input file(s) to be a set, and if any of them is newer than any of destination, input dataset will be processed.
-In its simplest form, `fold` have one input and one output. `<fold>` has following sub-elements: *`<input>`*, *`<output>`*, *`<dependency>`*, *`<mapreduce>`* or *`<pig>`* or *`<exec>`* 
+In its simplest form, `fold` have one input and one output.
+
+
+|| *Attribute* || *Description* || *Required* ||
+|| name || the name of the DTR. || No ||
+|| disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'. || No ||
+
+
+`<fold>` has following sub-elements: *`<input>`*, *`<output>`*, *`<dependencies>`*, *`<mapreduce>`* or *`<pig>`* or *`<exec>`* 
 
 Example:
 {{{
 <fold name="pig_fold">
-	<dependency>
+	<dependencies>
 		<file path="${libdir}/somefile.txt"/>
-	</dependency>
+	</dependencies>
 	<input>
 		<file path="${outdir}/class-size-histogram"/>
 	</input>
@@ -176,7 +194,7 @@ Example:
 ===`<output>`===
 
 This tag defines output dataset. 
-_fold_ DTR allows to specify here one or more files or folders. This tag has a single optional attribute - _validity_period_. It specifies for now many seconds this output considered valid. In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
+_fold_ DTR allows to specify here one or more files or folders. This tag has a single optional attribute - _expiration_. It specifies for now many seconds this output considered valid. In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
  * s - seconds
  * m - minutes
  * h - hours
@@ -234,7 +252,7 @@ In Hamake there are three kind of tasks available: Hadoop map-reduce job, Pig sc
 
 Launches Hadoop Map Reduce job on the !JobTracker that is determined by environment of the running VM (Hamake). This tag has following attributes
 || *Attribute* || *Description* || *Required* ||
-|| name || the name of the task. Used for reporting and can be specified as build target || Yes ||
+|| name || the name of the task. Used for reporting and can be specified as build target || No ||
 || jar || path to jar file that will be run || Yes ||
 || disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'.  || No ||
 || main || the full name of the main class || Yes ||
@@ -254,9 +272,8 @@ Example:
 
 Launches Hadoop Pig script on the !JobTracker that is determined by environment of the running VM (Hamake). _pig_ has following attributes
 || *Attribute* || *Description* || *Required* ||
-|| name || the name of the task. Used for reporting and can be specified as build target || Yes ||
+|| name || the name of the task. Used for reporting and can be specified as build target || No ||
 || script || path to script file that will be run || Yes ||
-|| disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'.  || No ||
 
 _pig_ can have following sub-elements: *`<parameter>`*, *`<description>`*
 
@@ -273,7 +290,7 @@ Example:
 
 Executes script or program locally within the running VM (Hamake). It has following attributes
 || *Attribute* || *Description* || *Required* ||
-|| name || the name of the task. Used for reporting and can be specified as build target || Yes ||
+|| name || the name of the task. Used for reporting and can be specified as build target || No ||
 || binary || path to script file or program that will be run || Yes ||
 || disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'.  || No ||
 
@@ -313,15 +330,15 @@ Example:
 
 = Task Dependencies =
 
-==`<dependency>`==
+==`<dependencies>`==
 
-In case you want to specify some external data a dataflow transformation rule will depend on, you can use `<dependency>` tag whithin `<foreach>` or `<fold>` elements. Tag has one sub-element *`<file>`*
+In case you want to specify some external data a dataflow transformation rule will depend on, you can use `<dependencies>` tag whithin `<foreach>` or `<fold>` elements. Tag has one sub-element *`<file>`*
 
 Example:
 {{{
-<dependency>
+<dependencies>
     <file id="${libdir}/somefile.txt" />
-</dependency>
+</dependencies>
 }}}
 
 = Hamakefile Complite Example =
@@ -374,13 +391,13 @@ Example:
 		</mapreduce>
 	</fold>
 	<fold name="pig_fold">
-		<dependency>
+		<dependencies>
 			<file path="${libdir}/somefile.txt"/>
-		</dependency>
+		</dependencies>
 		<input>
 			<file path="${outdir}/class-size-histogram"/>
 		</input>
-		<output validity_period="1h">
+		<output expiration="1h">
 			<file path="${outdir}/class-size-median-bin"/>
 		</output>
 		<pig script="${scripts}/median.pig">
