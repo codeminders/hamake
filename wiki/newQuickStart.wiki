@@ -12,7 +12,7 @@ Hamake is a lightweight workflow engine for Hadoop. Hamake helps to organize you
 
 ==Installation==
 
-To install Hamake simply copy hamake-j-1.0.jar to the directory of your choise and make sure that hadoop command is in your $PATH variable.
+To install Hamake simply copy hamake-j-1.0.jar to the directory of your choice and make sure that hadoop command is in your $PATH variable.
 
 =Quick Start=
 
@@ -98,7 +98,7 @@ First of all, if you haven't done it already, please install hamake. After that 
 </project>
 }}}
 
-This hamake file starts with `<project>` tag. Whithin _project_ element you can change base directory from _/tmp_ to the directory of your choise in _tempDir_ property. 
+This hamake file starts with `<project>` tag. Whithin _project_ element you can change base directory from _/tmp_ to the directory of your choice in _tempDir_ property. 
 
 This simple hamake file has only 2 transformation rules:
  * _foreach_ that copies all files from /tmp/in folder to /tmp/hamake-tmp folder
