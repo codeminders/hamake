@@ -47,18 +47,18 @@ In case of successful execution, you should see /user/$USERNAME/build/test/class
 
 It is possible to run the Hamake on [http://aws.amazon.com/elasticmapreduce/ Amazon EMR]. This use case assumes that all data (input and output), MR code and Hamake workflow script are stored on Amazon S3.
 In order to run Hamake example on Amazon EMR, follow the steps below:
-  # Set up an environment on S3
-  # Copy {{{<hamake distribuion>/lib/*.jar to s3n://hamake/lib}}}
-  # Copy {{{<hamake distribuion>/hamake-j-1.0.jar to s3n://hamake/}}}
-  # Copy {{{<hamake distribuion>/examples/hamake-examples-1.0.jar to s3n://hamake/}}}
-  # Copy {{{<hamake distribuion>/examples/hamakefiles/class-size-s3.xml to s3n://hamake/}}}
-  # [http://developer.amazonwebservices.com/connect/entry.jspa?externalID=2264&categoryID=266 download] and [http://docs.amazonwebservices.com/ElasticMapReduce/latest/DeveloperGuide/index.html?introduction.html install] Amazon EMR command-line tool
+  # Set up an environment on S3:
+    # Copy {{{<hamake distribuion>/lib/*.jar to s3n://hamake/lib}}}
+    # Copy {{{<hamake distribuion>/hamake-j-1.0.jar to s3n://hamake/}}}
+    # Copy {{{<hamake distribuion>/examples/hamake-examples-1.0.jar to s3n://hamake/}}}
+    # Copy {{{<hamake distribuion>/examples/hamakefiles/class-size-s3.xml to s3n://hamake/}}}
+  # [http://developer.amazonwebservices.com/connect/entry.jspa?externalID=2264&categoryID=266 Download] and [http://docs.amazonwebservices.com/ElasticMapReduce/latest/DeveloperGuide/index.html?introduction.html install] Amazon EMR command-line tool
   # Start the Hamake on Amazon EMR:
 {{{
 elastic-mapreduce --create --jar s3n://hamake/hamake-j-1.0.jar --main-class com.codeminders.hamake.Main --args -t,-v,-f,s3n://hamake/class-size-s3.xml
 }}}
 
-Hamake is executed as single job within Amazon EMR job flow, it uses Amazon's Hadoop configuration and submits MR jobs directly to !JobTracker. At the moment Hamake allows to execute only MR tasks within Amazon EMR.
+Hamake is executed as a single job within Amazon EMR job flow, it uses Amazon's Hadoop configuration and submits your MR jobs directly to EMR !JobTracker. 
 
 ==Creating Your First Hamake-File==
 This example will give you a short introduction to hamake file syntax. To get more insight into it, please visit TODO:link_to_hamakefile-syntax-reference.
