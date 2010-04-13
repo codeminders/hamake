@@ -15,6 +15,7 @@ public abstract class Task {
 	private Collection<String> taskDeps = new ArrayList<String>();
 	private Command command;
 	private List<HamakePath> outputs = new ArrayList<HamakePath>();
+	private List<HamakePath> deps = new ArrayList<HamakePath>();
 
 	public String getName() {
 		return name;
@@ -60,6 +61,14 @@ public abstract class Task {
 	public void setTaskDeps(Collection<String> taskDeps) {
 		this.taskDeps = taskDeps;
 	}
+	
+	public void setDeps(List<HamakePath> deps) {
+        this.deps = deps;
+    }
+	
+	public List<HamakePath> getDeps() {
+        return deps;
+    }
 
 	@Override
 	public String toString() {

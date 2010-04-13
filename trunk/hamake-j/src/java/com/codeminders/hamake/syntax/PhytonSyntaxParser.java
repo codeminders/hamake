@@ -1,5 +1,11 @@
-package com.codeminders.hamake;
+package com.codeminders.hamake.syntax;
 
+import com.codeminders.hamake.Command;
+import com.codeminders.hamake.Hamake;
+import com.codeminders.hamake.HamakePath;
+import com.codeminders.hamake.Param;
+import com.codeminders.hamake.PigNotFoundException;
+import com.codeminders.hamake.Task;
 import com.codeminders.hamake.commands.ExecCommand;
 import com.codeminders.hamake.commands.HadoopCommand;
 import com.codeminders.hamake.commands.PigCommand;
@@ -17,39 +23,31 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
+import java.util.regex.Pattern;
 
-public class MakefileParser {
+public class PhytonSyntaxParser extends BaseSyntaxParser{
+	
+	public static final Pattern VARIABLE_PATTERN = Pattern.compile("%\\(([^\\)]+)\\)[sdiefc]");
+	
+	Document dom;
+	String wdir;
+	boolean verbose;
+	
+	protected PhytonSyntaxParser(Document dom, String wdir, boolean verbose){
+		this.dom = dom;
+		this.wdir = wdir;
+		this.verbose = verbose;
+	}
 
-    protected static boolean isPigAvailable = Utils.isPigAvailable();
-
-    public Hamake parse(String filename, String wdir, boolean verbose) throws IOException,
+	@Override
+    protected Hamake parseSyntax() throws IOException,
             ParserConfigurationException,
             SAXException,
             InvalidMakefileException,
             PigNotFoundException {
-        InputStream is = new FileInputStream(filename);
-        try {
-            return parse(is, wdir, verbose);
-        } finally {
-            try {
-                is.close();
-            } catch (Exception ex) { /* Don't care */ }
-        }
-    }
-
-    public Hamake parse(InputStream is, String wdir, boolean verbose) throws IOException,
-            ParserConfigurationException,
-            SAXException,
-            InvalidMakefileException,
-            PigNotFoundException {
-        Document dom = loadMakefile(is);
         
         Element config = parseConfig(dom);
         Map<String, String> properties = parseProperties(config, wdir);
@@ -62,17 +60,15 @@ public class MakefileParser {
         	ret.setDefaultTarget(defaultTask);
         }
         return ret;
-    }
-
-    protected Document loadMakefile(InputStream is)
-            throws IOException, ParserConfigurationException, SAXException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        return builder.parse(is);
-    }
+    }    
+    
+    @Override
+    protected boolean isCorrectParser(){
+		return (dom.getElementsByTagName("map").getLength() > 0) || (dom.getElementsByTagName("reduce").getLength() > 0);
+	}
 
     protected Element parseConfig(Document dom) throws InvalidMakefileException {
-        return Utils.getMandatory(dom.getDocumentElement(), "config");
+        return getMandatory(dom.getDocumentElement(), "config");
     }        
 
     protected Map<String, String> parseProperties(Element root, String wdir) throws InvalidMakefileException {
@@ -88,8 +84,8 @@ public class MakefileParser {
         
         for (int i = 0, sz = c.getLength(); i < sz; i++) {
             Element e = (Element) c.item(i);
-            ret.put(Utils.getRequiredAttribute(e, "name", ret),
-                    Utils.getRequiredAttribute(e, "value", ret));
+            ret.put(getRequiredAttribute(e, "name", ret, VARIABLE_PATTERN),
+                    getRequiredAttribute(e, "value", ret, VARIABLE_PATTERN));
         }                  
         return ret;
     }
@@ -102,10 +98,10 @@ public class MakefileParser {
         NodeList tx = config.getElementsByTagName("map");
         for (int i = 0, sz = tx.getLength(); i < sz; i++) {
             Element t = (Element) tx.item(i);
-            String dattr = Utils.getOptionalAttribute(t, "disabled", properties);
+            String dattr = getOptionalAttribute(t, "disabled", properties, VARIABLE_PATTERN);
             if ("yes".equalsIgnoreCase(dattr) || "true".equalsIgnoreCase(dattr)) {
                 if (verbose)
-                    System.out.println("Ignoring disabled task " + Utils.getOptionalAttribute(t, "name", properties));
+                    System.out.println("Ignoring disabled task " + getOptionalAttribute(t, "name", properties, VARIABLE_PATTERN));
                 continue;
             }
             hamake.addTask(parseMapTask(t, properties, wdir));
@@ -113,10 +109,10 @@ public class MakefileParser {
         tx = config.getElementsByTagName("reduce");
         for (int i = 0, sz = tx.getLength(); i < sz; i++) {
             Element t = (Element) tx.item(i);
-            String dattr = Utils.getOptionalAttribute(t, "disabled", properties);
+            String dattr = getOptionalAttribute(t, "disabled", properties, VARIABLE_PATTERN);
             if ("yes".equalsIgnoreCase(dattr) || "true".equalsIgnoreCase(dattr)) {
                 if (verbose)
-                    System.out.println("Ignoring disabled task " + Utils.getOptionalAttribute(t, "name", properties));
+                    System.out.println("Ignoring disabled task " + getOptionalAttribute(t, "name", properties, VARIABLE_PATTERN));
                 continue;
             }
             hamake.addTask(parseReduceTask(t, properties, wdir));
@@ -124,7 +120,7 @@ public class MakefileParser {
     }
 
     protected Task parseMapTask(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException, PigNotFoundException {
-        String name = Utils.getRequiredAttribute(root, "name", properties);
+        String name = getRequiredAttribute(root, "name", properties, VARIABLE_PATTERN);
 
         Collection<HamakePath> inputs = parsePathList(root, "input", properties, wdir);
         HamakePath input;
@@ -162,32 +158,32 @@ public class MakefileParser {
         NodeList list = root.getElementsByTagName("task");
         int size = list.getLength();
         if (size > 1)
-            throw new InvalidMakefileException("Multiple elements 'task' in " + Utils.getPath(root) + " are not permitted");
+            throw new InvalidMakefileException("Multiple elements 'task' in " + getPath(root) + " are not permitted");
         if (size == 1)
             return parseHadoopCommand((Element) list.item(0), properties, wdir);
 
         list = root.getElementsByTagName("pig");
         size = list.getLength();
         if (size > 1)
-            throw new InvalidMakefileException("Multiple elements 'pig' in " + Utils.getPath(root) + " are not permitted");
+            throw new InvalidMakefileException("Multiple elements 'pig' in " + getPath(root) + " are not permitted");
         if (size == 1)
             return parsePigCommand((Element) list.item(0), properties, wdir);
 
         list = root.getElementsByTagName("exec");
         size = list.getLength();
         if (size > 1)
-            throw new InvalidMakefileException("Multiple elements 'exec' in " + Utils.getPath(root) + " are not permitted");
+            throw new InvalidMakefileException("Multiple elements 'exec' in " + getPath(root) + " are not permitted");
         if (size == 1)
             return parseExecCommand((Element) list.item(0), properties, wdir);
 
-        throw new InvalidMakefileException("No commands are encountered in " + Utils.getPath(root));
+        throw new InvalidMakefileException("No commands are encountered in " + getPath(root));
     }
 
     protected Command parseHadoopCommand(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException {
         HadoopCommand res = new HadoopCommand();
-        res.setJar(HamakePath.resolve(wdir, Utils.getRequiredAttribute(root, "jar", properties)).toString());
-        res.setMain(Utils.getRequiredAttribute(root, "main", properties));
-        res.setParameters(parseParametersList(root, properties));
+        res.setJar(HamakePath.resolve(wdir, getRequiredAttribute(root, "jar", properties, VARIABLE_PATTERN)).toString());
+        res.setMain(getRequiredAttribute(root, "main", properties, VARIABLE_PATTERN));
+        res.setParameters(parseParameters(root, properties));
         return res;
     }
     
@@ -196,20 +192,20 @@ public class MakefileParser {
             throw new PigNotFoundException("Pig isn't found in classpath. Please, make sure Pig classes are available in classpath.");
 
         PigCommand res = new PigCommand();
-        res.setScript(new HamakePath(wdir, Utils.getRequiredAttribute(root, "script", properties)));
-        res.setParameters(parseParametersList(root, properties));
+        res.setScript(new HamakePath(wdir, getRequiredAttribute(root, "script", properties, VARIABLE_PATTERN)));
+        res.setParameters(parseParameters(root, properties));
         return res;
     }
 
     protected Command parseExecCommand(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException {
         ExecCommand res = new ExecCommand();
-        res.setBinary(new HamakePath(wdir, Utils.getRequiredAttribute(root, "binary", properties)));
-        res.setParameters(parseParametersList(root, properties));
+        res.setBinary(new HamakePath(wdir, getRequiredAttribute(root, "binary", properties, VARIABLE_PATTERN)));
+        res.setParameters(parseParameters(root, properties));
         return res;
     }
 
     protected Task parseReduceTask(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException, PigNotFoundException {
-        String name = Utils.getRequiredAttribute(root, "name", properties);
+        String name = getRequiredAttribute(root, "name", properties, VARIABLE_PATTERN);
 
         List<HamakePath> inputs = parsePathList(root, "input", properties, wdir);
         List<HamakePath> outputs = parsePathList(root, "output", properties, wdir);
@@ -225,9 +221,9 @@ public class MakefileParser {
         return res;
     }
 
-    protected Collection<Param> parseParametersList(Element root, Map<String, String> properties)
+    protected List<Param> parseParameters(Element root, Map<String, String> properties)
             throws InvalidMakefileException {
-        Collection<Param> ret = new ArrayList<Param>();
+        List<Param> ret = new ArrayList<Param>();
         NodeList children = root.getChildNodes();
         int counter = 0;
         for (int i = 0, sz = children.getLength(); i < sz; i++) {
@@ -246,7 +242,7 @@ public class MakefileParser {
                 } else if ("pigparam".equals(name)) {
                     param = parsePigParam(e, properties);
                 } else {
-                    throw new InvalidMakefileException("Unknown sub-element '" + name + "' under " + Utils.getPath(root));
+                    throw new InvalidMakefileException("Unknown sub-element '" + name + "' under " + getPath(root));
                 }
                 ret.add(param);
             }
@@ -255,18 +251,18 @@ public class MakefileParser {
     }
 
     protected Param parseConstParam(Element root, Map<String, String> properties) throws InvalidMakefileException {
-        return new ConstParam(Utils.getRequiredAttribute(root, "value", properties));
+        return new ConstParam(getRequiredAttribute(root, "value", properties, VARIABLE_PATTERN));
     }
 
     protected Param parsePathParam(Element root, Map<String, String> properties, int index) throws InvalidMakefileException {
-        String ptype = Utils.getRequiredAttribute(root, "type", properties);
-        String number_s = Utils.getOptionalAttribute(root, "number", properties);
+        String ptype = getRequiredAttribute(root, "type", properties, VARIABLE_PATTERN);
+        String number_s = getOptionalAttribute(root, "number", properties, VARIABLE_PATTERN);
         int number;
         if (number_s != null)
             number = Integer.parseInt(number_s);
         else
             number = -1;
-        String mask_handling = Utils.getOptionalAttribute(root, "mask", properties);
+        String mask_handling = getOptionalAttribute(root, "mask", properties, VARIABLE_PATTERN);
         PathParam.Mask mask;
         if (mask_handling == null)
             mask = PathParam.Mask.keep;
@@ -274,23 +270,23 @@ public class MakefileParser {
             try {
                 mask = PathParam.Mask.valueOf(mask_handling);
             } catch (IllegalArgumentException ex) {
-                throw new InvalidMakefileException("Unsupported value of 'mask' parameter in " + Utils.getPath(root));
+                throw new InvalidMakefileException("Unsupported value of 'mask' parameter in " + getPath(root));
             }
         }
-        String name = Utils.getOptionalAttribute(root, "name", properties);
+        String name = getOptionalAttribute(root, "name", properties, VARIABLE_PATTERN);
         if (name == null)
             name = "path" + index;
         return new PathParam(name, ptype, number, mask);
     }
 
     protected Param parseJobConfParam(Element root, Map<String, String> properties) throws InvalidMakefileException {
-        return new JobConfParam(Utils.getRequiredAttribute(root, "name", properties),
-                Utils.getRequiredAttribute(root, "value", properties));
+        return new JobConfParam(getRequiredAttribute(root, "name", properties, VARIABLE_PATTERN),
+                getRequiredAttribute(root, "value", properties, VARIABLE_PATTERN));
     }
 
     protected Param parsePigParam(Element root, Map<String, String> properties) throws InvalidMakefileException {
-        return new PigParam(Utils.getRequiredAttribute(root, "name", properties),
-                Utils.getRequiredAttribute(root, "value", properties));
+        return new PigParam(getRequiredAttribute(root, "name", properties, VARIABLE_PATTERN),
+                getRequiredAttribute(root, "value", properties, VARIABLE_PATTERN));
     }
 
     protected void parseTaskDeps(Element root, Task res, Map<String, String> properties)
@@ -306,7 +302,7 @@ public class MakefileParser {
 
         Collection<String> deps = new ArrayList<String>();
         for (int i = 0, sz = pretasks.getLength(); i < sz; i++) {
-            String name = Utils.getRequiredAttribute((Element) pretasks.item(i), "name", properties);
+            String name = getRequiredAttribute((Element) pretasks.item(i), "name", properties, VARIABLE_PATTERN);
             if (!name.equals(res.getName()))
                 deps.add(name);
         }
@@ -321,7 +317,7 @@ public class MakefileParser {
         if (len == 0)
             return Collections.EMPTY_LIST;
         if (len != 1)
-            throw new InvalidMakefileException("Multiple elements '" + name + "' in " + Utils.getPath(root) +
+            throw new InvalidMakefileException("Multiple elements '" + name + "' in " + getPath(root) +
                     " are not permitted");
         NodeList path = ((Element) list.item(0)).getElementsByTagName("path");
         List<HamakePath> ret = new ArrayList<HamakePath>();
@@ -333,16 +329,16 @@ public class MakefileParser {
 
     protected HamakePath parsePath(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException {
 
-        String location = Utils.getRequiredAttribute(root, "location", properties);
-        String filename = Utils.getOptionalAttribute(root, "filename", properties);
-        String mask = Utils.getOptionalAttribute(root, "mask", properties);
-        String gen_s = Utils.getOptionalAttribute(root, "generation", properties);
+        String location = getRequiredAttribute(root, "location", properties, VARIABLE_PATTERN);
+        String filename = getOptionalAttribute(root, "filename", properties, VARIABLE_PATTERN);
+        String mask = getOptionalAttribute(root, "mask", properties, VARIABLE_PATTERN);
+        String gen_s = getOptionalAttribute(root, "generation", properties, VARIABLE_PATTERN);
         int gen;
         if (gen_s == null)
             gen = 0;
         else
             gen = Integer.parseInt(gen_s);
-        return new HamakePath(wdir, location, filename, mask, gen);
+        return new HamakePath(null, wdir, location, filename, mask, gen, null, Long.MAX_VALUE);
     }
 
 }
