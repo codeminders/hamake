@@ -14,10 +14,6 @@ Hamake is a lightweight workflow engine for Hadoop. Hamake helps to organize you
 
 To install Hamake simply copy hamake-j-1.0.jar to the directory of your choise and make sure that hadoop command is in your $PATH variable.
 
-{{{
-cp hamake-j-1.0.jar /tmp
-}}}
-
 =Quick Start=
 
 ==Running Hamake Example==
