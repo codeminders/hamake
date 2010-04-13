@@ -12,28 +12,59 @@ import java.io.IOException;
 
 public class HamakePath {
 	
+	public enum Variant {
+		LIST, PATH, MASK;
+		
+		public static Variant parseString(String variant){
+			if(StringUtils.isEmpty(variant)) return null;
+			if(variant.equalsIgnoreCase("list")) return LIST;
+			else if(variant.equalsIgnoreCase("path")) return PATH;
+			else if(variant.equalsIgnoreCase("mask")) return MASK;
+			else return null;
+		}
+	}
+	
 	public static final Log LOG = LogFactory.getLog(HamakePath.class);
 
+	private String ID;
     private String wdir;
     private String loc;
     private String filename;
     private String mask;
     private int gen;
     private FileSystem fs;
+    private Variant variant;
+    private long validityPeriod;
     
-    public HamakePath(String loc) throws IOException {
-    	this(null, loc, null, null, 0);
+	public HamakePath(String loc) throws IOException {
+    	this(null, null, loc, null, null, 0, null, Long.MAX_VALUE);
+    }
+	
+	public HamakePath(String loc, long validityPeriod) throws IOException {
+    	this(null, null, loc, null, null, 0, null, validityPeriod);
+    }
+	
+	public HamakePath(String loc, long validityPeriod, int gen) throws IOException {
+    	this(null, null, loc, null, null, gen, null, validityPeriod);
     }
 
     public HamakePath(String wdir, String loc) throws IOException {
-    	this(wdir, loc, null, null, 0);
+    	this(null, wdir, loc, null, null, 0, null, Long.MAX_VALUE);
     }
 
     public HamakePath(String loc, int gen) throws IOException {
-    	this(null, loc, null, null, gen);
+    	this(null, null, loc, null, null, gen, null, Long.MAX_VALUE);
     }
 
-    public HamakePath(String wdir, String loc, String filename, String mask, int gen) throws IOException {
+    public HamakePath(String ID, String wdir, String loc, String mask, int gen) throws IOException {
+    	this(ID, wdir, loc, null, mask, gen, null, Long.MAX_VALUE);
+    }
+    
+    public HamakePath(String ID, String wdir, String loc, String mask, int gen, Variant variant) throws IOException {
+    	this(ID, wdir, loc, null, mask, gen, variant, Long.MAX_VALUE);
+    }
+    
+    public HamakePath(String ID, String wdir, String loc, String filename, String mask, int gen, Variant variant, long validityPeriod) throws IOException {
         this.wdir = wdir;
     	Configuration conf = new Configuration();
 
@@ -48,9 +79,20 @@ public class HamakePath {
         setFilename(filename);
         setMask(mask);
         setGen(gen);
+        this.variant = variant;
+        this.validityPeriod = validityPeriod;
+        this.ID = ID;
     }
+    
+    public String getID() {
+		return ID;
+	}
+    
+    public long getValidityPeriod() {
+		return validityPeriod;
+	}
 
-    public static Path resolve(String wdir, String loc)
+	public static Path resolve(String wdir, String loc)
     {
         Path pathLoc = new Path(loc);
 
@@ -80,8 +122,12 @@ public class HamakePath {
     public Path getPathName() {
         return getPathName(null);
     }
+    
+    public Variant getVariant() {
+		return variant;
+	}
 
-    public Path getPathName(String newFilename) {
+	public Path getPathName(String newFilename) {
         if (newFilename == null)
             newFilename = getFilename();
         if (newFilename != null)

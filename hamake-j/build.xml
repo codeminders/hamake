@@ -21,7 +21,7 @@
   <property name="test.build.dir" value="${build.dir}/test" />
   <property name="test.src.dir" value="${test.dir}/java" />
   <property name="test.resources.dir" value="${test.dir}/resources" />
-  <property name="test.current.hamakefiles.dir" value="${test.resources.dir}/hamakefiles/pythonsyntax" />
+  <property name="test.current.hamakefiles.dir" value="${test.resources.dir}/hamakefiles/currentsyntax" />
 
   <!--Apache Ivy(http://ant.apache.org/ivy/history/latest-milestone/install.html) -->
   <loadproperties srcfile="${basedir}/ivy/libraries.properties" />

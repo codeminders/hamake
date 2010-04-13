@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="test">
+
+    <config>
+        <property name="output"  value="build/test"/>
+        <property name="lib"     value="build/lib"/>
+        <property name="dist"    value="dist/examples"/>
+        <property name="scripts" value="test/resources/scripts"/>
+    </config>
+
+    <map name="jar-listings">
+        <input>
+            <path location="%(lib)s" mask="*.jar"/>
+        </input>
+        <dependencies/>
+
+        <output>
+            <path location="%(output)s/jar-listings"/>
+        </output>
+
+        <task jar="%(dist)s/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListing">
+            <pathparam type="inputfile"/>
+            <pathparam type="outputfile"/>
+        </task>
+    </map>
+
+    <map name="filter-listing">
+        <input>
+            <path location="%(output)s/jar-listings"/>
+        </input>
+        <dependencies/>
+
+        <output>
+            <path location="%(output)s/jar-listings-filtered"/>
+        </output>
+
+        <task jar="%(dist)s/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
+            <pathparam type="inputfile"/>
+            <pathparam type="outputfile"/>
+        </task>
+    </map>
+
+    <reduce name="histogram">
+
+        <input>
+            <path location="%(output)s/jar-listings-filtered"/>
+        </input>
+        
+        <output>
+            <path location="%(output)s/class-size-histogram"/>
+        </output>
+
+        <task jar="%(dist)s/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
+            <pathparam type="input"/>
+            <pathparam type="output"/>
+        </task>
+        
+    </reduce>
+
+    <map name="map">
+        <input>
+            <path location="%(output)s/class-size-histogram"/>
+        </input>
+        <dependencies/>
+
+        <output>
+            <path location="%(output)s/class-size-median-bin"/>
+        </output>
+
+        <pig script="%(scripts)s/median.pig">
+            <pathparam type="inputfile" name="infile" />
+            <pathparam type="outputfile" name="outfile" />
+        </pig>
+    </map>
+
+
+
+</project>

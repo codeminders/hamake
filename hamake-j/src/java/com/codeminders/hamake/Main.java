@@ -11,6 +11,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.VersionInfo;
 import org.xml.sax.SAXException;
 
+import com.codeminders.hamake.syntax.BaseSyntaxParser;
+import com.codeminders.hamake.syntax.InvalidMakefileException;
+import com.codeminders.hamake.syntax.PhytonSyntaxParser;
+
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,8 +90,6 @@ public class Main {
         if (line.hasOption('w'))
             wdir = line.getOptionValue('w');
 
-        PhytonSyntaxParser makefileParser = new PhytonSyntaxParser();
-
         Hamake make = null;        
 
         InputStream is = null;
@@ -107,7 +109,7 @@ public class Main {
                 FileSystem fs = makefilePath.getFileSystem(hadoopCfg);
                 is = fs.open(makefilePath);
             }
-            make = makefileParser.parse(is, wdir, config.verbose);
+            make = BaseSyntaxParser.parse(is, wdir, config.verbose);
             if(line.getArgs().length > 0){
             	for(String target : line.getArgs()){
             		make.addTarget(target);

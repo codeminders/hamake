@@ -1,0 +1,75 @@
+<project name="test-syntax" default="foreach1">
+
+	<property name="dfsroot" value="/root" />
+	<property name="basedir" value="/base" />
+
+	<foreach name="foreach1">
+		<dependencies>
+			<file path="${basedir}/somefile.txt"/>
+		</dependencies>
+		<description>first foreach</description>
+		<input>
+			<fileset id="foreach1_id" path="${dfsroot}/referrers" mask="*.log" />
+		</input>
+		<output>
+			<identity path="${dfsroot}/related/domain_referrers_totals" generation="1" />
+		</output>
+		<mapreduce jar="${basedir}/datamining.jar" main="us.imageshack.datamining.Access2Referrers">
+			<parameter value="${input}" />
+			<parameter value="${output}" />
+		</mapreduce>
+	</foreach>
+	<foreach name="foreach2">
+		<description>second foreach</description>
+		<input>
+			<fileset path="${dfsroot}/related/domain_referrers_totals" generation="2" />
+		</input>
+		<output expiration="2d">
+			<composition>
+				<identity path="${dfsroot}/related/image_domains1" />
+				<identity path="${dfsroot}/related/image_domains2" />
+			</composition>
+		</output>
+		<exec binary="cat">
+			<parameter value="${input}" />
+			<parameter value=">" />
+			<parameter value="${output}" />
+		</exec>
+	</foreach>
+	<foreach name="foreach3" disabled="true">
+		<description>second foreach</description>
+		<input>
+			<fileset path="${dfsroot}/related/domain_referrers_totals" generation="2" />
+		</input>
+		<output expiration="2d">
+			<composition>
+				<identity path="${dfsroot}/related/image_domains1" />
+				<identity path="${dfsroot}/related/image_domains2" />
+			</composition>
+		</output>
+		<exec binary="cat">
+			<parameter value="${input}" />
+			<parameter value=">" />
+			<parameter value="${output}" />
+		</exec>
+	</foreach>
+	<fold name="reduce">
+		<dependencies>
+			<file path="${basedir}/somefile.txt"/>
+		</dependencies>
+		<description>reducer</description>
+		<input>
+			<file path="${dfsroot}/image_domains" generation="1" variant="list"/>
+			<fileset path="${dfsroot}/rev" mask="*.file"/>
+		</input>
+		<output expiration="15h">
+			<file path="${dfsroot}/related/porn_stats.tmp"/>
+			<file id="reduce2out" path="${dfsroot}/related/" mask="*.file" variant="mask"/>
+		</output>
+		<pig script="median.pig">
+			<parameter value="${input}" />
+			<jobconf name="jcname" value="jcvalue" />
+			<parameter value="${output}" />
+		</pig>
+	</fold>
+</project>

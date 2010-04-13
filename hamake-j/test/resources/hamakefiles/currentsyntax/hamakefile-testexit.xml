@@ -1,0 +1,23 @@
+<project name="test-system.exit">
+
+	<config>
+	</config>
+
+	<map name="map">
+		<description>
+	      second map
+	    </description>
+		<dependencies />
+		<input>
+			<path location="is_set_by_test" />
+		</input>
+		<output>
+			<path location="is_set_by_test" />
+		</output>
+		<task jar="is_set_by_test" main="com.codeminders.hamake.examples.DummyJobThatCallsSystemExit">
+            <pathparam type="inputfile" />
+			<pathparam type="outputfile" />
+        </task>
+	</map>	
+
+</project>

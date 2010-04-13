@@ -25,7 +25,6 @@ public class MapTask extends Task {
 
 	public static final Log LOG = LogFactory.getLog(MapTask.class);
 	
-    private Collection<HamakePath> deps = new ArrayList<HamakePath>();
     private HamakePath xinput;
 
     public List<HamakePath> getInputs() {
@@ -181,14 +180,6 @@ public class MapTask extends Task {
         }
         return rc;
 
-    }
-
-    public Collection<HamakePath> getDeps() {
-        return deps;
-    }
-
-    public void setDeps(Collection<HamakePath> deps) {
-        this.deps = deps;
     }
 
     public HamakePath getXinput() {

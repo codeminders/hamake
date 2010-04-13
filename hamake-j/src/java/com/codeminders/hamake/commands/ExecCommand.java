@@ -13,6 +13,7 @@ import org.apache.hadoop.fs.FileSystem;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class ExecCommand extends BaseCommand {
@@ -24,7 +25,7 @@ public class ExecCommand extends BaseCommand {
     public ExecCommand() {
     }
 
-    public ExecCommand(HamakePath binary, Collection<Param> parameters) {
+    public ExecCommand(HamakePath binary, List<Param> parameters) {
         setBinary(binary);
         setParameters(parameters);
     }

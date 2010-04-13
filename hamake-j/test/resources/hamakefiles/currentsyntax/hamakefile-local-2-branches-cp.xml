@@ -1,0 +1,120 @@
+<project name="local-cp">
+
+	<config>
+		<property name="basedir" value="/tmp" />
+		<property name="numreducers" value="2" />
+	</config>
+
+
+	<map name="map11">
+		<description>
+      first map, first branch
+    </description>
+		<dependencies />
+		<input>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</input>
+		<output>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</output>
+		<exec binary="cp">
+			<pathparam type="inputfile" />
+			<pathparam type="outputfile" />
+		</exec>
+	</map>
+	<map name="map12">
+		<description>
+	      first map, second branch
+	    </description>
+		<dependencies />
+		<input>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</input>
+		<output>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</output>
+		<exec binary="cp">
+			<pathparam type="inputfile" />
+			<pathparam type="outputfile" />
+		</exec>
+	</map>
+	<map name="map21">
+		<description>
+	      second map, first branch
+	    </description>
+		<dependencies />
+		<input>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</input>
+		<output>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</output>
+		<exec binary="is_set_by_test">
+			<pathparam type="inputfile" />
+			<pathparam type="outputfile" />
+		</exec>
+	</map>
+	<map name="map22">
+		<description>
+		      second map, second branch
+		    </description>
+		<dependencies />
+		<input>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</input>
+		<output>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</output>
+		<exec binary="is_set_by_test">
+			<pathparam type="inputfile" />
+			<pathparam type="outputfile" />
+		</exec>
+	</map>
+	<reduce name="reduce1">
+		<description>
+	      first reduce
+	    </description>
+		<dependencies />
+		<input>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</input>
+		<output>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</output>
+		<exec binary="is_set_by_test">
+			<pathparam type="input" />
+			<constparam value=">" />
+			<pathparam type="output" />
+		</exec>
+	</reduce>
+	<reduce name="reduce2">
+		<description>
+		      second reduce
+		    </description>
+		<dependencies />
+		<input>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</input>
+		<output>
+			<!-- this parameter is set by JUnit test programmatically-->
+			<path location="is_set_by_test" />
+		</output>
+		<exec binary="is_set_by_test">
+			<pathparam type="input" />
+			<constparam value=">" />
+			<pathparam type="output" />
+		</exec>
+	</reduce>
+
+</project>

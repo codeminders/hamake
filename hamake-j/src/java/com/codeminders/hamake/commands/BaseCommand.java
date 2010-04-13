@@ -5,17 +5,17 @@ import com.codeminders.hamake.Param;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 public abstract class BaseCommand implements Command {
 
-    private Collection<Param> parameters = new ArrayList<Param>();
+    private List<Param> parameters = new ArrayList<Param>();
     
-    public Collection<Param> getParameters() {
+    public List<Param> getParameters() {
         return parameters;
     }
 
-    public void setParameters(Collection<Param> parameters) {
+    public void setParameters(List<Param> parameters) {
         this.parameters = parameters;
     }
 

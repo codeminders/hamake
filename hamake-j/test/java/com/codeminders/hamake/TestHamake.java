@@ -17,6 +17,9 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.codeminders.hamake.commands.HadoopCommand;
+import com.codeminders.hamake.syntax.BaseSyntaxParser;
+import com.codeminders.hamake.syntax.InvalidMakefileException;
+import com.codeminders.hamake.syntax.PhytonSyntaxParser;
 import com.codeminders.hamake.tasks.MapTask;
 
 public class TestHamake {
@@ -50,10 +53,9 @@ public class TestHamake {
 	 File tempReduce1OutFile = TestHelperUtils
 	 .generateTemporaryFile(tempReduce1OutDir.getAbsolutePath());
 	 Thread.sleep(5000);
-	 PhytonSyntaxParser parser = new PhytonSyntaxParser();
 	 Hamake make = new Hamake();
 	 File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-local-cp.xml");
-	 make = parser.parse(new FileInputStream(localHamakeFile), null, true);
+	 make = BaseSyntaxParser.parse(new FileInputStream(localHamakeFile), null, true);
 	 if (OS.isLinux()) {
 	 TestHelperUtils.setTaskExecBinary(make, "map1", "cp");
 	 TestHelperUtils.setTaskExecBinary(make, "map2", "cp");
@@ -111,10 +113,9 @@ public class TestHamake {
 	 File tempReduce2OutFile = TestHelperUtils
 	 .generateTemporaryFile(tempReduce2OutDir.getAbsolutePath());
 	 Thread.sleep(5000);
-	 PhytonSyntaxParser parser = new PhytonSyntaxParser();
 	 Hamake make = new Hamake();
 	 File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-local-2-branches-cp.xml");
-	 make = parser.parse(new FileInputStream(localHamakeFile), null, true);
+	 make = BaseSyntaxParser.parse(new FileInputStream(localHamakeFile), null, true);
 	 if (OS.isLinux()) {
 	 TestHelperUtils.setTaskExecBinary(make, "map11", "cp");
 	 TestHelperUtils.setTaskExecBinary(make, "map12", "cp");
@@ -196,9 +197,8 @@ public class TestHamake {
 		TestHelperUtils.generateTemporaryFiles(tempInDir.getAbsolutePath(), 1);
 		File tempOutDir = TestHelperUtils.generateTemporaryDirectory(tempDir
 				.getAbsolutePath());
-		PhytonSyntaxParser parser = new PhytonSyntaxParser();
 		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testexit.xml");
-		final Hamake make = parser.parse(new FileInputStream(localHamakeFile), null, true);
+		final Hamake make = BaseSyntaxParser.parse(new FileInputStream(localHamakeFile), null, true);
 		make.setNumJobs(1);
 		((HadoopCommand) ((MapTask) make.getTasks().get(0)).getCommand())
 				.setJar(TestHelperUtils.getExamplesJar().getAbsolutePath());

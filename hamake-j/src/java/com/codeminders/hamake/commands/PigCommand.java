@@ -22,6 +22,7 @@ import org.apache.pig.tools.parameters.ParseException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -34,7 +35,7 @@ public class PigCommand extends BaseCommand {
     public PigCommand() {
     }
 
-    public PigCommand(HamakePath script, Collection<Param> parameters) {
+    public PigCommand(HamakePath script, List<Param> parameters) {
         setScript(script);
         setParameters(parameters);
     }
