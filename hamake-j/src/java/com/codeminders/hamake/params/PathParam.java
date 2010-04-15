@@ -3,6 +3,7 @@ package com.codeminders.hamake.params;
 import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.NamedParam;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -75,9 +76,9 @@ public class PathParam implements NamedParam {
         this.maskHandling = maskHandling;
     }
 
-    public Collection<String> get(Map<String, Collection> dict, FileSystem fs) throws IOException {
+    public List<String> get(Map<String, List<HamakePath>> dict, FileSystem fs) throws IOException {
 
-        Collection<String> ret;
+        List<String> ret;
 
         int number = getNumber();
         if (number == -1) {
@@ -113,22 +114,22 @@ public class PathParam implements NamedParam {
         return toStrArr(i, null);
     }
 
-    protected Collection<String> toStrArr(Object i, FileSystem fs) throws IOException {
+    protected List<String> toStrArr(Object i, FileSystem fs) throws IOException {
         if (i instanceof HamakePath) {
             HamakePath p = (HamakePath) i;
             Mask m = getMaskHandling();
             if (m == Mask.keep) {
-                return Collections.singleton(p.getPathNameWithMask());
+                return Collections.unmodifiableList(Arrays.asList(p.getPathNameWithMask()));
             } else if (m == Mask.suppress) {
                 if (fs == null)
                     throw new IllegalArgumentException("Could not expand path, no filesystem");
-                return Collections.singleton(p.getPathName().toString());
+                return Collections.unmodifiableList(Arrays.asList(p.getPathName().toString()));
             } else {
                 if (fs == null)
                     throw new IllegalArgumentException("Could not expand path, no filesystem");
                 if (p.hasFilename())
                     throw new IllegalArgumentException("Could not expand file " + p);
-                Collection<String> ret = new ArrayList<String>();
+                List<String> ret = new ArrayList<String>();
 
                 Map<String, FileStatus> list =
                         Utils.getFileList(p, false, p.getMask());
@@ -139,7 +140,7 @@ public class PathParam implements NamedParam {
                 return ret;
             }
         } else
-            return Collections.singleton(i.toString());
+            return Collections.unmodifiableList(Arrays.asList(i.toString()));
     }
 
     @Override

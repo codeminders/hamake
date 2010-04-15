@@ -4,7 +4,7 @@
 
   <property file="build.properties" />
 
-  <property name="hadoop.version" value="0.18" />
+  <property name="hadoop.version" value="0.20" />
 
 
   <!-- Compiler options -->
@@ -56,6 +56,10 @@
 
 
   <!-- Project Libraries -->
+	
+  <path id="pig.classpath">
+  	<fileset file="${lib.dir}/hadoop-${hadoop.version}/pig-*-core.jar" />
+  </path>
 
   <path id="library.commons.classpath">
     <fileset dir="${lib.dir}">
@@ -162,8 +166,8 @@
   </target>
 
   <target name="examples.local" depends="dist">
-    <pathconvert targetos="unix" property="classpath.unix" refid="test.classpath"/>
-    <pathconvert targetos="windows" property="classpath.windows" refid="test.classpath"/>
+    <pathconvert targetos="unix" property="classpath.unix" refid="pig.classpath"/>
+    <pathconvert targetos="windows" property="classpath.windows" refid="pig.classpath"/>
 
     <!--<delete dir="${test.build.dir}"/>-->
     <mkdir dir="${test.build.dir}" />
@@ -194,8 +198,8 @@
   </target>
 
   <target name="examples.distributed" depends="dist">
-    <pathconvert targetos="unix" property="classpath.unix" refid="test.classpath"/>
-    <pathconvert targetos="windows" property="classpath.windows" refid="test.classpath"/>
+    <pathconvert targetos="unix" property="classpath.unix" refid="pig.classpath"/>
+    <pathconvert targetos="windows" property="classpath.windows" refid="pig.classpath"/>
 
     <!--<delete dir="${test.build.dir}"/>-->
     <mkdir dir="${test.build.dir}" />

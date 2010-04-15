@@ -61,7 +61,7 @@ public class ReduceTask extends Task {
         }
 
         if (mits == -1 || mits > mots) {
-            Map<String, Collection> params = new HashMap<String, Collection>();
+            Map<String, List<HamakePath>> params = new HashMap<String, List<HamakePath>>();
             //check that input folder is not empty            
     		for(HamakePath path : inputs){
     			try{

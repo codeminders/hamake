@@ -19,7 +19,6 @@ import org.xml.sax.SAXException;
 import com.codeminders.hamake.commands.HadoopCommand;
 import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
-import com.codeminders.hamake.syntax.PhytonSyntaxParser;
 import com.codeminders.hamake.tasks.MapTask;
 
 public class TestHamake {

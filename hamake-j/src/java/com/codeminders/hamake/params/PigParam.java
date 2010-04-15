@@ -1,11 +1,13 @@
 package com.codeminders.hamake.params;
 
-import com.codeminders.hamake.Param;
+import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.NamedParam;
 import org.apache.hadoop.fs.FileSystem;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class PigParam implements NamedParam {
@@ -33,7 +35,7 @@ public class PigParam implements NamedParam {
         this.value = value;
     }
 
-    public Collection<String> get(Map<String, Collection> dict, FileSystem fs) {
-        return Collections.singleton(getValue());
+    public List<String> get(Map<String, List<HamakePath>> dict, FileSystem fs) {
+        return Collections.unmodifiableList(Arrays.asList(getValue()));
     }
 }

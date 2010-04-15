@@ -8,6 +8,7 @@ import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
@@ -16,14 +17,14 @@ public class CommandThread extends Thread {
 	public static final Log LOG = LogFactory.getLog(CommandThread.class);
 
     private Command command;
-    private Map<String, Collection> params;
+    private Map<String, List<HamakePath>> params;
     private Collection<Path> cleanuplist;
     private Map<String, Object> exec_context;
     private Semaphore job_semaphore;
     private int rc;
 
     public CommandThread(Command command,
-                         Map<String, Collection> params,
+                         Map<String, List<HamakePath>> params,
                          Collection<Path> cleanuplist,
                          Map<String, Object> exec_context,
                          Semaphore job_semaphore) {

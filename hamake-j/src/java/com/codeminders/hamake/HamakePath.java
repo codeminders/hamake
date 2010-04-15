@@ -44,8 +44,8 @@ public class HamakePath {
     	this(null, null, loc, null, null, 0, null, validityPeriod);
     }
 	
-	public HamakePath(String loc, long validityPeriod, int gen) throws IOException {
-    	this(null, null, loc, null, null, gen, null, validityPeriod);
+	public HamakePath(String loc, String wdir, long validityPeriod, int gen) throws IOException {
+    	this(null, wdir, loc, null, null, gen, null, validityPeriod);
     }
 
     public HamakePath(String wdir, String loc) throws IOException {

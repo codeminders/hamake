@@ -21,21 +21,20 @@ import org.xml.sax.SAXException;
 import com.codeminders.hamake.Command;
 import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.HamakePath;
-import com.codeminders.hamake.Param;
-import com.codeminders.hamake.HamakeParameter;
 import com.codeminders.hamake.PigNotFoundException;
 import com.codeminders.hamake.Task;
 import com.codeminders.hamake.commands.ExecCommand;
 import com.codeminders.hamake.commands.HadoopCommand;
 import com.codeminders.hamake.commands.PigCommand;
+import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.JobConfParam;
-import com.codeminders.hamake.params.PathParam;
+import com.codeminders.hamake.params.Param;
 import com.codeminders.hamake.tasks.MapTask;
 import com.codeminders.hamake.tasks.ReduceTask;
 
 public class SyntaxParser extends BaseSyntaxParser {
 	
-	protected static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([^\\}]+)\\}");
+	public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([^\\}]+)\\}");
 
 	Map<String, String> properties;
 	Document dom;
@@ -159,8 +158,12 @@ public class SyntaxParser extends BaseSyntaxParser {
 	protected Task parseFoldDTR(Element root, String wdir) throws InvalidMakefileException, IOException, PigNotFoundException {
         String name = getRequiredAttribute(root, "name", properties, VARIABLE_PATTERN);
 
-        List<HamakePath> inputs = parseFoldData(root, "input", wdir);
-        List<HamakePath> outputs = parseFoldData(root, "output", wdir);
+        Element input = getOneSubElement(root, "input");
+        List<HamakePath> inputs = parseFoldData(input, wdir, 0);        
+        Element output = getOneSubElement(root, "output");
+        String expiration = getOptionalAttribute(output, "expiration");
+        long validityPeriod = parseValidityPeriod(expiration);
+        List<HamakePath> outputs = parseFoldData(output, wdir, validityPeriod);
         List<HamakePath> deps = parseDependencies(root, "dependencies", wdir);
 
         Command command = parseTask(root, wdir);
@@ -174,23 +177,18 @@ public class SyntaxParser extends BaseSyntaxParser {
         return res;
     }
 	
-	protected List<HamakePath> parseFoldData(Element root, String name,
-			String wdir) throws InvalidMakefileException, IOException {
+	protected List<HamakePath> parseFoldData(Element root, String wdir, long validityPeriod) throws InvalidMakefileException, IOException {
 		List<HamakePath> ret = new ArrayList<HamakePath>();
-		Element output = getOneSubElement(root, name);
-		if(output != null){
-			String expiration = getOptionalAttribute(output, "expiration");
-			long validityPeriod = parseValidityPeriod(expiration);
-			NodeList files = output.getElementsByTagName(
-			"file");
-			for (int i = 0, sz = files.getLength(); i < sz; i++) {
-				ret.add(parseFile((Element) files.item(i), wdir, validityPeriod));
-			}
-			NodeList filesets = output.getElementsByTagName(
-			"fileset");			
-			for (int i = 0, sz = filesets.getLength(); i < sz; i++) {
-				ret.add(parseFileset((Element) filesets.item(i), wdir));
-			}
+		NodeList files = root.getElementsByTagName("file");
+		for (int i = 0, sz = files.getLength(); i < sz; i++) {
+			ret.add(parseFile((Element) files.item(i), wdir, validityPeriod));
+		}
+		NodeList filesets = root.getElementsByTagName("fileset");			
+		for (int i = 0, sz = filesets.getLength(); i < sz; i++) {
+			ret.add(parseFileset((Element) filesets.item(i), wdir));
+		}
+		if(filesets.getLength() < 1 && files.getLength() < 1){
+			throw new InvalidMakefileException(getPath(root) + " should have at least one file or fileset element");
 		}
 		return ret;
 	}
@@ -199,6 +197,9 @@ public class SyntaxParser extends BaseSyntaxParser {
 			String wdir) throws InvalidMakefileException, IOException {
 		NodeList path = getOneSubElement(root, name).getElementsByTagName(
 				"fileset");
+		if(path == null || path.getLength() != 1){
+			throw new InvalidMakefileException(getPath(root) + " should have at least one fileset element");
+		}
 		List<HamakePath> ret = new ArrayList<HamakePath>();
 		for (int i = 0, sz = path.getLength(); i < sz; i++) {
 			ret.add(parseFileset((Element) path.item(i), wdir));
@@ -296,7 +297,7 @@ public class SyntaxParser extends BaseSyntaxParser {
             gen = 0;
         else
             gen = Integer.parseInt(gen_s);
-		return new HamakePath(path, validityPeriod, gen);
+		return new HamakePath(path, wdir, validityPeriod, gen);
 	}
 
 	protected Command parseTask(Element root, String wdir)
@@ -382,6 +383,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	
 	protected Param parseParameter(Element root, Map<String, String> properties, int index) throws InvalidMakefileException {
         String value = getRequiredAttribute(root, "value");
+        String name = getOptionalAttribute(root, "value");
         return new HamakeParameter(value);
     }
 	

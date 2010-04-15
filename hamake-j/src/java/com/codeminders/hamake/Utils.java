@@ -120,7 +120,7 @@ public class Utils {
     		return srcFile;
     	}
     	else if(fs.exists(srcPath)){
-    		File dstFile = File.createTempFile("hamake", ".tmp");
+    		File dstFile = File.createTempFile("hamake", ".jar");
     		if (Config.getInstance().verbose) {
     			LOG.info("Downloading " + path + " to " + dstFile.getAbsolutePath());
             }

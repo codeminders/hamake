@@ -2,78 +2,61 @@
 
 <project name="test">
 
-    <config>
-        <property name="output"  value="build/test"/>
-        <property name="lib"     value="build/lib"/>
-        <property name="dist"    value="dist/examples"/>
-        <property name="scripts" value="test/resources/scripts"/>
-    </config>
+    <property name="output"  value="build/test"/>
+    <property name="lib"     value="build/lib"/>
+    <property name="dist"    value="dist/examples"/>
+    <property name="scripts" value="test/resources/scripts"/>
 
-    <map name="jar-listings">
+    <foreach name="jar-listings">
         <input>
-            <path location="%(lib)s" mask="*.jar"/>
+            <fileset path="${lib}" mask="*.jar"/>
         </input>
-        <dependencies/>
-
         <output>
-            <path location="%(output)s/jar-listings"/>
+            <identity path="${output}/jar-listings"/>
         </output>
+        <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListing">
+            <parameter value="${input}"/>
+            <parameter value="${output}"/>
+        </mapreduce>
+    </foreach>
 
-        <task jar="%(dist)s/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListing">
-            <pathparam type="inputfile"/>
-            <pathparam type="outputfile"/>
-        </task>
-    </map>
-
-    <map name="filter-listing">
+    <foreach name="filter-listing">
         <input>
-            <path location="%(output)s/jar-listings"/>
+            <fileset path="${output}/jar-listings"/>
         </input>
-        <dependencies/>
-
         <output>
-            <path location="%(output)s/jar-listings-filtered"/>
+            <identity path="${output}/jar-listings-filtered"/>
         </output>
+        <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
+            <parameter value="${input}"/>
+            <parameter value="${output}"/>
+        </mapreduce>
+    </foreach>
 
-        <task jar="%(dist)s/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
-            <pathparam type="inputfile"/>
-            <pathparam type="outputfile"/>
-        </task>
-    </map>
-
-    <reduce name="histogram">
-
+    <fold name="histogram">
         <input>
-            <path location="%(output)s/jar-listings-filtered"/>
+            <file path="${output}/jar-listings-filtered"/>
         </input>
-        
         <output>
-            <path location="%(output)s/class-size-histogram"/>
+            <file path="${output}/class-size-histogram"/>
         </output>
+        <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
+            <parameter value="${input}"/>
+            <parameter value="${output}"/>
+        </mapreduce>
+    </fold>
 
-        <task jar="%(dist)s/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
-            <pathparam type="input"/>
-            <pathparam type="output"/>
-        </task>
-        
-    </reduce>
-
-    <map name="map">
+    <foreach name="map">
         <input>
-            <path location="%(output)s/class-size-histogram"/>
+            <fileset path="${output}/class-size-histogram"/>
         </input>
-        <dependencies/>
-
         <output>
-            <path location="%(output)s/class-size-median-bin"/>
+            <identity path="${output}/class-size-median-bin"/>
         </output>
-
-        <pig script="%(scripts)s/median.pig">
-            <pathparam type="inputfile" name="infile" />
-            <pathparam type="outputfile" name="outfile" />
+        <pig script="${scripts}/median.pig">
+            <parameter value="infile=${input}" />
+            <parameter value="outfile=${output}" />
         </pig>
-    </map>
-
-
+    </foreach>
 
 </project>
