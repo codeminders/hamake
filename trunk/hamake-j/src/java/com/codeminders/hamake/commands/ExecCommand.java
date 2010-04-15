@@ -2,8 +2,9 @@ package com.codeminders.hamake.commands;
 
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.HamakePath;
-import com.codeminders.hamake.Param;
 import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.params.Param;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -30,7 +31,7 @@ public class ExecCommand extends BaseCommand {
         setParameters(parameters);
     }
 
-    public int execute(Map<String, Collection> parameters, Map<String, Object> context) throws IOException {
+    public int execute(Map<String, List<HamakePath>> parameters, Map<String, Object> context) throws IOException {
         FileSystem fs = binary.getFileSystem();
         Collection<String> args = new ArrayList<String>();
         args.add(getBinary().getPathName().toString());

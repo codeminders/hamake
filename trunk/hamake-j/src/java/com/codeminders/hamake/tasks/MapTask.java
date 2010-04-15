@@ -76,9 +76,9 @@ public class MapTask extends Task {
         for (Map.Entry<String, FileStatus> entry : inputlist.entrySet()) {
             String iname = entry.getKey();
             FileStatus i = entry.getValue();
-            Collection<HamakePath> iparams = new ArrayList<HamakePath>();
+            List<HamakePath> iparams = new ArrayList<HamakePath>();
             iparams.add(xinput.getPathWithNewName(iname));
-            Collection<HamakePath> oparams = new ArrayList<HamakePath>();
+            List<HamakePath> oparams = new ArrayList<HamakePath>();
             Collection<Path> present = new ArrayList<Path>();
             Collection<Path> cleanuplist = new ArrayList<Path>();
 
@@ -124,7 +124,7 @@ public class MapTask extends Task {
                 }
             }
 
-            Map<String, Collection> param_dict = new HashMap<String, Collection>();
+            Map<String, List<HamakePath>> param_dict = new HashMap<String, List<HamakePath>>();
             param_dict.put(PathParam.Type.inputfile.name(), iparams);
             param_dict.put(PathParam.Type.outputfile.name(), oparams);
             cmdparamsqueue.add(new Object[]{param_dict, cleanuplist});
@@ -154,7 +154,7 @@ public class MapTask extends Task {
             try {
                 @SuppressWarnings("unchecked")
                 CommandThread t = new CommandThread(getCommand(),
-                        (Map<String, Collection>) o[0],
+                        (Map<String, List<HamakePath>>) o[0],
                         (Collection<Path>) o[1],
                         exec_context,
                         job_semaphore);

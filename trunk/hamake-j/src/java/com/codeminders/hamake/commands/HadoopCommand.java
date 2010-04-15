@@ -1,10 +1,12 @@
 package com.codeminders.hamake.commands;
 
 import com.codeminders.hamake.Config;
-import com.codeminders.hamake.Param;
+import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.ExitException;
 import com.codeminders.hamake.params.JobConfParam;
+import com.codeminders.hamake.params.Param;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -17,6 +19,7 @@ import org.apache.hadoop.util.RunJar;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class HadoopCommand extends BaseCommand {
@@ -26,7 +29,7 @@ public class HadoopCommand extends BaseCommand {
     private String main;
 
     @SuppressWarnings("unchecked")
-	public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
+	public int execute(Map<String, List<HamakePath>> parameters, Map<String, Object> context) {
         FileSystem fs;
         Collection<String> args = new ArrayList<String>();
         try {

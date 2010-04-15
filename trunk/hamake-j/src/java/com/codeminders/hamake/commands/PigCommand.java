@@ -2,8 +2,9 @@ package com.codeminders.hamake.commands;
 
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.HamakePath;
-import com.codeminders.hamake.Param;
 import com.codeminders.hamake.NamedParam;
+import com.codeminders.hamake.params.HamakeParameter;
+import com.codeminders.hamake.params.Param;
 import com.codeminders.hamake.params.PigParam;
 import com.codeminders.hamake.params.PathParam;
 import org.apache.commons.io.IOUtils;
@@ -40,7 +41,7 @@ public class PigCommand extends BaseCommand {
         setParameters(parameters);
     }
 
-    public int execute(Map<String, Collection> parameters, Map<String, Object> context) {
+    public int execute(Map<String, List<HamakePath>> parameters, Map<String, Object> context) {
         FileSystem fs;
         Collection<String> args = new ArrayList<String>();
         BufferedReader in = null;
@@ -55,6 +56,9 @@ public class PigCommand extends BaseCommand {
                         Collection<String> values = getValues((NamedParam)p, parameters, fs);
                         if (values == null) return -1000;
                         args.add(((NamedParam)p).getName() + '=' + values.iterator().next());
+                    }
+                    else if(p instanceof HamakeParameter){
+                    	args.addAll(p.get(parameters, fs));
                     }
                 }
             }
@@ -139,9 +143,9 @@ public class PigCommand extends BaseCommand {
         }
     }
 
-    protected Collection<String> getValues(NamedParam p, Map<String, Collection> parameters, FileSystem fs)
+    protected List<String> getValues(NamedParam p, Map<String, List<HamakePath>> parameters, FileSystem fs)
     {
-        Collection<String> values;
+        List<String> values;
         try {
             values = p.get(parameters, fs);
         } catch (IOException ex) {

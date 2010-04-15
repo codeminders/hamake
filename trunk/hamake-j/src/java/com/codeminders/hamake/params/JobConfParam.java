@@ -1,11 +1,13 @@
 package com.codeminders.hamake.params;
 
-import com.codeminders.hamake.Param;
+import com.codeminders.hamake.Hamake;
+import com.codeminders.hamake.HamakePath;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileSystem;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class JobConfParam implements Param {
@@ -33,8 +35,8 @@ public class JobConfParam implements Param {
         this.value = value;
     }
 
-    public Collection<String> get(Map<String, Collection> dict, FileSystem fs) {
-        Collection<String> ret = new ArrayList<String>();
+    public List<String> get(Map<String, List<HamakePath>> dict, FileSystem fs) {
+        List<String> ret = new ArrayList<String>();
         ret.add("-jobconf");
         ret.add(getName() + '=' + getValue());
         return ret;

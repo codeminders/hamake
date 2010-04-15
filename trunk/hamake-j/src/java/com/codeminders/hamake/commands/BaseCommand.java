@@ -1,7 +1,8 @@
 package com.codeminders.hamake.commands;
 
 import com.codeminders.hamake.Command;
-import com.codeminders.hamake.Param;
+import com.codeminders.hamake.params.Param;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.util.ArrayList;
