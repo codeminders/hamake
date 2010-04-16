@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="test">
+
+    <property name="output"  value="build/test"/>
+    <property name="lib"     value="build/lib"/>
+    <property name="dist"    value="dist/examples"/>
+    <property name="scripts" value="test/resources/scripts"/>
+
+    <foreach name="jar-listings">
+        <input>
+            <fileset path="${lib}" mask="*.jar"/>
+        </input>
+        <output>
+            <identity path="${output}/jar-listings"/>
+        </output>
+        <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListing">
+            <parameter value="${input}"/>
+            <parameter value="${output}"/>
+        </mapreduce>
+    </foreach>
+
+    <foreach name="filter-listing">
+        <input>
+            <fileset path="${output}/jar-listings"/>
+        </input>
+        <output>
+            <identity path="${output}/jar-listings-filtered"/>
+        </output>
+        <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
+            <parameter value="${input}"/>
+            <parameter value="${output}"/>
+        </mapreduce>
+    </foreach>
+
+    <fold name="histogram">
+        <input>
+            <file path="${output}/jar-listings-filtered"/>
+        </input>
+        <output>
+            <file path="${output}/class-size-histogram"/>
+        </output>
+        <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
+            <parameter value="${input}"/>
+            <parameter value="${output}"/>
+        </mapreduce>
+    </fold>
+
+    <foreach name="map">
+        <input>
+            <fileset path="${output}/class-size-histogram"/>
+        </input>
+        <output>
+            <identity path="${output}/class-size-median-bin"/>
+        </output>
+        <pig script="${scripts}/median.pig">
+            <parameter value="infile=${input}" />
+            <parameter value="outfile=${output}" />
+        </pig>
+    </foreach>
+
+</project>

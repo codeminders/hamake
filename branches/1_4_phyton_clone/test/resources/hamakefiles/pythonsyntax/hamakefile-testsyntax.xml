@@ -1,0 +1,56 @@
+<project name="test-syntax" default="map1">
+
+	<config>
+		<property name="dfsroot" value="/root" />
+		<property name="basedir" value="/base" />
+	</config>
+
+	<map name="map1">
+		<description>first map</description>
+		<input>
+			<path location="%(dfsroot)s/referrers" mask="*.log" />
+		</input>
+		<output>
+			<path location="%(dfsroot)s/related/domain_referrers_totals" />
+		</output>
+		<task jar="%(basedir)s/datamining.jar" main="us.imageshack.datamining.Access2Referrers">
+          <pathparam type="inputfile" />
+          <pathparam type="outputfile" />
+        </task>
+	</map>
+	<map name="map2">
+		<description>second map</description>		
+		<input>
+			<path location="%(dfsroot)s/related/domain_referrers_totals"/>
+		</input>
+		<output>
+			<path location="%(dfsroot)s/related/image_domains" />
+		</output>
+		<exec binary="is_set_by_test">
+			<pathparam type="inputfile" />
+			<pathparam type="outputfile" />
+		</exec>
+	</map>
+	<reduce name="reduce">
+		<description>reducer</description>
+		<taskdep>
+			<pretask name="map1" />
+			<pretask name="map2" />
+		</taskdep>
+		<input>
+			<path location="%(dfsroot)s/image_domains" generation="1"/>
+	        <path location="%(dfsroot)s/rev" mask="*.file" />
+	        <path location="%(dfsroot)s/private_img.tsv"/>
+		</input>
+		<output>
+			<path location="%(dfsroot)s/related/porn_stats.tmp" validity_period="1w"/>
+		</output>
+		<exec binary="is_set_by_test">
+			<pathparam type="input" />
+			<constparam value=">" />
+			<pathparam type="output" />
+		</exec>
+	</reduce>
+
+
+</project>
