@@ -2,6 +2,8 @@
 
 	<property name="dfsroot" value="/root" />
 	<property name="basedir" value="/base" />
+	
+	<file id="somedir" path="${basedir}/somedir"/>
 
 	<foreach name="foreach1">
 		<dependencies>
@@ -9,14 +11,18 @@
 		</dependencies>
 		<description>first foreach</description>
 		<input>
-			<fileset id="foreach1_id" path="${dfsroot}/referrers" mask="*.log" />
+			<fileset path="${dfsroot}/referrers" mask="*.log" />
 		</input>
 		<output>
-			<identity path="${dfsroot}/related/domain_referrers_totals" generation="1" />
+			<file id="domainReferrersTotals" path="${dfsroot}/related/domain_referrers_totals/$#.txt" generation="1" />
 		</output>
 		<mapreduce jar="${basedir}/datamining.jar" main="us.imageshack.datamining.Access2Referrers">
-			<parameter value="${input}" />
-			<parameter value="${output}" />
+			<parameter>
+				<literal value="$_" />
+			</parameter>
+			<parameter>
+				<reference idref="domainReferrersTotals" />
+			</parameter>
 		</mapreduce>
 	</foreach>
 	<foreach name="foreach2">
@@ -25,15 +31,21 @@
 			<fileset path="${dfsroot}/related/domain_referrers_totals" generation="2" />
 		</input>
 		<output expiration="2d">
-			<composition>
-				<identity path="${dfsroot}/related/image_domains1" />
-				<identity path="${dfsroot}/related/image_domains2" />
-			</composition>
+			<set id="out">
+				<file path="${dfsroot}/related/image_domains1/$@" />
+				<file path="${dfsroot}/related/image_domains2/$@" />
+			</set>
 		</output>
 		<exec binary="cat">
-			<parameter value="${input}" />
-			<parameter value=">" />
-			<parameter value="${output}" />
+			<parameter>
+				<literal value="$_" />
+			</parameter>
+			<parameter>
+				<literal value=">" />
+			</parameter>
+			<parameter> 
+				<reference idref="out" />
+			</parameter>
 		</exec>
 	</foreach>
 	<foreach name="foreach3" disabled="true">
@@ -42,15 +54,21 @@
 			<fileset path="${dfsroot}/related/domain_referrers_totals" generation="2" />
 		</input>
 		<output expiration="2d">
-			<composition>
-				<identity path="${dfsroot}/related/image_domains1" />
-				<identity path="${dfsroot}/related/image_domains2" />
-			</composition>
+			<set id="out">
+				<file path="${dfsroot}/related/image_domains1" />
+				<file path="${dfsroot}/related/image_domains2" />
+			</set>
 		</output>
 		<exec binary="cat">
-			<parameter value="${input}" />
-			<parameter value=">" />
-			<parameter value="${output}" />
+			<parameter>
+				<literal value="$_" />
+			</parameter>
+			<parameter>
+				<literal value=">" />
+			</parameter>
+			<parameter>
+				<reference idref="out" />
+			</parameter>
 		</exec>
 	</foreach>
 	<fold name="reduce">
@@ -59,17 +77,25 @@
 		</dependencies>
 		<description>reducer</description>
 		<input>
-			<file path="${dfsroot}/image_domains" generation="1" variant="list"/>
-			<fileset path="${dfsroot}/rev" mask="*.file"/>
+			<set>
+				<file id="infile" path="${dfsroot}/image_domains" generation="1"/>
+				<fileset id="infileset" path="${dfsroot}/rev" mask="*.file"/>
+			</set>
 		</input>
 		<output expiration="15h">
-			<file path="${dfsroot}/related/porn_stats.tmp"/>
-			<file id="reduce2out" path="${dfsroot}/related/" mask="*.file" variant="mask"/>
+			<set>
+				<file id="outPornStat" path="${dfsroot}/related/porn_stats.tmp"/>
+				<file id="outRelated" path="${dfsroot}/related/" mask="*.file" variant="mask"/>
+			</set>
 		</output>
 		<pig script="median.pig">
-			<parameter value="${input}" />
+			<parameter>
+				<literal value="$_" />
+			</parameter>
 			<jobconf name="jcname" value="jcvalue" />
-			<parameter value="${output}" />
+			<parameter>
+				<reference idref="outRelated" />
+			</parameter>
 		</pig>
 	</fold>
 </project>

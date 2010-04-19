@@ -8,19 +8,21 @@ import java.util.concurrent.locks.Lock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.codeminders.hamake.dtr.DataTransformationRule;
+
 public class TaskThread extends Thread {
 	
 	public static final Log LOG = LogFactory.getLog(TaskThread.class);
 
-    private Map<String, Object> context;
+    private Context context;
     private Semaphore semaphore;
-    private Task task;
+    private DataTransformationRule task;
     private boolean finished;
     private Condition cv;
     private Lock lock;
     private int rc = 0;
 
-    public TaskThread(Task task, Semaphore semaphore, Lock lock, Condition cv, Map<String, Object> context) {
+    public TaskThread(DataTransformationRule task, Semaphore semaphore, Lock lock, Condition cv, Context context) {
         super("Task " + task.getName());
         setDaemon(true);
         this.context = context;
@@ -45,7 +47,7 @@ public class TaskThread extends Thread {
     public void run() {
         int rc;
         try {
-            rc = task.execute(semaphore, context);
+            rc = task.execute(semaphore);
         } catch (Exception ex) {
         	LOG.error("Unexpected exception occured during task " + task.getName(), ex);
             rc = -1000;

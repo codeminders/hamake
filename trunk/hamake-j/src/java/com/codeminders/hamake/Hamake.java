@@ -2,7 +2,8 @@ package com.codeminders.hamake;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
+
+import com.codeminders.hamake.dtr.DataTransformationRule;
 
 import java.security.Permission;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class Hamake {
     }
     protected int numJobs;
     protected String projectName;
+    protected Context context;
     public String getProjectName() {
 		return projectName;
 	}
@@ -29,19 +31,23 @@ public class Hamake {
 	}
 
 	protected List<String> targets;
-	protected List<Task> tasks;
+	protected List<DataTransformationRule> tasks;
 	protected String defaultTarget;
 
     public Hamake() {
-        this.tasks = new ArrayList<Task>();
+        this.tasks = new ArrayList<DataTransformationRule>();
         this.targets = new ArrayList<String>();
     }
 
     public void setNumJobs(int numJobs) {
         this.numJobs = numJobs;
     }
+    
+    public void setContext(Context context) {
+		this.context = context;
+	}
 
-    public void addTask(Task task) {
+	public void addTask(DataTransformationRule task) {
         tasks.add(task);
     }
     
@@ -53,7 +59,7 @@ public class Hamake {
         this.targets.add(target);
     }
 
-    public void setTasks(List<Task> tasks) {
+    public void setTasks(List<DataTransformationRule> tasks) {
         this.tasks = tasks;
     }
 
@@ -61,8 +67,7 @@ public class Hamake {
     	
     	SecurityManager securityManager = System.getSecurityManager();
         System.setSecurityManager(new NoExitSecurityManager());        
-        Map<String, Object> context = new HashMap<String, Object>();
-        context.put("hamake.configuration", new Configuration());
+        context.set("hamake.configuration", new Configuration());
         try{
 	        if(targets.size() <= 0 && !StringUtils.isEmpty(defaultTarget)){
 	        	targets.add(defaultTarget);
@@ -81,7 +86,7 @@ public class Hamake {
         return ExitCode.OK;
     }
 
-	protected List<Task> getTasks() {
+	protected List<DataTransformationRule> getTasks() {
 		return tasks;
 	}
 	

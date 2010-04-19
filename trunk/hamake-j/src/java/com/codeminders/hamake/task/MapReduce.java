@@ -1,11 +1,10 @@
-package com.codeminders.hamake.commands;
+package com.codeminders.hamake.task;
 
 import com.codeminders.hamake.Config;
-import com.codeminders.hamake.HamakePath;
+import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.ExitException;
-import com.codeminders.hamake.params.JobConfParam;
-import com.codeminders.hamake.params.Param;
+import com.codeminders.hamake.params.HamakeParameter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -20,18 +19,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-public class HadoopCommand extends BaseCommand {
+public class MapReduce extends Task {
     
-	public static final Log LOG = LogFactory.getLog(HadoopCommand.class);
+	public static final Log LOG = LogFactory.getLog(MapReduce.class);
     private String jar;
     private String main;
 
-    @SuppressWarnings("unchecked")
-	public int execute(Map<String, List<HamakePath>> parameters, Map<String, Object> context) {
+	public int execute(Context context) {
         FileSystem fs;
-        Collection<String> args = new ArrayList<String>();
+        List<String> args = new ArrayList<String>();
         try {
             Path jarPath = new Path(getJar());             
             fs = jarPath.getFileSystem(new Configuration());
@@ -41,29 +38,15 @@ public class HadoopCommand extends BaseCommand {
             return -1000;
         }
         args.add(getMain());
-        Collection<Param> scriptParams = getParameters();
-        if (scriptParams != null) {
-            // first add jobconf params
-            for (Param p : scriptParams) {
-                if (p instanceof JobConfParam) {
+        Collection<HamakeParameter> params = getParameters();
+        if (params != null) {
+            for (HamakeParameter p : params) {
                     try {
-                        args.addAll(p.get(parameters, fs));
+                        args.add(p.get(context));
                     } catch (IOException ex) {
                     	LOG.error("Failed to extract parameter values from parameter", ex);
                         return -1000;
                     }
-                }
-            }
-            // then the rest
-            for (Param p : scriptParams) {
-                if (!(p instanceof JobConfParam)) {
-                    try {
-                        args.addAll(p.get(parameters, fs));
-                    } catch (IOException ex) {
-                    	LOG.error("Failed to extract parameter values from parameter", ex);
-                        return -1000;
-                    }
-                }
             }
         }
         try {

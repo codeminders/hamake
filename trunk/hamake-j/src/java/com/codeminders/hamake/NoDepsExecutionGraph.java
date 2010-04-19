@@ -2,21 +2,23 @@ package com.codeminders.hamake;
 
 import java.util.*;
 
+import com.codeminders.hamake.dtr.DataTransformationRule;
+
 class NoDepsExecutionGraph implements ExecutionGraph {
 
 	public class GraphNode {
 
-		private Task task;
+		private DataTransformationRule task;
 		private List<GraphNode> children = new ArrayList<GraphNode>();
 		private List<GraphNode> parents = new ArrayList<GraphNode>();
 		private boolean done;
 
-		public GraphNode(Task t) {
+		public GraphNode(DataTransformationRule t) {
 			this.task = t;
 			this.done = false;
 		}
 
-		public Task getTask() {
+		public DataTransformationRule getTask() {
 			return this.task;
 		}
 
@@ -63,7 +65,7 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 	 * Constructor
 	 * @param tasks list of tasks
 	 */
-	public NoDepsExecutionGraph(List<Task> tasks) {
+	public NoDepsExecutionGraph(List<DataTransformationRule> tasks) {
 		buildGraph(tasks);
 	}
 
@@ -137,8 +139,8 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		}
 	}
 
-	private void buildGraph(List<Task> tasks) {
-		List<Task> t = new ArrayList<Task>(tasks);
+	private void buildGraph(List<DataTransformationRule> tasks) {
+		List<DataTransformationRule> t = new ArrayList<DataTransformationRule>(tasks);
 		Collections.copy(t, tasks);
 		rootNodes = fetchRootNodes(t);
 		if (rootNodes.size() > 0) {
@@ -146,12 +148,12 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		}
 	}
 
-	private List<GraphNode> fetchRootNodes(List<Task> tasks) {
+	private List<GraphNode> fetchRootNodes(List<DataTransformationRule> tasks) {
 		List<GraphNode> rootNodes = new ArrayList<GraphNode>();
-		for (Task ti : tasks) {
+		for (DataTransformationRule ti : tasks) {
 			boolean rootNode = true;
-			for (Task tj : tasks) {
-				rootNode = dependsOn(ti,tj) ? false : rootNode;
+			for (DataTransformationRule tj : tasks) {
+				rootNode = ti.dependsOn(tj) ? false : rootNode;
 			}
 			if (rootNode) {
 				if (!hash.containsKey(ti.getName())) {
@@ -165,12 +167,12 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		return rootNodes;
 	}
 
-	private void fetchChildren(List<GraphNode> nodes, List<Task> tasks) {
+	private void fetchChildren(List<GraphNode> nodes, List<DataTransformationRule> tasks) {
 		// find all dependent nodes in this level
 		List<GraphNode> nextLevelNodes = new ArrayList<GraphNode>();
 		for (GraphNode node : nodes) {
-			for (Task task : tasks) {
-				if (dependsOn(task,node.getTask())) {
+			for (DataTransformationRule task : tasks) {
+				if (task.dependsOn(node.getTask())) {
 					if (!hash.containsKey(task.getName())) {
 						// add new node
 						GraphNode newNode = new GraphNode(task);
@@ -192,7 +194,4 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		}
 	}
 	
-	protected boolean dependsOn(Task a, Task b){
-		return a.dependsOn(b);
-	}
 }

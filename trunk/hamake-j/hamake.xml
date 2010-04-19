@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="test" default="jar-listings">
+	<property name="outdir" value="build/test" />
+	<property name="libdir" value="lib" />
+	<property name="dist" value="dist" />
+	<property name="scripts" value="src/scripts" />
+	
+	<fileset id="projectaInput" dir="${libdir}/lib" mask="*.jar" />
+	<folder id="projectOutput" dir="${outdir}/class-size-median-bin" />
+	
+	<foreach name="jar-listings">
+		<input>
+			<file refid="projectInput"/>
+		</input>
+		<output>
+			<samename > 
+			<produce 
+		</input>
+		<output>
+			<folder id="listing" location="${outdir}/jar-listings" />
+		</output>
+		<mapreduce main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
+			<description>description</description>
+			<parameter value="${jar}" />
+			<parameter value="${listing}" />
+		</mapreduce>
+	</foreach>
+
+	<foreach name="filter-listing">
+		<foreachInput>
+			<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
+		</foreachInput>
+		<foreachOutput>
+			<folder id="goodJar" dir="${outdir}/jar-listings-filtered" />
+			<folder id="badJar" dir="${outdir}/jar-listings-bad" />
+		</foreachOutput>		
+		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
+			<parameter value="${jar}" />
+			<parameter value="${goodJar}" />
+			<parameter value="${badJar}" />
+		</mapreduce>
+	</foreach>
+
+	<fold name="histogram">
+		<foldInput>
+			<fileset id="badJarDir" dir="${outdir}/jar-listings-bad" />
+			<fileset id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
+		</foldInput>
+		<foldOutput>
+			<folder id="histogramDir" dir="${outdir}/class-size-histogram" />
+			<file id="logFile" file="${outdir}/logs/histogram.log" />
+		</foldOutput>
+		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
+			<parameter value="${goodJarDir}" />
+			<parameter value="${histogramDir}" />
+			<parameter value="${logFile}" />
+		</mapreduce>
+	</fold>
+
+	<fold name="pig_fold" >
+		<depends>
+			<fileset id="${libdir}/somefile.txt" />
+		</depends>
+		<foldInput>
+			<fileset id="histogramDir" dir="${outdir}/class-size-histogram" />
+		</foldInput>
+		<foldOutput>
+			<folder refid="projectOutput"/>
+		</foldOutput>
+		<pig script="${scripts}/median.pig">
+			<parameter value="${libdir}/somefile.txt" />
+			<parameter value="${histogramDir}" />
+			<parameter value="${log}" />
+		</pig>
+	</fold>
+</project>

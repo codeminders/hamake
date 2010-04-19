@@ -1,45 +1,42 @@
-package com.codeminders.hamake.commands;
+package com.codeminders.hamake.task;
 
 import com.codeminders.hamake.Config;
+import com.codeminders.hamake.Context;
 import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Utils;
-import com.codeminders.hamake.params.Param;
+import com.codeminders.hamake.params.HamakeParameter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.FileSystem;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-public class ExecCommand extends BaseCommand {
+public class Exec extends Task {
 	
-	public static final Log LOG = LogFactory.getLog(ExecCommand.class);
+	public static final Log LOG = LogFactory.getLog(Exec.class);
 
     private HamakePath binary;
 
-    public ExecCommand() {
+    public Exec() {
     }
 
-    public ExecCommand(HamakePath binary, List<Param> parameters) {
+    public Exec(HamakePath binary) {
         setBinary(binary);
-        setParameters(parameters);
     }
 
-    public int execute(Map<String, List<HamakePath>> parameters, Map<String, Object> context) throws IOException {
-        FileSystem fs = binary.getFileSystem();
+    public int execute(Context context) throws IOException {
         Collection<String> args = new ArrayList<String>();
         args.add(getBinary().getPathName().toString());
-        Collection<Param> scriptParams = getParameters();
-        if (scriptParams != null) {
-            for (Param p : scriptParams) {
+        List<HamakeParameter> parameters = getParameters();
+        if (parameters != null) {
+            for (HamakeParameter p : parameters) {
                 try {
-                    args.addAll(p.get(parameters, fs));
+                    args.add(p.get(context));
                 } catch (IOException ex) {
                 	LOG.error("Failed to extract parameter values", ex);
                     return -1000;

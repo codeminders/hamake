@@ -1,23 +1,17 @@
 <project name="test-system.exit">
 
-	<config>
-	</config>
-
-	<map name="map">
-		<description>
-	      second map
-	    </description>
-		<dependencies />
+	<foreach name="map">
+		<description>second map</description>
 		<input>
-			<path location="is_set_by_test" />
+			<fileset path="is_set_by_test" />
 		</input>
 		<output>
-			<path location="is_set_by_test" />
+			<identity path="is_set_by_test" />
 		</output>
-		<task jar="is_set_by_test" main="com.codeminders.hamake.examples.DummyJobThatCallsSystemExit">
-            <pathparam type="inputfile" />
-			<pathparam type="outputfile" />
-        </task>
-	</map>	
+		<mapreduce jar="is_set_by_test" main="com.codeminders.hamake.examples.DummyJobThatCallsSystemExit">
+            <parameter value="${input}" />
+			<parameter value="${output}" />
+        </mapreduce>
+	</foreach>	
 
 </project>
