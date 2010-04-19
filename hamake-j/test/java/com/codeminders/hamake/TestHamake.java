@@ -16,10 +16,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import com.codeminders.hamake.commands.HadoopCommand;
+import com.codeminders.hamake.dtr.Foreach;
 import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
-import com.codeminders.hamake.tasks.MapTask;
+import com.codeminders.hamake.task.MapReduce;
 
 public class TestHamake {
 
@@ -54,7 +54,7 @@ public class TestHamake {
 	 Thread.sleep(5000);
 	 Hamake make = new Hamake();
 	 File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-local-cp.xml");
-	 make = BaseSyntaxParser.parse(new FileInputStream(localHamakeFile), null, true);
+	 make = BaseSyntaxParser.parse(new Context(), new FileInputStream(localHamakeFile), null, true);
 	 if (OS.isLinux()) {
 	 TestHelperUtils.setTaskExecBinary(make, "map1", "cp");
 	 TestHelperUtils.setTaskExecBinary(make, "map2", "cp");
@@ -114,7 +114,7 @@ public class TestHamake {
 	 Thread.sleep(5000);
 	 Hamake make = new Hamake();
 	 File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-local-2-branches-cp.xml");
-	 make = BaseSyntaxParser.parse(new FileInputStream(localHamakeFile), null, true);
+	 make = BaseSyntaxParser.parse(new Context(), new FileInputStream(localHamakeFile), null, true);
 	 if (OS.isLinux()) {
 	 TestHelperUtils.setTaskExecBinary(make, "map11", "cp");
 	 TestHelperUtils.setTaskExecBinary(make, "map12", "cp");
@@ -197,9 +197,9 @@ public class TestHamake {
 		File tempOutDir = TestHelperUtils.generateTemporaryDirectory(tempDir
 				.getAbsolutePath());
 		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testexit.xml");
-		final Hamake make = BaseSyntaxParser.parse(new FileInputStream(localHamakeFile), null, true);
+		final Hamake make = BaseSyntaxParser.parse(new Context(), new FileInputStream(localHamakeFile), null, true);
 		make.setNumJobs(1);
-		((HadoopCommand) ((MapTask) make.getTasks().get(0)).getCommand())
+		((MapReduce) ((Foreach) make.getTasks().get(0)).getTask())
 				.setJar(TestHelperUtils.getExamplesJar().getAbsolutePath());
 		TestHelperUtils.setMapTaskInputOutputFolders(make, "map",
 				new HamakePath(tempInDir.getAbsolutePath()), new HamakePath(

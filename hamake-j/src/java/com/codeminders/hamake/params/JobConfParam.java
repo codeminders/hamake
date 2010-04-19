@@ -1,16 +1,14 @@
 package com.codeminders.hamake.params;
 
-import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.HamakePath;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileSystem;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class JobConfParam implements Param {
+public class JobConfParam implements Parameter{
     private String name;
     private String value;
 

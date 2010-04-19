@@ -9,17 +9,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.w3c.dom.ranges.RangeException;
 
 import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.OS;
 import com.codeminders.hamake.HamakePath;
-import com.codeminders.hamake.Task;
-import com.codeminders.hamake.commands.ExecCommand;
-import com.codeminders.hamake.tasks.MapTask;
-import com.codeminders.hamake.tasks.ReduceTask;
+import com.codeminders.hamake.dtr.DataTransformationRule;
+import com.codeminders.hamake.dtr.Fold;
+import com.codeminders.hamake.dtr.Foreach;
+import com.codeminders.hamake.task.Exec;
 
 
 public class TestHelperUtils {
@@ -67,85 +64,88 @@ public class TestHelperUtils {
 	}
 	
 	public static void setMapTaskInputOutputFolders(Hamake make, String taskName, HamakePath inputFolder, HamakePath outputFolder){
-		Collection<Task> tasks = make.getTasks();
-		Iterator<Task> i = tasks.iterator();
-		while(i.hasNext()){
-			Task task = i.next();
-			if(task instanceof MapTask){
-				MapTask m = (MapTask)task;
-				if(task.getName().equals(taskName)){
-					m.setXinput(inputFolder);
-					m.getOutputs().clear();
-					m.getOutputs().add(outputFolder);
-				}
-			}
-		}
+//		Collection<DataTransformationRule> tasks = make.getTasks();
+//		Iterator<DataTransformationRule> i = tasks.iterator();
+//		while(i.hasNext()){
+//			DataTransformationRule task = i.next();
+//			if(task instanceof Foreach){
+//				Foreach m = (Foreach)task;
+//				if(task.getName().equals(taskName)){
+//					m.setXinput(inputFolder);
+//					m.getOutputs().clear();
+//					m.getOutputs().add(outputFolder);
+//				}
+//			}
+//		}
 	}
 	
 	public static void setReduceTaskInputOutputFolders(Hamake make, String taskName, HamakePath inputFolder, HamakePath outputFolder){
-		Collection<Task> tasks = make.getTasks();
-		Iterator<Task> i = tasks.iterator();
-		while(i.hasNext()){
-			Task task = i.next();			
-			if(task instanceof ReduceTask){
-				ReduceTask r = (ReduceTask)task;
-				if(task.getName().equals(taskName)){
-					List<HamakePath> inputs = r.getInputs();
-					inputs.clear();
-					inputs.add(inputFolder);
-					r.setInputs(inputs);
-					r.getOutputs().clear();
-					r.getOutputs().add(outputFolder);
-				}				
-			}
-		}
+//		Collection<DataTransformationRule> tasks = make.getTasks();
+//		Iterator<DataTransformationRule> i = tasks.iterator();
+//		while(i.hasNext()){
+//			DataTransformationRule task = i.next();			
+//			if(task instanceof Fold){
+//				Fold r = (Fold)task;
+//				if(task.getName().equals(taskName)){
+//					List<HamakePath> inputs = r.getInputs();
+//					inputs.clear();
+//					inputs.add(inputFolder);
+//					r.setInputs(inputs);
+//					r.getOutputs().clear();
+//					r.getOutputs().add(outputFolder);
+//				}				
+//			}
+//		}
 	}
 	
 	public static void setTaskExecBinary(Hamake make, String taskName, String binary) throws IOException{
-		Collection<Task> tasks = make.getTasks();
-		Iterator<Task> i = tasks.iterator();
-		while(i.hasNext()){
-			Task task = i.next();
-			if(task instanceof MapTask){				
-				MapTask m = (MapTask)task;
-				if(task.getName().equals(taskName)){
-					ExecCommand command = (ExecCommand)m.getCommand();
-					command.setBinary(new HamakePath(binary));
-				}
-			}
-			if(task instanceof ReduceTask){
-				ReduceTask r = (ReduceTask)task;
-				if(task.getName().equals(taskName)){
-					ExecCommand command = (ExecCommand)r.getCommand();
-					command.setBinary(new HamakePath(binary));
-				}				
-			}
-		}
+//		Collection<DataTransformationRule> tasks = make.getTasks();
+//		Iterator<DataTransformationRule> i = tasks.iterator();
+//		while(i.hasNext()){
+//			DataTransformationRule task = i.next();
+//			if(task instanceof Foreach){				
+//				Foreach m = (Foreach)task;
+//				if(task.getName().equals(taskName)){
+//					Exec command = (Exec)m.getCommand();
+//					command.setBinary(new HamakePath(binary));
+//				}
+//			}
+//			if(task instanceof Fold){
+//				Fold r = (Fold)task;
+//				if(task.getName().equals(taskName)){
+//					Exec command = (Exec)r.getCommand();
+//					command.setBinary(new HamakePath(binary));
+//				}				
+//			}
+//		}
 	}
 	
-	public static MapTask createMapTask(String name, HamakePath input, HamakePath[] outputs){
-		MapTask map = new MapTask();
-		map.setName(name);
-		map.setXinput(input);
-		map.setOutputs(Arrays.asList(outputs));
-		return map;
+	public static Foreach createMapTask(String name, HamakePath input, HamakePath[] outputs){
+//		Foreach map = new Foreach();
+//		map.setName(name);
+//		map.setXinput(input);
+//		map.setOutputs(Arrays.asList(outputs));
+//		return map;
+		return null;
 	}
 	
-	public static ReduceTask createReduceTask(String name, HamakePath[] inputs, HamakePath[] outputs){
-		ReduceTask reduce = new ReduceTask();
-		reduce.setName(name);
-		reduce.setInputs(Arrays.asList(inputs));
-		reduce.setOutputs(Arrays.asList(outputs));
-		return reduce;
+	public static Fold createReduceTask(String name, HamakePath[] inputs, HamakePath[] outputs){
+//		Fold reduce = new Fold();
+//		reduce.setName(name);
+//		reduce.setInputs(Arrays.asList(inputs));
+//		reduce.setOutputs(Arrays.asList(outputs));
+//		return reduce;
+		return null;
 	}
 	
-	public static MapTask createMapTaskWithTaskDeps(String name, HamakePath input, HamakePath[] outputs, String[] dependsOns){
-		MapTask map = new MapTask();
-		map.setName(name);
-		map.setXinput(input);
-		map.setOutputs(Arrays.asList(outputs));
-		map.setTaskDeps(Arrays.asList(dependsOns));
-		return map;
+	public static Foreach createMapTaskWithTaskDeps(String name, HamakePath input, HamakePath[] outputs, String[] dependsOns){
+//		Foreach map = new Foreach();
+//		map.setName(name);
+//		map.setXinput(input);
+//		map.setOutputs(Arrays.asList(outputs));
+//		map.setTaskDeps(Arrays.asList(dependsOns));
+//		return map;
+		return null;
 	}		
 	
 	public static File getExamplesJar() throws IOException{

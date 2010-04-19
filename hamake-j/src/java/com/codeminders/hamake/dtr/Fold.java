@@ -1,9 +1,8 @@
-package com.codeminders.hamake.tasks;
+package com.codeminders.hamake.dtr;
 
+import com.codeminders.hamake.Context;
 import com.codeminders.hamake.HamakePath;
-import com.codeminders.hamake.Task;
 import com.codeminders.hamake.Utils;
-import com.codeminders.hamake.params.PathParam;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -16,27 +15,54 @@ import org.apache.hadoop.fs.Path;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
-public class ReduceTask extends Task {
+public class Fold extends DataTransformationRule {
 	
-	public static final Log LOG = LogFactory.getLog(ReduceTask.class);
+	public static final Log LOG = LogFactory.getLog(Fold.class);
+	
+	private List<HamakePath> inputs = new ArrayList<HamakePath>();
+	private List<HamakePath> outputs = new ArrayList<HamakePath>();
+	private List<HamakePath> deps = new ArrayList<HamakePath>();
+	private Context context;
 
-    private Collection<HamakePath> inputs = new ArrayList<HamakePath>();
+	public Fold(Context parentContext, List<HamakePath> inputs, List<HamakePath> outputs, List<HamakePath> deps){
+		this.inputs = inputs;
+		this.outputs = outputs;
+		this.deps = deps;
+		this.context = new Context(parentContext);
+	}
+	
+	@Override
+	protected List<HamakePath> getDeps() {
+		return deps;
+	}
 
-    public List<HamakePath> getInputs() {    	
-        return new ArrayList<HamakePath>(inputs);
+	@Override
+	protected List<HamakePath> getInputs() {
+		return inputs;
+	}
+
+	@Override
+	protected List<HamakePath> getOutputs() {
+		return outputs;
+	}
+	
+	@Override
+    public String toString() {
+        return new ToStringBuilder(this).
+                append("inputs", inputs).appendSuper(super.toString()).toString();
     }
 
-    public int execute(Semaphore semaphore, Map<String, Object> context) throws IOException {
+	@Override
+    public int execute(Semaphore semaphore) throws IOException {
         long mits = -1;
         long mots = -1;                
         
         int numo = 0;
-        for (HamakePath p : getOutputs()) {
+        for (HamakePath p : inputs) {
             long stamp = getTimeStamp(p.getFileSystem(), p);
             if (stamp == 0) {
                 mots = -1;
@@ -48,7 +74,7 @@ public class ReduceTask extends Task {
             numo++;
         }
         if (numo > 0 && mots != -1) {
-            Collection<HamakePath> paths = new ArrayList<HamakePath>(getInputs());
+            Collection<HamakePath> paths = new ArrayList<HamakePath>(inputs);
             for (HamakePath p : paths) {
                 long stamp = getTimeStamp(p.getFileSystem(), p);
                 if (stamp == 0) {
@@ -61,11 +87,10 @@ public class ReduceTask extends Task {
         }
 
         if (mits == -1 || mits > mots) {
-            Map<String, List<HamakePath>> params = new HashMap<String, List<HamakePath>>();
             //check that input folder is not empty            
-    		for(HamakePath path : inputs){
+    		for(HamakePath input : inputs){
     			try{
-    				if(ArrayUtils.isEmpty(path.getFileSystem().listStatus(path.getPathName()))){
+    				if(ArrayUtils.isEmpty(input.getFileSystem().listStatus(input.getPathName()))){
     					LOG.warn("WARN: The input folder is empty for task " + getName());
     				}
     			}
@@ -73,18 +98,15 @@ public class ReduceTask extends Task {
     				LOG.error(e);
     			}
     		}    		
-    		if(getInputs().isEmpty()){
+    		if(inputs.isEmpty()){
     			LOG.warn("WARN: There is no input folder for task " + getName());
             	return 0;
             }
     		
-            params.put(PathParam.Type.input.name(), getInputs());
-            params.put(PathParam.Type.output.name(), getOutputs());
+            for (HamakePath input : inputs)
+                input.removeIfExists(input.getFileSystem());
 
-            for (HamakePath p : getOutputs())
-                p.removeIfExists(p.getFileSystem());
-
-            return getCommand().execute(params, context);
+            return getTask().execute(context);
         }
         // all fresh
         return 0;
@@ -122,16 +144,6 @@ public class ReduceTask extends Task {
             }
         }
         return ret;
-    }
-
-    public void setInputs(List<HamakePath> inputs) {
-        this.inputs = inputs;
-    }
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this).
-                append("inputs", getInputs()).appendSuper(super.toString()).toString();
     }
 
 }

@@ -18,6 +18,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.PigNotFoundException;
 import com.codeminders.hamake.Utils;
@@ -26,12 +27,12 @@ public abstract class BaseSyntaxParser {
 	
 	protected static boolean isPigAvailable = Utils.isPigAvailable(); 
 
-	public static Hamake parse(String filename, String wdir, boolean verbose)
+	public static Hamake parse(Context context, String filename, String wdir, boolean verbose)
 			throws IOException, ParserConfigurationException, SAXException,
 			InvalidMakefileException, PigNotFoundException {
 		InputStream is = new FileInputStream(filename);
 		try {
-			return parse(is, wdir, verbose);
+			return parse(context, is, wdir, verbose);
 		} finally {
 			try {
 				is.close();
@@ -40,14 +41,13 @@ public abstract class BaseSyntaxParser {
 		}
 	}
 
-	public static Hamake parse(InputStream is, String wdir, boolean verbose)
+	public static Hamake parse(Context context, InputStream is, String wdir, boolean verbose)
 			throws IOException, ParserConfigurationException, SAXException,
 			InvalidMakefileException, PigNotFoundException{
 		Document doc = loadMakefile(is);
-		BaseSyntaxParser syntaxParser = new SyntaxParser(doc, wdir, verbose);
+		BaseSyntaxParser syntaxParser = new SyntaxParser(doc, wdir, context, verbose);
 		if(!syntaxParser.isCorrectParser()){
-			syntaxParser = new PhytonSyntaxParser(doc, wdir, verbose);
-			if(!syntaxParser.isCorrectParser()) throw new InvalidMakefileException("Unknown hamakefile syntax");
+			throw new InvalidMakefileException("Unknown hamakefile syntax");
 		}
 		return syntaxParser.parseSyntax();
 	}	

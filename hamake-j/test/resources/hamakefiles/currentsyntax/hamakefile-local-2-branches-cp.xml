@@ -1,120 +1,99 @@
 <project name="local-cp">
 
-	<config>
-		<property name="basedir" value="/tmp" />
-		<property name="numreducers" value="2" />
-	</config>
+	<property name="basedir" value="/tmp" />
+	<property name="numreducers" value="2" />
 
-
-	<map name="map11">
-		<description>
-      first map, first branch
-    </description>
-		<dependencies />
+	<foreach name="map11">
+		<description>first map, first branch</description>
 		<input>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<fileset path="is_set_by_test" />
 		</input>
 		<output>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<identity path="is_set_by_test" />
 		</output>
 		<exec binary="cp">
-			<pathparam type="inputfile" />
-			<pathparam type="outputfile" />
+			<parameter value="${input}" />
+			<parameter value="${output}" />
 		</exec>
-	</map>
-	<map name="map12">
-		<description>
-	      first map, second branch
-	    </description>
-		<dependencies />
+	</foreach>
+	<foreach name="map12">
+		<description>first map, second branch</description>
 		<input>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<fileset path="is_set_by_test" />
 		</input>
 		<output>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<identity path="is_set_by_test" />
 		</output>
 		<exec binary="cp">
-			<pathparam type="inputfile" />
-			<pathparam type="outputfile" />
+			<parameter value="${input}" />
+			<parameter value="${output}" />
 		</exec>
-	</map>
-	<map name="map21">
-		<description>
-	      second map, first branch
-	    </description>
-		<dependencies />
+	</foreach>
+	<foreach name="map21">
+		<description>second map, first branch</description>
 		<input>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<fileset path="is_set_by_test" />
 		</input>
 		<output>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<identity path="is_set_by_test" />
 		</output>
 		<exec binary="is_set_by_test">
-			<pathparam type="inputfile" />
-			<pathparam type="outputfile" />
+			<parameter value="${input}" />
+			<parameter value="${output}" />
 		</exec>
-	</map>
-	<map name="map22">
-		<description>
-		      second map, second branch
-		    </description>
-		<dependencies />
+	</foreach>
+	<foreach name="map22">
+		<description>second map, second branch</description>
 		<input>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<fileset path="is_set_by_test" />
 		</input>
 		<output>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<identity path="is_set_by_test" />
 		</output>
 		<exec binary="is_set_by_test">
-			<pathparam type="inputfile" />
-			<pathparam type="outputfile" />
+			<parameter value="${input}" />
+			<parameter value="${output}" />
 		</exec>
-	</map>
-	<reduce name="reduce1">
-		<description>
-	      first reduce
-	    </description>
-		<dependencies />
+	</foreach>
+	<fold name="reduce1">
+		<description>first reduce</description>
 		<input>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<file path="is_set_by_test" />
 		</input>
 		<output>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<file path="is_set_by_test" />
 		</output>
 		<exec binary="is_set_by_test">
-			<pathparam type="input" />
-			<constparam value=">" />
-			<pathparam type="output" />
+			<parameter value="${input}" />
+			<parameter value=">" />
+			<parameter value="${output}" />
 		</exec>
-	</reduce>
-	<reduce name="reduce2">
-		<description>
-		      second reduce
-		    </description>
-		<dependencies />
+	</fold>
+	<fold name="reduce2">
+		<description>second reduce</description>
 		<input>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<file path="is_set_by_test" />
 		</input>
 		<output>
 			<!-- this parameter is set by JUnit test programmatically-->
-			<path location="is_set_by_test" />
+			<file path="is_set_by_test" />
 		</output>
 		<exec binary="is_set_by_test">
-			<pathparam type="input" />
-			<constparam value=">" />
-			<pathparam type="output" />
+			<parameter value="${input}" />
+			<parameter value=">" />
+			<parameter value="${output}" />
 		</exec>
-	</reduce>
+	</fold>
 
 </project>

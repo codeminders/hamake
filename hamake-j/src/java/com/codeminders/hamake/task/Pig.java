@@ -1,12 +1,9 @@
-package com.codeminders.hamake.commands;
+package com.codeminders.hamake.task;
 
 import com.codeminders.hamake.Config;
+import com.codeminders.hamake.Context;
 import com.codeminders.hamake.HamakePath;
-import com.codeminders.hamake.NamedParam;
 import com.codeminders.hamake.params.HamakeParameter;
-import com.codeminders.hamake.params.Param;
-import com.codeminders.hamake.params.PigParam;
-import com.codeminders.hamake.params.PathParam;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -23,25 +20,22 @@ import org.apache.pig.tools.parameters.ParseException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
-public class PigCommand extends BaseCommand {
+public class Pig extends Task {
 	
-	public static final Log LOG = LogFactory.getLog(PigCommand.class);
+	public static final Log LOG = LogFactory.getLog(Pig.class);
 
     private HamakePath script;
 
-    public PigCommand() {
+    public Pig() {
     }
 
-    public PigCommand(HamakePath script, List<Param> parameters) {
+    public Pig(HamakePath script) {
         setScript(script);
-        setParameters(parameters);
     }
 
-    public int execute(Map<String, List<HamakePath>> parameters, Map<String, Object> context) {
+    public int execute(Context context) {
         FileSystem fs;
         Collection<String> args = new ArrayList<String>();
         BufferedReader in = null;
@@ -49,17 +43,10 @@ public class PigCommand extends BaseCommand {
         try {
             fs = script.getFileSystem();
 
-            Collection<Param> scriptParams = getParameters();
-            if (scriptParams != null) {
-                for (Param p : scriptParams) {
-                    if (p instanceof PigParam || p instanceof PathParam) {
-                        Collection<String> values = getValues((NamedParam)p, parameters, fs);
-                        if (values == null) return -1000;
-                        args.add(((NamedParam)p).getName() + '=' + values.iterator().next());
-                    }
-                    else if(p instanceof HamakeParameter){
-                    	args.addAll(p.get(parameters, fs));
-                    }
+            Collection<HamakeParameter> parameters = getParameters();
+            if (parameters != null) {
+                for (HamakeParameter p : parameters) {
+                    args.add(p.get(context));
                 }
             }
 
@@ -141,24 +128,6 @@ public class PigCommand extends BaseCommand {
                     null);
             return new BufferedReader(new StringReader(writer.toString()));
         }
-    }
-
-    protected List<String> getValues(NamedParam p, Map<String, List<HamakePath>> parameters, FileSystem fs)
-    {
-        List<String> values;
-        try {
-            values = p.get(parameters, fs);
-        } catch (IOException ex) {
-        	LOG.error("Failed to extract parameter values from parameter " +
-                    p.getName(), ex);
-            return null;
-        }
-        if (values.size() != 1) {
-        	LOG.error("Multiple values for param are no supported in PIG scripts");
-            return null;
-        }
-
-        return values;
     }
 
 }

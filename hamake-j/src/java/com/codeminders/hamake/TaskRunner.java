@@ -9,13 +9,15 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.codeminders.hamake.dtr.DataTransformationRule;
+
 public class TaskRunner {
 
 	public static final Log LOG = LogFactory.getLog(TaskRunner.class);
 
 	private ExecutionGraph graph;
-	private Map<String, Object> context;
-	private Map<String, Task> tasks;
+	private Context context;
+	private Map<String, DataTransformationRule> tasks;
 	private List<String> targets;
 
 	private Collection<String> failed;
@@ -25,15 +27,12 @@ public class TaskRunner {
 	private Lock lock;
 	private Condition condition;
 
-	public TaskRunner(List<Task> tasks, int numJobs, List<String> targets,
-			Map<String, Object> context) {
-		if (Config.getInstance().nodeps)
-			graph = new NoDepsExecutionGraph(tasks);
-		else
-			graph = new DependencyExecutionGraph(tasks);
+	public TaskRunner(List<DataTransformationRule> tasks, int numJobs, List<String> targets,
+			Context context) {
+		graph = new NoDepsExecutionGraph(tasks);
 		this.context = context;
-		this.tasks = new HashMap<String, Task>();
-		for (Task t : tasks)
+		this.tasks = new HashMap<String, DataTransformationRule>();
+		for (DataTransformationRule t : tasks)
 			this.tasks.put(t.getName(), t);
 		this.failed = new HashSet<String>();
 		this.running = new HashSet<TaskThread>();
@@ -59,7 +58,7 @@ public class TaskRunner {
 	public void startTasks(Collection<String> tasks) {
 		for (String task : tasks) {
 			LOG.info("Starting " + task);
-			Task t = this.tasks.get(task);
+			DataTransformationRule t = this.tasks.get(task);
 			TaskThread tt = new TaskThread(t, job_semaphore, lock, condition,
 					context);
 			running.add(tt);
