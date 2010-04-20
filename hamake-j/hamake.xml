@@ -1,77 +1,92 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
 <project name="test" default="jar-listings">
 	<property name="outdir" value="build/test" />
-	<property name="libdir" value="lib" />
 	<property name="dist" value="dist" />
 	<property name="scripts" value="src/scripts" />
-	
-	<fileset id="projectaInput" dir="${libdir}/lib" mask="*.jar" />
-	<folder id="projectOutput" dir="${outdir}/class-size-median-bin" />
-	
+	<file id="logfile" path="${outdir}/logs/histogram.log" />
+	<file id="histogram" path="${outdir}/class-size-histogram" />
+
 	<foreach name="jar-listings">
 		<input>
-			<file refid="projectInput"/>
+			<fileset path="${libdir}/lib" mask="*.jar" />
 		</input>
 		<output>
-			<samename > 
-			<produce 
-		</input>
-		<output>
-			<folder id="listing" location="${outdir}/jar-listings" />
+			<file id="file-listing" path="${outdir}/jar-listings/$#.txt" />
 		</output>
 		<mapreduce main="com.codeminders.hamake.examples.JarListing" jar="${dist}/hamake-examples-1.0.jar">
 			<description>description</description>
-			<parameter value="${jar}" />
-			<parameter value="${listing}" />
+			<parameter>
+				<literal value="$_" />
+			</parameter>
+			<parameter>
+				<reference idref="file-listing" />
+			</parameter>
 		</mapreduce>
 	</foreach>
 
 	<foreach name="filter-listing">
-		<foreachInput>
-			<fileset id="jar" dir="${outdir}/jar-listings" mask="*.jar" />
-		</foreachInput>
-		<foreachOutput>
-			<folder id="goodJar" dir="${outdir}/jar-listings-filtered" />
-			<folder id="badJar" dir="${outdir}/jar-listings-bad" />
-		</foreachOutput>		
+		<input>
+			<fileset path="${outdir}/jar-listings" />
+		</input>
+		<output>
+			<set id="listing-processed">
+				<file path="${outdir}/jar-listings-0/$@" />
+				<file path="${outdir}/jar-listings-1/$@" />
+				<!-- this does not make any sense, just for demo -->
+			</set>
+		</output>
 		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
-			<parameter value="${jar}" />
-			<parameter value="${goodJar}" />
-			<parameter value="${badJar}" />
+			<parameter>
+				<literal value="$_" />
+			</parameter>
+			<parameter concat_function="space" processing_function="identity">
+				<reference idref="listing-processed" />
+			</parameter>
 		</mapreduce>
 	</foreach>
 
 	<fold name="histogram">
-		<foldInput>
-			<fileset id="badJarDir" dir="${outdir}/jar-listings-bad" />
-			<fileset id="goodJarDir" dir="${outdir}/jar-listings-filtered" />
-		</foldInput>
-		<foldOutput>
-			<folder id="histogramDir" dir="${outdir}/class-size-histogram" />
-			<file id="logFile" file="${outdir}/logs/histogram.log" />
-		</foldOutput>
+		<dependency>
+			<file path="${scripts}/bin-size.property" />
+		</dependency>
+		<input generation="1">
+			<fileset id="listings-0" path="${outdir}/jar-listings-0" />
+		</input>
+		<input>
+			<fileset id="listings-1" path="${outdir}/jar-listings-1" />
+		</input>
+		<output>
+			<include idref="logfile" />
+			<include idref="histogram" />
+		</output>
+
 		<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
-			<parameter value="${goodJarDir}" />
-			<parameter value="${histogramDir}" />
-			<parameter value="${logFile}" />
+			<parameter>
+				<reference idref="logfile" />
+			</parameter>
+			<parameter concat_function="comma" processing_function="identity">
+				<reference reference="listings-0" expand="list" />
+				<reference reference="listings-1" expand="list" />
+			</parameter>
+			<parameter>
+				<reference idref="histogram" />
+			</parameter>
 		</mapreduce>
 	</fold>
 
-	<fold name="pig_fold" >
-		<depends>
-			<fileset id="${libdir}/somefile.txt" />
-		</depends>
-		<foldInput>
-			<fileset id="histogramDir" dir="${outdir}/class-size-histogram" />
-		</foldInput>
-		<foldOutput>
-			<folder refid="projectOutput"/>
-		</foldOutput>
+	<fold name="median">
+		<input>
+			<include idref="histogram" />
+		</input>
+		<output expiration="1h">
+			<file id="median" path="${outdir}/class-size-median-bin" />
+		</output>
 		<pig script="${scripts}/median.pig">
-			<parameter value="${libdir}/somefile.txt" />
-			<parameter value="${histogramDir}" />
-			<parameter value="${log}" />
+			<parameter>
+				<reference idref="histogram" />
+			</parameter>
+			<parameter>
+				<reference idref="median" />
+			</parameter>
 		</pig>
 	</fold>
 </project>

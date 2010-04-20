@@ -26,12 +26,7 @@ public class IdentityOutputFunction extends OutputFunction {
 	public List<HamakePath> getOutput(HamakePath input, Context context)
 			throws IOException {
 		return Arrays.asList(new HamakePath(input.getID() + "_out", input.getWdir(),
-				Utils.replaceVariables(outputValue, context, 
-						Foreach.FULL_FILENAME,
-						Foreach.SHORT_FILENAME,
-						Foreach.PARENT_FOLDER,
-						Foreach.FILENAME_WO_EXTENTION,
-						Foreach.EXTENTION), null,
+				Utils.replaceVariables(context, outputValue), null,
 						null, input.getGen(), input.getVariant(), validityPeriod));
 	}
 

@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 public class Hamake {
+	
+	public static final String SYS_PROPERTY_WORKING_FOLDER = "sys:workdir";
+	public static final String SYS_PROPERTY_HADOOP_CONFIGURATION = "sys:hadoop.configuration";
 
     enum ExitCode {
         OK,
@@ -67,7 +70,7 @@ public class Hamake {
     	
     	SecurityManager securityManager = System.getSecurityManager();
         System.setSecurityManager(new NoExitSecurityManager());        
-        context.set("hamake.configuration", new Configuration());
+        context.set(SYS_PROPERTY_HADOOP_CONFIGURATION, new Configuration());
         try{
 	        if(targets.size() <= 0 && !StringUtils.isEmpty(defaultTarget)){
 	        	targets.add(defaultTarget);

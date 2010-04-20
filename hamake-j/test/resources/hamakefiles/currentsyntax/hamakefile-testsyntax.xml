@@ -4,6 +4,7 @@
 	<property name="basedir" value="/base" />
 	
 	<file id="somedir" path="${basedir}/somedir"/>
+	<fileset id="foreach1Output" path="${dfsroot}/referrers" mask="*.log" />
 
 	<foreach name="foreach1">
 		<dependencies>
@@ -11,7 +12,7 @@
 		</dependencies>
 		<description>first foreach</description>
 		<input>
-			<fileset path="${dfsroot}/referrers" mask="*.log" />
+			<include idref="foreach1Output"/>
 		</input>
 		<output>
 			<file id="domainReferrersTotals" path="${dfsroot}/related/domain_referrers_totals/$#.txt" generation="1" />

@@ -113,11 +113,11 @@ public abstract class BaseSyntaxParser {
 	}
 
 	protected String getRequiredAttribute(Element root, String name,
-			Map<String, String> properties, Pattern variablePattern) throws InvalidMakefileException {
+			Pattern variablePattern, Context context) throws InvalidMakefileException {
 		if (root.hasAttribute(name)) {
 			String ret = root.getAttribute(name);
-			if (properties != null) {
-				ret = substitute(ret, properties, variablePattern);
+			if (context != null) {
+				ret = substitute(ret, variablePattern, context);
 			}
 			return ret;
 		}
@@ -130,19 +130,19 @@ public abstract class BaseSyntaxParser {
 	}
 
 	protected String getOptionalAttribute(Element root, String name,
-			Map<String, String> properties, Pattern variablePattern) {
+			Pattern variablePattern, Context context) {
 		if (root.hasAttribute(name)) {
 			String ret = root.getAttribute(name);
-			if (properties != null) {
-				ret = substitute(ret, properties, variablePattern);
+			if (context != null) {
+				ret = substitute(ret, variablePattern, context);
 			}
 			return ret;
 		}
 		return null;
 	}
 
-	protected String substitute(String s, Map<String, String> properties,
-			Pattern variablePlaceholder) {
+	protected String substitute(String s,
+			Pattern variablePlaceholder, Context context) {
 		int pos = 0;
 		Matcher m = variablePlaceholder.matcher(s);
 		while (m.find(pos)) {
@@ -151,7 +151,7 @@ public abstract class BaseSyntaxParser {
 			StringBuilder buf = new StringBuilder();
 			if (start > 0)
 				buf.append(s, 0, start);
-			String subst = properties.get(m.group(1));
+			String subst = context.getString(m.group(1));
 			if (subst != null)
 				buf.append(subst);
 			else

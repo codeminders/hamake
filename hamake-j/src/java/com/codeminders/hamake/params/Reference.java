@@ -12,6 +12,6 @@ public class Reference{
 	
 	public String getValue(Context context){
 		String value = refid;
-		return Utils.replaceVariables(value, context, refid);
+		return Utils.replaceVariables(context, value);
 	}
 }
