@@ -50,7 +50,6 @@ public class SyntaxParser extends BaseSyntaxParser {
 	
 	public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([^\\}]+)\\}");
 
-	Map<String, String> properties;
 	Document dom;
 	String wdir;
 	boolean verbose;
@@ -68,10 +67,10 @@ public class SyntaxParser extends BaseSyntaxParser {
 			throws IOException, ParserConfigurationException, SAXException,
 			InvalidMakefileException, PigNotFoundException {
 
-		properties = parseProperties(dom, wdir);
+		parseProperties(dom, context);
 
 		Hamake ret = new Hamake();
-		parseDTRs(ret, dom.getDocumentElement(), verbose, wdir);
+		parseDTRs(ret, dom.getDocumentElement(), verbose);
 		String defaultTask = dom.getDocumentElement().getAttribute("default");
 		ret.setProjectName(dom.getDocumentElement().getAttribute("name"));
 		if (!StringUtils.isEmpty(defaultTask)) {
@@ -89,54 +88,51 @@ public class SyntaxParser extends BaseSyntaxParser {
 		return getMandatory(dom.getDocumentElement(), "config");
 	}
 
-	protected Map<String, String> parseProperties(Document dom, String wdir)
+	protected void parseProperties(Document dom, Context context)
 			throws InvalidMakefileException {
 		NodeList c = dom.getElementsByTagName("property");
-		Map<String, String> ret = new HashMap<String, String>();
-		ret.put("workdir", wdir);
+		context.set(Hamake.SYS_PROPERTY_WORKING_FOLDER, wdir);
 
 		for (int i = 0, sz = c.getLength(); i < sz; i++) {
 			Element e = (Element) c.item(i);
-			ret.put(getRequiredAttribute(e, "name", ret, VARIABLE_PATTERN), getRequiredAttribute(
-					e, "value", ret, VARIABLE_PATTERN));
+			context.set(getRequiredAttribute(e, "name", VARIABLE_PATTERN, context), getRequiredAttribute(
+					e, "value", VARIABLE_PATTERN, context));
 		}
-		return ret;
 	}
 
-	protected void parseDTRs(Hamake hamake, Element config, boolean verbose,
-			String wdir) throws InvalidMakefileException, IOException,
+	protected void parseDTRs(Hamake hamake, Element config, boolean verbose) throws InvalidMakefileException, IOException,
 			PigNotFoundException {
 		NodeList tx = config.getElementsByTagName("foreach");
 		for (int i = 0, sz = tx.getLength(); i < sz; i++) {
 			Element t = (Element) tx.item(i);
-			String dattr = getOptionalAttribute(t, "disabled", properties, VARIABLE_PATTERN);
+			String dattr = getOptionalAttribute(t, "disabled", VARIABLE_PATTERN, context);
 			if ("yes".equalsIgnoreCase(dattr) || "true".equalsIgnoreCase(dattr)) {
 				if (verbose)
 					System.out.println("Ignoring disabled task "
-							+ getOptionalAttribute(t, "name", properties, VARIABLE_PATTERN));
+							+ getOptionalAttribute(t, "name", VARIABLE_PATTERN, context));
 				continue;
 			}
-			hamake.addTask(parseForeachDTR(t, wdir));
+			hamake.addTask(parseForeachDTR(t));
 		}
 		tx = config.getElementsByTagName("fold");
 		for (int i = 0, sz = tx.getLength(); i < sz; i++) {
 			Element t = (Element) tx.item(i);
-			String dattr = getOptionalAttribute(t, "disabled", properties, VARIABLE_PATTERN);
+			String dattr = getOptionalAttribute(t, "disabled", VARIABLE_PATTERN, context);
 			if ("yes".equalsIgnoreCase(dattr) || "true".equalsIgnoreCase(dattr)) {
 				if (verbose)
 					System.out.println("Ignoring disabled task "
-							+ getOptionalAttribute(t, "name", properties, VARIABLE_PATTERN));
+							+ getOptionalAttribute(t, "name", VARIABLE_PATTERN, context));
 				continue;
 			}
-			hamake.addTask(parseFoldDTR(t, wdir));
+			hamake.addTask(parseFoldDTR(t));
 		}
 	}
 
-	protected DataTransformationRule parseForeachDTR(Element root, String wdir)
+	protected DataTransformationRule parseForeachDTR(Element root)
 			throws InvalidMakefileException, IOException, PigNotFoundException {
-		String name = getRequiredAttribute(root, "name", properties, VARIABLE_PATTERN);
+		String name = getRequiredAttribute(root, "name", VARIABLE_PATTERN, context);
 
-		Collection<HamakePath> inputs = parseForeachInput(root, "input", wdir);
+		Collection<HamakePath> inputs = parseForeachInput(root, "input");
 		HamakePath input;
 		if (inputs.size() == 0)
 			input = null;
@@ -147,8 +143,8 @@ public class SyntaxParser extends BaseSyntaxParser {
 					"Multiple 'input' elements in MAP task '%s' are not permitted"
 							+ name);
 
-		OutputFunction outputFunc = parseOutputFunction(root, wdir);
-		List<HamakePath> deps = parseDependencies(root, "dependencies", wdir);
+		OutputFunction outputFunc = parseOutputFunction(root);
+		List<HamakePath> deps = parseDependencies(root, "dependencies");
 
 		Task task = parseTask(root, wdir);
 
@@ -158,16 +154,16 @@ public class SyntaxParser extends BaseSyntaxParser {
 		return res;
 	}
 
-	protected DataTransformationRule parseFoldDTR(Element root, String wdir) throws InvalidMakefileException, IOException, PigNotFoundException {
-        String name = getRequiredAttribute(root, "name", properties, VARIABLE_PATTERN);
+	protected DataTransformationRule parseFoldDTR(Element root) throws InvalidMakefileException, IOException, PigNotFoundException {
+        String name = getRequiredAttribute(root, "name", VARIABLE_PATTERN, context);
 
         Element input = getOneSubElement(root, "input");
-        List<HamakePath> inputs = parseFoldData(input, wdir, 0);        
+        List<HamakePath> inputs = parseFoldData(input, 0);        
         Element output = getOneSubElement(root, "output");
         String expiration = getOptionalAttribute(output, "expiration");
         long validityPeriod = parseValidityPeriod(expiration);
-        List<HamakePath> outputs = parseFoldData(output, wdir, validityPeriod);
-        List<HamakePath> deps = parseDependencies(root, "dependencies", wdir);
+        List<HamakePath> outputs = parseFoldData(output, validityPeriod);
+        List<HamakePath> deps = parseDependencies(root, "dependencies");
 
         Task task = parseTask(root, wdir);
 
@@ -177,15 +173,15 @@ public class SyntaxParser extends BaseSyntaxParser {
         return res;
     }
 	
-	protected List<HamakePath> parseFoldData(Element root, String wdir, long validityPeriod) throws InvalidMakefileException, IOException {
+	protected List<HamakePath> parseFoldData(Element root, long validityPeriod) throws InvalidMakefileException, IOException {
 		List<HamakePath> ret = new ArrayList<HamakePath>();
 		NodeList files = root.getElementsByTagName("file");
 		for (int i = 0, sz = files.getLength(); i < sz; i++) {
-			ret.add(parseFile((Element) files.item(i), wdir, validityPeriod));
+			ret.add(parseFile((Element) files.item(i), validityPeriod));
 		}
 		NodeList filesets = root.getElementsByTagName("fileset");			
 		for (int i = 0, sz = filesets.getLength(); i < sz; i++) {
-			ret.add(parseFileset((Element) filesets.item(i), wdir));
+			ret.add(parseFileset((Element) filesets.item(i)));
 		}
 		if(filesets.getLength() < 1 && files.getLength() < 1){
 			throw new InvalidMakefileException(getPath(root) + " should have at least one file or fileset element");
@@ -193,8 +189,23 @@ public class SyntaxParser extends BaseSyntaxParser {
 		return ret;
 	}
 	
-	protected List<HamakePath> parseForeachInput(Element root, String name,
-			String wdir) throws InvalidMakefileException, IOException {
+	protected List<HamakePath> parseForeachInput(Element root, String name) throws InvalidMakefileException, IOException {
+		List<HamakePath> paths = new ArrayList<HamakePath>();
+		NodeList children = root.getChildNodes();		
+		for(int i = 0; i < children.getLength(); i ++){
+			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element child = (Element)children.item(i);
+				if(child.getNodeName().equals("include")){
+					
+				}
+				else if(child.getNodeName().equals("fileset")){
+					paths.add(parseFileset(child));
+				}
+				else{
+					throw new InvalidMakefileException(getPath(root) + ": only 'include' or 'fileset' sub-elements allowed");
+				}
+			}
+		}
 		NodeList path = getOneSubElement(root, name).getElementsByTagName(
 				"fileset");
 		if(path == null || path.getLength() != 1){
@@ -202,33 +213,32 @@ public class SyntaxParser extends BaseSyntaxParser {
 		}
 		List<HamakePath> ret = new ArrayList<HamakePath>();
 		for (int i = 0, sz = path.getLength(); i < sz; i++) {
-			ret.add(parseFileset((Element) path.item(i), wdir));
+			ret.add(parseFileset((Element) path.item(i)));
 		}
 		return ret;
 	}
 
 	@SuppressWarnings( { "unchecked" })
-	protected List<HamakePath> parseDependencies(Element root, String name,
-			String wdir) throws InvalidMakefileException, IOException {
+	protected List<HamakePath> parseDependencies(Element root, String name) throws InvalidMakefileException, IOException {
 		Element dependency = getOneSubElement(root, name);
 		if (dependency != null) {
 			NodeList files = dependency.getElementsByTagName("file");
 			List<HamakePath> ret = new ArrayList<HamakePath>();
 			for (int i = 0, sz = files.getLength(); i < sz; i++) {
-				ret.add(parseFile((Element) files.item(i), wdir, Long.MAX_VALUE));
+				ret.add(parseFile((Element) files.item(i), Long.MAX_VALUE));
 			}
 			return ret;
 		}
 		return Collections.EMPTY_LIST;
 	}
 
-	protected HamakePath parseFileset(Element root, String wdir)
+	protected HamakePath parseFileset(Element root)
 			throws InvalidMakefileException, IOException {
 
-		String id = getOptionalAttribute(root, "id", properties, VARIABLE_PATTERN);
-		String path = getRequiredAttribute(root, "path", properties, VARIABLE_PATTERN);
-		String mask = getOptionalAttribute(root, "mask", properties, VARIABLE_PATTERN);
-		String generation = getOptionalAttribute(root, "generation", properties, VARIABLE_PATTERN);
+		String id = getOptionalAttribute(root, "id", VARIABLE_PATTERN, context);
+		String path = getRequiredAttribute(root, "path", VARIABLE_PATTERN, context);
+		String mask = getOptionalAttribute(root, "mask", VARIABLE_PATTERN, context);
+		String generation = getOptionalAttribute(root, "generation", VARIABLE_PATTERN, context);
 		int gen;
 		if (generation == null)
 			gen = 0;
@@ -239,14 +249,14 @@ public class SyntaxParser extends BaseSyntaxParser {
 		return fileset;
 	}
 
-	protected HamakePath parseFile(Element root, String wdir, long validityPeriod)
+	protected HamakePath parseFile(Element root, long validityPeriod)
 			throws InvalidMakefileException, IOException {
 
-		String id = getOptionalAttribute(root, "id", properties, VARIABLE_PATTERN);
-		String path = getRequiredAttribute(root, "path", properties, VARIABLE_PATTERN);
-		String var_s = getOptionalAttribute(root, "variant", properties, VARIABLE_PATTERN);
-		String mask = getOptionalAttribute(root, "mask", properties, VARIABLE_PATTERN);
-		String gen_s = getOptionalAttribute(root, "generation", properties, VARIABLE_PATTERN);
+		String id = getOptionalAttribute(root, "id", VARIABLE_PATTERN, context);
+		String path = getRequiredAttribute(root, "path", VARIABLE_PATTERN, context);
+		String var_s = getOptionalAttribute(root, "variant", VARIABLE_PATTERN, context);
+		String mask = getOptionalAttribute(root, "mask", VARIABLE_PATTERN, context);
+		String gen_s = getOptionalAttribute(root, "generation", VARIABLE_PATTERN, context);
 		int generation;
 		if (gen_s == null)
 			generation = 0;
@@ -263,7 +273,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 		return file;
 	}
 
-	protected OutputFunction parseOutputFunction(Element root, String wdir)
+	protected OutputFunction parseOutputFunction(Element root)
 			throws InvalidMakefileException, IOException {
 
 		Element output = getOneSubElement(root, "output");
@@ -274,40 +284,40 @@ public class SyntaxParser extends BaseSyntaxParser {
 			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				Element child = (Element)children.item(i);
 				if(child.getNodeName().equals("set")){
-					return parseSet(child, wdir, validityPeriod);
+					return parseSet(child, validityPeriod);
 				}
 				else if(child.getNodeName().equals("file")){
-					return parseFileOutputFunction(child, wdir, validityPeriod);
+					return parseFileOutputFunction(child, validityPeriod);
 				}
 				else if(child.getNodeName().equals("include")){
-					return parseIncludeOutputFunction(child, wdir, validityPeriod);
+//					return parseInclude(child, validityPeriod);
 				}
 			}
 		}
 		throw new InvalidMakefileException(getPath(root) + " should have at least one of set, file or include elements");
 	}
 	
-	protected OutputFunction parseSet(Element root, String wdir, long validityPeriod) throws InvalidMakefileException{
+	protected OutputFunction parseSet(Element root, long validityPeriod) throws InvalidMakefileException{
 		GroupOutputFunction outputFunction = new GroupOutputFunction();
 		NodeList children = root.getChildNodes();		
 		for(int i = 0; i < children.getLength(); i ++){
 			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				Element child = (Element)children.item(i);
 				if(child.getNodeName().equals("set")){
-					outputFunction.addOutputFunction(parseSet(child, wdir, validityPeriod));
+					outputFunction.addOutputFunction(parseSet(child, validityPeriod));
 				}
 				else if(child.getNodeName().equals("file")){
-					outputFunction.addOutputFunction(parseFileOutputFunction(child, wdir, validityPeriod));
+					outputFunction.addOutputFunction(parseFileOutputFunction(child, validityPeriod));
 				}
 				else if(child.getNodeName().equals("include")){
-					outputFunction.addOutputFunction(parseIncludeOutputFunction(child, wdir, validityPeriod));
+//					outputFunction.addOutputFunction(parseInclude(child, validityPeriod));
 				}
 			}
 		}
 		return new GroupOutputFunction();
 	}
 	
-	protected OutputFunction parseFileOutputFunction(Element root, String wdir, long validityPeriod) throws InvalidMakefileException{
+	protected OutputFunction parseFileOutputFunction(Element root, long validityPeriod) throws InvalidMakefileException{
 		String id = getOptionalAttribute(root, "id");	
 		String gen_s = getOptionalAttribute(root, "generation");
 		int gen;
@@ -323,9 +333,14 @@ public class SyntaxParser extends BaseSyntaxParser {
 		return func;
 	}
 	
-	protected OutputFunction parseIncludeOutputFunction(Element root, String wdir, long validityPeriod){
+	protected HamakePath parseInclude(Element root, long validityPeriod) throws InvalidMakefileException{		
 		String reference = getOptionalAttribute(root, "idref");
-		return new IncludeOutputFunction(reference);
+		Object obj = context.get(reference);
+		if(obj != null || !(obj instanceof HamakePath)){
+			throw new InvalidMakefileException("Unknown reference in " + getPath(root));
+		}
+		HamakePath path = (HamakePath)obj;
+		return path;
 	}
 
 	protected Task parseTask(Element root, String wdir)
@@ -337,30 +352,28 @@ public class SyntaxParser extends BaseSyntaxParser {
 							+ root.getNodeName()
 							+ "' should have one of mapreduce, pig or exec sub-elements");
 		if (task.getNodeName().equals("mapreduce")) {
-			return parseMapReduceTask(task, properties, wdir);
+			return parseMapReduceTask(task);
 		} else if (task.getNodeName().equals("pig")) {
-			return parsePigTask(task, properties, wdir);
+			return parsePigTask(task);
 		} else if (task.getNodeName().equals("exec")) {
-			return parseExecTask(task, properties, wdir);
+			return parseExecTask(task);
 		} else {
 			throw new InvalidMakefileException("Unknown task type found in '"
 					+ root.getNodeName() + "' element");
 		}
 	}
 
-	protected Task parseMapReduceTask(Element root,
-			Map<String, String> properties, String wdir)
+	protected Task parseMapReduceTask(Element root)
 			throws InvalidMakefileException {
 		MapReduce res = new MapReduce();
 		res.setJar(HamakePath.resolve(wdir,
-				getRequiredAttribute(root, "jar", properties, VARIABLE_PATTERN)).toString());
-		res.setMain(getRequiredAttribute(root, "main", properties, VARIABLE_PATTERN));
-		res.setParameters(parseParametersList(root, properties));
+				getRequiredAttribute(root, "jar", VARIABLE_PATTERN, context)).toString());
+		res.setMain(getRequiredAttribute(root, "main", VARIABLE_PATTERN, context));
+		res.setParameters(parseParametersList(root));
 		return res;
 	}
 
-	protected Task parsePigTask(Element root,
-			Map<String, String> properties, String wdir)
+	protected Task parsePigTask(Element root)
 			throws InvalidMakefileException, IOException, PigNotFoundException {
 		if (!isPigAvailable)
 			throw new PigNotFoundException(
@@ -368,23 +381,21 @@ public class SyntaxParser extends BaseSyntaxParser {
 
 		Pig res = new Pig();
 		res.setScript(new HamakePath(wdir, getRequiredAttribute(root, "script",
-				properties, VARIABLE_PATTERN)));
-		res.setParameters(parseParametersList(root, properties));
+				VARIABLE_PATTERN, context)));
+		res.setParameters(parseParametersList(root));
 		return res;
 	}
 
-	protected Task parseExecTask(Element root,
-			Map<String, String> properties, String wdir)
+	protected Task parseExecTask(Element root)
 			throws InvalidMakefileException, IOException {
 		Exec res = new Exec();
 		res.setBinary(new HamakePath(wdir, getRequiredAttribute(root, "binary",
-				properties, VARIABLE_PATTERN)));
-		res.setParameters(parseParametersList(root, properties));
+				VARIABLE_PATTERN, context)));
+		res.setParameters(parseParametersList(root));
 		return res;
 	}
 
-	protected List<HamakeParameter> parseParametersList(Element root,
-			Map<String, String> properties) throws InvalidMakefileException {
+	protected List<HamakeParameter> parseParametersList(Element root) throws InvalidMakefileException {
 		List<HamakeParameter> parameters = new ArrayList<HamakeParameter>();
 		NodeList children = root.getChildNodes();
 		int counter = 0;
@@ -392,14 +403,14 @@ public class SyntaxParser extends BaseSyntaxParser {
 			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				Element element = (Element)children.item(i);
 				if ("parameter".equals(element.getNodeName())) {
-					parameters.add(parseParameter(element, properties, counter));
+					parameters.add(parseParameter(element, counter));
 				}
 			}
 		}
 		return parameters;
 	}
 	
-	protected HamakeParameter parseParameter(Element root, Map<String, String> properties, int index) throws InvalidMakefileException {
+	protected HamakeParameter parseParameter(Element root, int index) throws InvalidMakefileException {
         String concatFuncIdentificator = getOptionalAttribute(root, "concat_function");
         ConcatFunction concatFunction = null;
         if(!StringUtils.isEmpty(concatFuncIdentificator)){
@@ -439,8 +450,8 @@ public class SyntaxParser extends BaseSyntaxParser {
     }
 	
 	protected JobConfParam parseJobConfParameter(Element root, Map<String, String> properties) throws InvalidMakefileException {
-        return new JobConfParam(getRequiredAttribute(root, "name", properties, VARIABLE_PATTERN),
-                getRequiredAttribute(root, "value", properties, VARIABLE_PATTERN));
+        return new JobConfParam(getRequiredAttribute(root, "name", VARIABLE_PATTERN, context),
+                getRequiredAttribute(root, "value", VARIABLE_PATTERN, context));
     }
 	
 	protected long parseValidityPeriod(String expiration) throws InvalidMakefileException{

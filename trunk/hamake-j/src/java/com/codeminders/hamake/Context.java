@@ -30,5 +30,12 @@ public class Context {
 	public Object get(String name){
 		return nameValuePairs.get(name);
 	}
+	
+	public String getString(String name){
+		if(nameValuePairs.get(name) instanceof String){
+			return (String)nameValuePairs.get(name);
+		}
+		return null;
+	}
 
 }

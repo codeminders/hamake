@@ -10,8 +10,12 @@ import java.io.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Utils {
+	
+	public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([^\\}]+)\\}");
 	
 	public static final Log LOG = LogFactory.getLog(Utils.class);              
 
@@ -88,15 +92,18 @@ public class Utils {
         return true;
     }
     
-    public static String replaceVariables(String value, Context context,
-			String... variables){
-		String outputValue = null;
-		for (String variable : variables) {
-			String variableValue = (String) context.get(variable);
-			outputValue = StringUtils.replace(value, variable,
-					variableValue);
+    public static String replaceVariables(Context context, String value){
+		Matcher matcher = VARIABLE_PATTERN.matcher(value);
+		StringBuilder outputValue = new StringBuilder(value);
+		while(matcher.find()){
+			int start = matcher.start();
+			int end = matcher.end();
+			String variable = outputValue.substring(start, end);
+			if(!StringUtils.isEmpty(context.getString(variable))){
+				outputValue.replace(start, end, variable);
+			}
 		}
-		return outputValue;
+		return outputValue.toString();
 	}
     
 }

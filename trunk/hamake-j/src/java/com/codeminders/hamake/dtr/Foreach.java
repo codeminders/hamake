@@ -31,11 +31,11 @@ import java.util.concurrent.Semaphore;
  */
 public class Foreach extends DataTransformationRule {
 	
-	public static final String FULL_FILENAME = "$_";
-	public static final String SHORT_FILENAME = "$@";
-	public static final String PARENT_FOLDER = "$%";
-	public static final String FILENAME_WO_EXTENTION = "$#";
-	public static final String EXTENTION = "$^";
+	public static final String FULL_FILENAME = "foreach:path";
+	public static final String SHORT_FILENAME = "foreach:filename";
+	public static final String PARENT_FOLDER = "foreach:folder";
+	public static final String FILENAME_WO_EXTENTION = "foreach:basename";
+	public static final String EXTENTION = "foreach:ext";
 
 	protected class HamakePathPair {
 

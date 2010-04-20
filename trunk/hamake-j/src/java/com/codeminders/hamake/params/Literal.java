@@ -12,12 +12,7 @@ public class Literal{
 	}
 	
 	public String getValue(Context context){
-		return Utils.replaceVariables(value, context, 
-				Foreach.FULL_FILENAME,
-				Foreach.SHORT_FILENAME,
-				Foreach.PARENT_FOLDER,
-				Foreach.FILENAME_WO_EXTENTION,
-				Foreach.EXTENTION);
+		return Utils.replaceVariables(context, value); 
 	}
 	
 }

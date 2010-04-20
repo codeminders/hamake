@@ -26,15 +26,15 @@ import com.codeminders.hamake.task.Pig;
 public class TestSyntaxParser {
 	
 	@Test
-	public void testProject() throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException{
+	public void testCorrectHamakefile() throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException{
 		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testsyntax.xml");
 		Context context = new Context();
 		Hamake make = BaseSyntaxParser.parse(new Context(), new FileInputStream(localHamakeFile), null, true);
 		//project
 		Assert.assertEquals("test-syntax", make.getProjectName());
 		Assert.assertEquals("foreach1", make.defaultTarget);
-//		Assert.assertEquals(3, make.getTasks().size());
-//		//1st foreach
+		Assert.assertEquals(3, make.getTasks().size());
+		//1st foreach
 //		Foreach mdtr = (Foreach)make.getTasks().get(0);
 //		Assert.assertEquals("foreach1", mdtr.getName());
 //		Assert.assertEquals("/root/referrers", mdtr.getXinput().getPathName().toString());
