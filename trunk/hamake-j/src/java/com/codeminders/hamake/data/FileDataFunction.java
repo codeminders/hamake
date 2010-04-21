@@ -17,30 +17,29 @@ public class FileDataFunction extends DataFunction {
 	
 	private String path;
 	
-	public FileDataFunction(Context context, String id, int generation, long validityPeriod, String workFolder, String path) throws IOException{
-		super(context, id, generation, validityPeriod, workFolder);
+	public FileDataFunction(String id, int generation, long validityPeriod, String workFolder, String path) throws IOException{
+		super(id, generation, validityPeriod, workFolder);
 		this.path = path;
 	}
 
 	@Override
-	public boolean clear() throws IOException {
-		FileSystem fs = getFileSystem();
-		Path path = toPath();
+	public boolean clear(Context context) throws IOException {
+		FileSystem fs = getFileSystem(context);
+		Path path = toPath(context);
 		if(fs.exists(path)) return fs.delete(path, true);
 		return false;
 	}
 
 	@Override
-	public List<Path> getPath(Object... arguments) throws IOException {
-		Path path = toPath();
+	public List<Path> getPath(Context context, Object... arguments) throws IOException {
+		Path path = toPath(context);
 		if(arguments.length > 1 && arguments[0] instanceof Path) return Arrays.asList(new Path((Path)arguments[0], path)); 
 		else return Arrays.asList(path);
 	}
 
 	@Override
-	public FileSystem getFileSystem() throws IOException {
-		Configuration conf = getContext().get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) != null? (Configuration)getContext().get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) : new Configuration();
-		return toPath().getFileSystem(conf);
+	public FileSystem getFileSystem(Context context) throws IOException {
+		return toPath(context).getFileSystem(context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) != null? (Configuration)context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) : new Configuration());
 	}
 	
 	@Override
@@ -53,12 +52,8 @@ public class FileDataFunction extends DataFunction {
 		return false;
 	}
 	
-	private Path toPath() throws IOException{
-		String processedPath = Utils.replaceVariables(getContext(), this.path);
-		Path path = new Path(processedPath);
-		if (!path.isAbsolute() && !StringUtils.isEmpty(getWorkFolder())) path = new Path(getWorkFolder(), processedPath);
-		
-		return path;
+	private Path toPath(Context context) throws IOException{
+		return Utils.resolvePath(Utils.replaceVariables(context, this.path), getWorkFolder());
 	}
 	
 }

@@ -6,7 +6,8 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import com.codeminders.hamake.HamakePath;
+import com.codeminders.hamake.Context;
+import com.codeminders.hamake.data.DataFunction;
 import com.codeminders.hamake.task.Task;
 
 public abstract class DataTransformationRule {
@@ -14,11 +15,13 @@ public abstract class DataTransformationRule {
 	private String name;
 	private Task task;
 	
-	protected abstract List<HamakePath> getInputs();
+	protected abstract List<DataFunction> getInputs();
 	
-	protected abstract List<HamakePath> getOutputs();
+	protected abstract List<DataFunction> getOutputs();
 	
-	protected abstract List<HamakePath> getDeps();
+	protected abstract List<DataFunction> getDeps();
+	
+	protected abstract Context getContext();
 	
 	public String getName() {
 		return name;
@@ -28,10 +31,10 @@ public abstract class DataTransformationRule {
 		this.name = name;
 	}
 
-	public boolean dependsOn(DataTransformationRule t) {		
-		for (HamakePath i : getInputs()) {
-			for (HamakePath o : t.getOutputs()) {
-				if (i.intersects(o))
+	public boolean dependsOn(DataTransformationRule t) throws IOException {		
+		for (DataFunction i : getInputs()) {
+			for (DataFunction o : t.getOutputs()) {
+				if (i.intersects(getContext(), o))
 					return true;
 			}
 		}

@@ -1,5 +1,6 @@
 package com.codeminders.hamake;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Condition;
@@ -28,7 +29,7 @@ public class TaskRunner {
 	private Condition condition;
 
 	public TaskRunner(List<DataTransformationRule> tasks, int numJobs, List<String> targets,
-			Context context) {
+			Context context) throws IOException {
 		graph = new NoDepsExecutionGraph(tasks);
 		this.context = context;
 		this.tasks = new HashMap<String, DataTransformationRule>();

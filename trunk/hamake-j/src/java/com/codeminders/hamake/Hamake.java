@@ -5,6 +5,7 @@ import org.apache.hadoop.conf.Configuration;
 
 import com.codeminders.hamake.dtr.DataTransformationRule;
 
+import java.io.IOException;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,8 +14,8 @@ import java.util.Map;
 
 public class Hamake {
 	
-	public static final String SYS_PROPERTY_WORKING_FOLDER = "sys:workdir";
-	public static final String SYS_PROPERTY_HADOOP_CONFIGURATION = "sys:hadoop.configuration";
+	public static final String SYS_PROPERTY_WORKING_FOLDER = "workdir";
+	public static final String SYS_PROPERTY_HADOOP_CONFIGURATION = "hadoop.configuration";
 
     enum ExitCode {
         OK,
@@ -66,11 +67,11 @@ public class Hamake {
         this.tasks = tasks;
     }
 
-    public ExitCode run() {
+    public ExitCode run() throws IOException {
     	
     	SecurityManager securityManager = System.getSecurityManager();
         System.setSecurityManager(new NoExitSecurityManager());        
-        context.set(SYS_PROPERTY_HADOOP_CONFIGURATION, new Configuration());
+        context.setSystem(SYS_PROPERTY_HADOOP_CONFIGURATION, new Configuration());
         try{
 	        if(targets.size() <= 0 && !StringUtils.isEmpty(defaultTarget)){
 	        	targets.add(defaultTarget);

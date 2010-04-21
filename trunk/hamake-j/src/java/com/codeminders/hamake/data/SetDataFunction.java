@@ -16,34 +16,32 @@ import com.codeminders.hamake.Hamake;
 public class SetDataFunction extends DataFunction {
 	
 	private Set<DataFunction> dataFunctions;
-	private FileSystem fs;
 	
-	public SetDataFunction(Context context, String id) throws IOException{
-		super(context, id, 0, Long.MAX_VALUE, null);
+	public SetDataFunction(String id) throws IOException{
+		super(id, 0, Long.MAX_VALUE, null);
 		dataFunctions = new HashSet<DataFunction>();
-		Configuration conf = context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) != null? (Configuration)context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) : new Configuration();
-		fs = FileSystem.get(conf);
 	}
 
 	@Override
-	public boolean clear() throws IOException {
+	public boolean clear(Context context) throws IOException {
 		boolean result = true;
 		for(DataFunction func : dataFunctions){
-			result = func.clear()? result : false;
+			result = func.clear(context)? result : false;
 		}
 		return result;
 	}
 
 	@Override
-	public FileSystem getFileSystem() {
-		return fs;
+	public FileSystem getFileSystem(Context context) throws IOException {
+		Configuration conf = context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) != null? (Configuration)context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) : new Configuration();
+		return FileSystem.get(conf);
 	}
 
 	@Override
-	public List<Path> getPath(Object... arguments) throws IOException {
+	public List<Path> getPath(Context context, Object... arguments) throws IOException {
 		List<Path> paths = new ArrayList<Path>();
 		for(DataFunction func : dataFunctions){
-			paths.addAll(func.getPath());
+			paths.addAll(func.getPath(context));
 		}
 		return paths;
 	}

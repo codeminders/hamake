@@ -38,29 +38,32 @@ public class FilesetDataFunction extends DataFunction {
 	private String path;
 	private String mask;
 	
-	public FilesetDataFunction(Context context, String id, int generation, long validityPeriod, String workFolder, String path, String mask) throws IOException{
-		super(context, id, generation, validityPeriod, workFolder);
+	public FilesetDataFunction(String id, int generation, long validityPeriod, String workFolder, String path, String mask) throws IOException{
+		super(id, generation, validityPeriod, workFolder);
 		this.path = path;
 		this.mask = mask;
 	}
 
 	@Override
-	public boolean clear() throws IOException {
-		Path path = toPath();
-		if(getFileSystem().exists(path)) return getFileSystem().delete(path, true);
+	public boolean clear(Context context) throws IOException {
+		Path path = toPath(context);
+		if(getFileSystem(context).exists(path)) return getFileSystem(context).delete(path, true);
 		return false;
 	}
 
 	@Override
-	public FileSystem getFileSystem() throws IOException {
-		Configuration conf = getContext().get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) != null? (Configuration)getContext().get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) : new Configuration();
-		return toPath().getFileSystem(conf);
+	public FileSystem getFileSystem(Context context) throws IOException {
+		return toPath(context).getFileSystem(context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) != null? (Configuration)context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) : new Configuration());
 	}
 
 	@Override
-	public List<Path> getPath(Object... arguments) throws IOException {
-		FileSystem fs = getFileSystem();
-		Path path = toPath();
+	public List<Path> getPath(Context context, Object... arguments) throws IOException {
+		FileSystem fs = getFileSystem(context);
+		
+		Path path = toPath(context);
+		if (!fs.getFileStatus(path).isDir()) {
+			throw new IOException("Path " + path + " should be a folder");
+		}
 		List<Path> filesList = new ArrayList<Path>();
 		Boolean create = false;
 		Variant variant = Variant.LIST;
@@ -106,14 +109,11 @@ public class FilesetDataFunction extends DataFunction {
 		return false;
 	}
 	
-	private Path toPath() throws IOException{
-		String processedPath = Utils.replaceVariables(getContext(), this.path);
+	private Path toPath(Context context) throws IOException{
+		String processedPath = Utils.replaceVariables(context, this.path);
 		Path path = new Path(processedPath);
 		if (!path.isAbsolute() && !StringUtils.isEmpty(getWorkFolder())) path = new Path(getWorkFolder(), processedPath);
 		
-		if (!getFileSystem().getFileStatus(path).isDir()) {
-			throw new IOException("Path " + path + " should be a folder");
-		}
 		return path;
 	}
 	
