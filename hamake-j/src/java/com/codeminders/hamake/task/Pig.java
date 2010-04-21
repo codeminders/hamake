@@ -2,12 +2,13 @@ package com.codeminders.hamake.task;
 
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
-import com.codeminders.hamake.HamakePath;
+import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.params.HamakeParameter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.pig.ExecType;
@@ -26,22 +27,19 @@ public class Pig extends Task {
 	
 	public static final Log LOG = LogFactory.getLog(Pig.class);
 
-    private HamakePath script;
+    private Path script;
 
     public Pig() {
     }
 
-    public Pig(HamakePath script) {
-        setScript(script);
-    }
-
     public int execute(Context context) {
         FileSystem fs;
+        Configuration conf = context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) != null? (Configuration)context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) : new Configuration();
         Collection<String> args = new ArrayList<String>();
         BufferedReader in = null;
 
         try {
-            fs = script.getFileSystem();
+            fs = script.getFileSystem(conf);
 
             Collection<HamakeParameter> parameters = getParameters();
             if (parameters != null) {
@@ -55,7 +53,7 @@ public class Pig extends Task {
             PigContext ctx = new PigContext(ExecType.MAPREDUCE, pigProps);
 
             // Run, using the provided file as a pig file
-            Path p = fs.makeQualified(getScript().getPathName());
+            Path p = fs.makeQualified(script);
             in = new BufferedReader(new InputStreamReader(fs.open(p)));
             // run parameter substitution preprocessor first
             File substFile = File.createTempFile("subst", ".pig");
@@ -67,7 +65,7 @@ public class Pig extends Task {
 
             // Set job name based on name of the script
             ctx.getProperties().setProperty(PigContext.JOB_NAME,
-                                                   "PigLatin:" + getScript());
+                                                   "PigLatin:" + script);
 
             substFile.deleteOnExit();
 
@@ -79,27 +77,27 @@ public class Pig extends Task {
             return results[1] == 0 ? 0 : -1000;
 
         } catch (ExecException ex) {
-        	LOG.error("Failed to execute PIG command " + getScript(), ex);
+        	LOG.error("Failed to execute PIG command " + script, ex);
             return -1000;
         } catch (IOException ex) {
-        	LOG.error("Failed to execute PIG command " + getScript(), ex);
+        	LOG.error("Failed to execute PIG command " + script, ex);
             return -1000;
         } catch (ParseException ex) {
-        	LOG.error("Failed to execute PIG command " + getScript(), ex);
+        	LOG.error("Failed to execute PIG command " + script, ex);
             return -1000;
         } catch (Throwable ex) {
-        	LOG.error("Failed to execute PIG command " + getScript(), ex);
+        	LOG.error("Failed to execute PIG command " + script, ex);
             return -1000;
         } finally {
             IOUtils.closeQuietly(in);
         }
     }
 
-    public HamakePath getScript() {
+    public Path getScript() {
         return script;
     }
 
-    public void setScript(HamakePath script) {
+    public void setScript(Path script) {
         this.script = script;
     }
 

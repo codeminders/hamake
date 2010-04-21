@@ -26,7 +26,7 @@ import com.codeminders.hamake.task.Pig;
 public class TestSyntaxParser {
 	
 	@Test
-	public void testCorrectHamakefile() throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException{
+	public void testCorrectHamakefile() throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InvalidContextVariableException{
 		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testsyntax.xml");
 		Context context = new Context();
 		Hamake make = BaseSyntaxParser.parse(new Context(), new FileInputStream(localHamakeFile), null, true);

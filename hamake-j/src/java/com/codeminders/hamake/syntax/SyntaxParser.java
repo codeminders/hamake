@@ -3,9 +3,6 @@ package com.codeminders.hamake.syntax;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -13,25 +10,24 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
-import org.mortbay.util.StringUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.codeminders.hamake.Command;
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.HamakePath;
+import com.codeminders.hamake.InvalidContextVariableException;
 import com.codeminders.hamake.PigNotFoundException;
+import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.data.DataFunction;
+import com.codeminders.hamake.data.FileDataFunction;
+import com.codeminders.hamake.data.FilesetDataFunction;
+import com.codeminders.hamake.data.SetDataFunction;
 import com.codeminders.hamake.dtr.DataTransformationRule;
 import com.codeminders.hamake.dtr.Fold;
 import com.codeminders.hamake.dtr.Foreach;
-import com.codeminders.hamake.dtr.GroupOutputFunction;
-import com.codeminders.hamake.dtr.IdentityOutputFunction;
-import com.codeminders.hamake.dtr.IncludeOutputFunction;
-import com.codeminders.hamake.dtr.OutputFunction;
 import com.codeminders.hamake.params.CommaConcatFunction;
 import com.codeminders.hamake.params.ConcatFunction;
 import com.codeminders.hamake.params.HamakeParameter;
@@ -65,7 +61,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	@Override
 	protected Hamake parseSyntax()
 			throws IOException, ParserConfigurationException, SAXException,
-			InvalidMakefileException, PigNotFoundException {
+			InvalidMakefileException, PigNotFoundException, InvalidContextVariableException {
 
 		parseProperties(dom, context);
 
@@ -89,7 +85,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 
 	protected void parseProperties(Document dom, Context context)
-			throws InvalidMakefileException {
+			throws InvalidMakefileException, InvalidContextVariableException {
 		NodeList c = dom.getElementsByTagName("property");
 		context.set(Hamake.SYS_PROPERTY_WORKING_FOLDER, wdir);
 
@@ -101,7 +97,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 
 	protected void parseDTRs(Hamake hamake, Element config, boolean verbose) throws InvalidMakefileException, IOException,
-			PigNotFoundException {
+			PigNotFoundException, InvalidContextVariableException {
 		NodeList tx = config.getElementsByTagName("foreach");
 		for (int i = 0, sz = tx.getLength(); i < sz; i++) {
 			Element t = (Element) tx.item(i);
@@ -129,112 +125,84 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 
 	protected DataTransformationRule parseForeachDTR(Element root)
-			throws InvalidMakefileException, IOException, PigNotFoundException {
+			throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextVariableException {
 		String name = getRequiredAttribute(root, "name", VARIABLE_PATTERN, context);
 
-		Collection<HamakePath> inputs = parseForeachInput(root, "input");
-		HamakePath input;
-		if (inputs.size() == 0)
-			input = null;
-		else if (inputs.size() == 1)
-			input = inputs.iterator().next();
-		else
-			throw new InvalidMakefileException(
-					"Multiple 'input' elements in MAP task '%s' are not permitted"
-							+ name);
-
-		OutputFunction outputFunc = parseOutputFunction(root);
-		List<HamakePath> deps = parseDependencies(root, "dependencies");
+		Element input = getOneSubElement(root, "input");
+		DataFunction inputFunc = parseDTRData(input, Arrays.asList("fileset"), 1).get(0);
+		Element output = getOneSubElement(root, "output");
+		List<DataFunction> outputFuncs = parseDTRData(output, Arrays.asList("fileset", "file", "set", "include"), Integer.MAX_VALUE);
+		Element dependencies = getOneSubElement(root, "dependencies");
+		List<DataFunction> deps = parseDTRData(dependencies, Arrays.asList("fileset", "file", "set", "include"), Integer.MAX_VALUE);
 
 		Task task = parseTask(root, wdir);
 
-		Foreach res = new Foreach(context, Arrays.asList(input), outputFunc, deps);
-		res.setName(name);
-		res.setTask(task);
-		return res;
+		Foreach foreach = new Foreach(context, inputFunc, outputFuncs, deps);
+		foreach.setName(name);
+		foreach.setTask(task);
+		return foreach;
 	}
 
-	protected DataTransformationRule parseFoldDTR(Element root) throws InvalidMakefileException, IOException, PigNotFoundException {
+	protected DataTransformationRule parseFoldDTR(Element root) throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextVariableException {
         String name = getRequiredAttribute(root, "name", VARIABLE_PATTERN, context);
 
         Element input = getOneSubElement(root, "input");
-        List<HamakePath> inputs = parseFoldData(input, 0);        
+        List<DataFunction> inputFuncs = parseDTRData(input, Arrays.asList("fileset", "file", "set", "include"), Integer.MAX_VALUE);
         Element output = getOneSubElement(root, "output");
-        String expiration = getOptionalAttribute(output, "expiration");
-        long validityPeriod = parseValidityPeriod(expiration);
-        List<HamakePath> outputs = parseFoldData(output, validityPeriod);
-        List<HamakePath> deps = parseDependencies(root, "dependencies");
+        List<DataFunction> outputFuncs = parseDTRData(output, Arrays.asList("fileset", "file", "set", "include"), Integer.MAX_VALUE);
+        Element dependencies = getOneSubElement(root, "dependencies");
+        List<DataFunction> dependenciesFunc = parseDTRData(dependencies, Arrays.asList("fileset", "file", "set", "include"), Integer.MAX_VALUE);
 
         Task task = parseTask(root, wdir);
 
-        Fold res = new Fold(context, inputs, outputs, deps);
+        Fold res = new Fold(context, inputFuncs, outputFuncs, dependenciesFunc);
         res.setName(name);
         res.setTask(task);
         return res;
     }
 	
-	protected List<HamakePath> parseFoldData(Element root, long validityPeriod) throws InvalidMakefileException, IOException {
-		List<HamakePath> ret = new ArrayList<HamakePath>();
-		NodeList files = root.getElementsByTagName("file");
-		for (int i = 0, sz = files.getLength(); i < sz; i++) {
-			ret.add(parseFile((Element) files.item(i), validityPeriod));
-		}
-		NodeList filesets = root.getElementsByTagName("fileset");			
-		for (int i = 0, sz = filesets.getLength(); i < sz; i++) {
-			ret.add(parseFileset((Element) filesets.item(i)));
-		}
-		if(filesets.getLength() < 1 && files.getLength() < 1){
-			throw new InvalidMakefileException(getPath(root) + " should have at least one file or fileset element");
-		}
-		return ret;
-	}
-	
-	protected List<HamakePath> parseForeachInput(Element root, String name) throws InvalidMakefileException, IOException {
-		List<HamakePath> paths = new ArrayList<HamakePath>();
+	protected List<DataFunction> parseDTRData(Element root, List<String> allowedSubElements, int subElementsAmount) throws InvalidMakefileException, IOException, InvalidContextVariableException {
+		List<DataFunction> functions = new ArrayList<DataFunction>();
+		String expiration = getOptionalAttribute(root, "expiration");
+		long validityPeriod = parseValidityPeriod(expiration);
 		NodeList children = root.getChildNodes();		
 		for(int i = 0; i < children.getLength(); i ++){
 			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				Element child = (Element)children.item(i);
-				if(child.getNodeName().equals("include")){
-					
-				}
-				else if(child.getNodeName().equals("fileset")){
-					paths.add(parseFileset(child));
-				}
-				else{
-					throw new InvalidMakefileException(getPath(root) + ": only 'include' or 'fileset' sub-elements allowed");
+				for(String allowedSubElement : allowedSubElements){
+					if(child.getNodeName().equals(allowedSubElement)){
+						functions.add(parseDataFunction(child, allowedSubElement, validityPeriod));
+					}
 				}
 			}
 		}
-		NodeList path = getOneSubElement(root, name).getElementsByTagName(
-				"fileset");
-		if(path == null || path.getLength() != 1){
-			throw new InvalidMakefileException(getPath(root) + " should have at least one fileset element");
+		if(functions.size() < 1){
+			throw new InvalidMakefileException(getPath(root) + " should have at least one of " + StringUtils.join(allowedSubElements, ","));
 		}
-		List<HamakePath> ret = new ArrayList<HamakePath>();
-		for (int i = 0, sz = path.getLength(); i < sz; i++) {
-			ret.add(parseFileset((Element) path.item(i)));
+		if(functions.size() > subElementsAmount){
+			throw new InvalidMakefileException(getPath(root) + " should have no more then " + subElementsAmount + " sub-elements");
 		}
-		return ret;
+		return functions;
 	}
 
-	@SuppressWarnings( { "unchecked" })
-	protected List<HamakePath> parseDependencies(Element root, String name) throws InvalidMakefileException, IOException {
-		Element dependency = getOneSubElement(root, name);
-		if (dependency != null) {
-			NodeList files = dependency.getElementsByTagName("file");
-			List<HamakePath> ret = new ArrayList<HamakePath>();
-			for (int i = 0, sz = files.getLength(); i < sz; i++) {
-				ret.add(parseFile((Element) files.item(i), Long.MAX_VALUE));
-			}
-			return ret;
+	private DataFunction parseDataFunction(Element element, String elementName,	long validityPeriod) throws InvalidMakefileException, IOException, InvalidContextVariableException {
+		if(elementName.equals("fileset")){
+			return parseFileset(element, validityPeriod);
 		}
-		return Collections.EMPTY_LIST;
+		else if(elementName.equals("file")){
+			return parseFile(element, validityPeriod);
+		}
+		else if(elementName.equals("set")){
+			return parseSet(element, validityPeriod);
+		}
+		else if(elementName.equals("include")){
+			return parseInclude(element, validityPeriod);
+		}
+		throw new InvalidMakefileException(getPath(element) + ": unknown element found");
 	}
 
-	protected HamakePath parseFileset(Element root)
-			throws InvalidMakefileException, IOException {
-
+	protected DataFunction parseFileset(Element root, long validityPeriod)
+			throws InvalidMakefileException, IOException, InvalidContextVariableException{
 		String id = getOptionalAttribute(root, "id", VARIABLE_PATTERN, context);
 		String path = getRequiredAttribute(root, "path", VARIABLE_PATTERN, context);
 		String mask = getOptionalAttribute(root, "mask", VARIABLE_PATTERN, context);
@@ -244,103 +212,61 @@ public class SyntaxParser extends BaseSyntaxParser {
 			gen = 0;
 		else
 			gen = Integer.parseInt(generation);
-		HamakePath fileset = new HamakePath(id, wdir, path, mask, gen);
+		FilesetDataFunction fileset = new FilesetDataFunction(id, gen, validityPeriod, wdir, path, mask);
 		if(!StringUtils.isEmpty(id)) context.set(id, fileset);
 		return fileset;
 	}
 
-	protected HamakePath parseFile(Element root, long validityPeriod)
-			throws InvalidMakefileException, IOException {
+	protected DataFunction parseFile(Element root, long validityPeriod)
+			throws InvalidMakefileException, IOException, InvalidContextVariableException {
 
 		String id = getOptionalAttribute(root, "id", VARIABLE_PATTERN, context);
 		String path = getRequiredAttribute(root, "path", VARIABLE_PATTERN, context);
-		String var_s = getOptionalAttribute(root, "variant", VARIABLE_PATTERN, context);
-		String mask = getOptionalAttribute(root, "mask", VARIABLE_PATTERN, context);
 		String gen_s = getOptionalAttribute(root, "generation", VARIABLE_PATTERN, context);
 		int generation;
 		if (gen_s == null)
 			generation = 0;
 		else
 			generation = Integer.parseInt(gen_s);
-		HamakePath.Variant variant = HamakePath.Variant.parseString(var_s);
-		if(variant == HamakePath.Variant.MASK && StringUtils.isEmpty(mask)){
-			throw new InvalidMakefileException("You can not specify 'variant' attribute without 'mask' in'" + getPath(root));
-		}
-		HamakePath file = new HamakePath(id, wdir, path, null, mask, generation, variant, validityPeriod);
-		if(!StringUtils.isEmpty(id)){
-			context.set(id, file);
-		}
+		FileDataFunction file = new FileDataFunction(id, generation, validityPeriod, wdir, path);
+		if(!StringUtils.isEmpty(id)) context.set(id, file);
 		return file;
 	}
 
-	protected OutputFunction parseOutputFunction(Element root)
-			throws InvalidMakefileException, IOException {
-
-		Element output = getOneSubElement(root, "output");
-		String expiration = getOptionalAttribute(output, "expiration");
-		long validityPeriod = parseValidityPeriod(expiration);
-		NodeList children = output.getChildNodes();		
-		for(int i = 0; i < children.getLength(); i ++){
-			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
-				Element child = (Element)children.item(i);
-				if(child.getNodeName().equals("set")){
-					return parseSet(child, validityPeriod);
-				}
-				else if(child.getNodeName().equals("file")){
-					return parseFileOutputFunction(child, validityPeriod);
-				}
-				else if(child.getNodeName().equals("include")){
-//					return parseInclude(child, validityPeriod);
-				}
-			}
-		}
-		throw new InvalidMakefileException(getPath(root) + " should have at least one of set, file or include elements");
-	}
-	
-	protected OutputFunction parseSet(Element root, long validityPeriod) throws InvalidMakefileException{
-		GroupOutputFunction outputFunction = new GroupOutputFunction();
+	protected DataFunction parseSet(Element root, long validityPeriod) throws InvalidMakefileException, InvalidContextVariableException, IOException{
+		String id = getOptionalAttribute(root, "id", VARIABLE_PATTERN, context);
+		SetDataFunction set = new SetDataFunction(id);
 		NodeList children = root.getChildNodes();		
 		for(int i = 0; i < children.getLength(); i ++){
 			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				Element child = (Element)children.item(i);
 				if(child.getNodeName().equals("set")){
-					outputFunction.addOutputFunction(parseSet(child, validityPeriod));
+					set.addDataFunction(parseSet(child, validityPeriod));
 				}
 				else if(child.getNodeName().equals("file")){
-					outputFunction.addOutputFunction(parseFileOutputFunction(child, validityPeriod));
+					set.addDataFunction(parseFile(child, validityPeriod));
+				}
+				else if(child.getNodeName().equals("fileset")){
+					set.addDataFunction(parseFileset(child, validityPeriod));
 				}
 				else if(child.getNodeName().equals("include")){
-//					outputFunction.addOutputFunction(parseInclude(child, validityPeriod));
+					set.addDataFunction(parseInclude(child, validityPeriod));
+				}
+				else{
+					throw new InvalidMakefileException(getPath(child) + ": unknown element found");
 				}
 			}
 		}
-		return new GroupOutputFunction();
+		return set;
 	}
 	
-	protected OutputFunction parseFileOutputFunction(Element root, long validityPeriod) throws InvalidMakefileException{
-		String id = getOptionalAttribute(root, "id");	
-		String gen_s = getOptionalAttribute(root, "generation");
-		int gen;
-        if (StringUtils.isEmpty(gen_s) || !StringUtils.isNumeric(gen_s))
-            gen = 0;
-        else
-            gen = Integer.parseInt(gen_s);
-		String functionString = getRequiredAttribute(root, "path");
-		IdentityOutputFunction func = new IdentityOutputFunction(functionString, validityPeriod);
-		if(!StringUtils.isEmpty(id)){
-			context.set(id, func);
-		}
-		return func;
-	}
-	
-	protected HamakePath parseInclude(Element root, long validityPeriod) throws InvalidMakefileException{		
+	protected DataFunction parseInclude(Element root, long validityPeriod) throws InvalidMakefileException{		
 		String reference = getOptionalAttribute(root, "idref");
 		Object obj = context.get(reference);
-		if(obj != null || !(obj instanceof HamakePath)){
-			throw new InvalidMakefileException("Unknown reference in " + getPath(root));
+		if(obj != null || !(obj instanceof DataFunction)){
+			throw new InvalidMakefileException("Unknown data function reference found: " + getPath(root));
 		}
-		HamakePath path = (HamakePath)obj;
-		return path;
+		return (DataFunction)obj;
 	}
 
 	protected Task parseTask(Element root, String wdir)
@@ -366,7 +292,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	protected Task parseMapReduceTask(Element root)
 			throws InvalidMakefileException {
 		MapReduce res = new MapReduce();
-		res.setJar(HamakePath.resolve(wdir,
+		res.setJar(Utils.resolvePath(wdir,
 				getRequiredAttribute(root, "jar", VARIABLE_PATTERN, context)).toString());
 		res.setMain(getRequiredAttribute(root, "main", VARIABLE_PATTERN, context));
 		res.setParameters(parseParametersList(root));
@@ -380,7 +306,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 					"Pig isn't found in classpath. Please, make sure Pig classes are available in classpath.");
 
 		Pig res = new Pig();
-		res.setScript(new HamakePath(wdir, getRequiredAttribute(root, "script",
+		res.setScript(Utils.resolvePath(wdir, getRequiredAttribute(root, "script",
 				VARIABLE_PATTERN, context)));
 		res.setParameters(parseParametersList(root));
 		return res;
@@ -389,7 +315,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	protected Task parseExecTask(Element root)
 			throws InvalidMakefileException, IOException {
 		Exec res = new Exec();
-		res.setBinary(new HamakePath(wdir, getRequiredAttribute(root, "binary",
+		res.setBinary(Utils.resolvePath(wdir, getRequiredAttribute(root, "binary",
 				VARIABLE_PATTERN, context)));
 		res.setParameters(parseParametersList(root));
 		return res;
@@ -431,7 +357,6 @@ public class SyntaxParser extends BaseSyntaxParser {
         }
         List<Object> values = new ArrayList<Object>();
         NodeList children = root.getChildNodes();
-		int counter = 0;
 		for (int i = 0; i < children.getLength(); i++) {
 			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				Element element = (Element)children.item(i);

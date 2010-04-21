@@ -1,5 +1,6 @@
 package com.codeminders.hamake;
 
+import java.io.IOException;
 import java.util.*;
 
 import com.codeminders.hamake.dtr.DataTransformationRule;
@@ -64,8 +65,9 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 	/**
 	 * Constructor
 	 * @param tasks list of tasks
+	 * @throws IOException 
 	 */
-	public NoDepsExecutionGraph(List<DataTransformationRule> tasks) {
+	public NoDepsExecutionGraph(List<DataTransformationRule> tasks) throws IOException {
 		buildGraph(tasks);
 	}
 
@@ -139,7 +141,7 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		}
 	}
 
-	private void buildGraph(List<DataTransformationRule> tasks) {
+	private void buildGraph(List<DataTransformationRule> tasks) throws IOException {
 		List<DataTransformationRule> t = new ArrayList<DataTransformationRule>(tasks);
 		Collections.copy(t, tasks);
 		rootNodes = fetchRootNodes(t);
@@ -148,7 +150,7 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		}
 	}
 
-	private List<GraphNode> fetchRootNodes(List<DataTransformationRule> tasks) {
+	private List<GraphNode> fetchRootNodes(List<DataTransformationRule> tasks) throws IOException {
 		List<GraphNode> rootNodes = new ArrayList<GraphNode>();
 		for (DataTransformationRule ti : tasks) {
 			boolean rootNode = true;
@@ -167,7 +169,7 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		return rootNodes;
 	}
 
-	private void fetchChildren(List<GraphNode> nodes, List<DataTransformationRule> tasks) {
+	private void fetchChildren(List<GraphNode> nodes, List<DataTransformationRule> tasks) throws IOException {
 		// find all dependent nodes in this level
 		List<GraphNode> nextLevelNodes = new ArrayList<GraphNode>();
 		for (GraphNode node : nodes) {

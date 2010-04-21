@@ -3,16 +3,13 @@ package com.codeminders.hamake.dtr;
 import com.codeminders.hamake.CommandThread;
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
-import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.HamakePath;
-import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.data.DataFunction;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -20,9 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -31,144 +26,99 @@ import java.util.concurrent.Semaphore;
  */
 public class Foreach extends DataTransformationRule {
 	
-	public static final String FULL_FILENAME = "foreach:path";
-	public static final String SHORT_FILENAME = "foreach:filename";
-	public static final String PARENT_FOLDER = "foreach:folder";
-	public static final String FILENAME_WO_EXTENTION = "foreach:basename";
-	public static final String EXTENTION = "foreach:ext";
-
-	protected class HamakePathPair {
-
-		public HamakePathPair(HamakePath input, HamakePath output) {
-			this.input = input;
-			this.outputValue = output;
-		}
-
-		public HamakePath input;
-		public HamakePath outputValue;
-	}
+	public static final String FULL_FILENAME_VAR = "path";
+	public static final String SHORT_FILENAME_VAR = "filename";
+	public static final String PARENT_FOLDER_VAR = "folder";
+	public static final String FILENAME_WO_EXTENTION_VAR = "basename";
+	public static final String EXTENTION_VAR = "ext";
 
 	public static final Log LOG = LogFactory.getLog(Foreach.class);
 
-	private List<HamakePath> inputs;
-	private OutputFunction mapFunction;
-	private List<HamakePath> deps;
+	private DataFunction input;
+	private List<DataFunction> output;
+	private List<DataFunction> deps;
 	private Context context;
 
 
-	public Foreach(Context parentContext, List<HamakePath> inputs, OutputFunction function,
-			List<HamakePath> dependencies) {
-		this.mapFunction = function;
-		this.inputs = inputs;
+	public Foreach(Context parentContext, DataFunction input, List<DataFunction> output,
+			List<DataFunction> dependencies) {
+		this.output = output;
+		this.input = input;
 		this.deps = dependencies;
 		this.context = new Context(parentContext);
 	}
 
 	@Override
-	protected List<HamakePath> getDeps() {
+	protected List<DataFunction> getDeps() {
 		return deps;
 	}
 
 	@Override
-	protected List<HamakePath> getInputs() {
-		return inputs;
+	protected List<DataFunction> getInputs() {
+		return Arrays.asList(input);
 	}
 
-	/**
-	 * Return ordered list of output files which corresponds input files
-	 * @throws IOException 
-	 */
 	@Override
-	protected List<HamakePath> getOutputs(){
-		try{
-			return mapFunction.getOutput(inputs.get(0), context);
-		}
-		catch(IOException e){
-			LOG.error(e);
-		}
-		return null;
+	protected List<DataFunction> getOutputs(){
+		return output;
+	}
+	
+	@Override
+	protected Context getContext() {
+		return context;
 	}
 
 	@Override
 	public int execute(Semaphore semaphore)
 			throws IOException {
 		
-		List<HamakePath> inputlist;
-
-		for (HamakePath input : inputs) {
-			try {
-				inputlist = input.getFileList(false);
-				if (inputlist == null)
-					return -1;
-				if (inputlist.isEmpty()) {
-					LOG.warn("WARN: Input folder for task " + getName()
-							+ " is empty");
-					return 0;
-				}
-			} catch (IOException ex) {
-				LOG.error("Error accessing " + input, ex);
-				return -1;
-			}
-		}
-
-		List<HamakePath> outputs = getOutputs();
-		if (outputs == null){
-			LOG.warn("There were zero files produced by mapping function(s) of " + getName() + " DTR");
+		List<Path> inputlist = input.getPath(context);
+		FileSystem inputfs = input.getFileSystem(context);
+		List<Context> pathPairs = new ArrayList<Context>();
+		if (inputlist == null || inputlist.isEmpty()){
+			LOG.error("Input folder of DTR " + getName()
+					+ " is empty");
 			return -1;
 		}
-
-		List<HamakePathPair> pathPairs = new ArrayList<HamakePathPair>();
-
-		for (int i = 0; i < inputs.size() && i < outputs.size(); i++) {
-			HamakePath input = inputs.get(i);
-			HamakePath output = outputs.get(i);
-
-			if (output.getFileStatus().getModificationTime() >= input
-					.getFileStatus().getModificationTime()) {
-				if (Config.getInstance().verbose)
-					LOG.info("Output " + output.getPathName().toString()
-							+ " is already present and fresh");
-			} else {
-				if (Config.getInstance().verbose)
-					LOG.info("Output " + output.getPathName().toString()
-							+ " is present but not fresh. Removing it.");
-				if (!Config.getInstance().dryrun) {
-					synchronized (output.getFileSystem()) {
-						output.getFileSystem().delete(output.getPathName(),
-								true);
-						pathPairs.add(new HamakePathPair(input, output));
-					}
-				}
+		
+		for(Path path : inputlist){
+			if(!inputfs.isFile(path)){
+				LOG.error(path.toString() + " from input of DTR " + getName()
+						+ " is not a file. Ignoring");
+				continue;
 			}
+			Context context = new Context(this.context);
+			context.setForeach(FULL_FILENAME_VAR, path.toString());
+			context.setForeach(SHORT_FILENAME_VAR, path.getParent().toString());
+			context.setForeach(PARENT_FOLDER_VAR, FilenameUtils.getName(path.toString()));
+			context.setForeach(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(path.toString()));
+			context.setForeach(EXTENTION_VAR, FilenameUtils.getExtension(path.toString()));
+			for (DataFunction outputFunc : output) {
+				if (outputFunc.getTimeStamp(context) >= input.getTimeStamp(context)) {
+					if (Config.getInstance().verbose){
+						LOG.info("Output " + outputFunc.getPath(context)
+								+ " is already present and fresh");
+						return 0;
+					}
+					else{						
+						if(!StringUtils.isEmpty(outputFunc.getId())){
+							outputFunc.clear(context);
+							context.setHamake(outputFunc.getId(), outputFunc);
+						}
+					}
+				} 
+				
+			}
+			pathPairs.add(context);
 		}
-
-		if (pathPairs.size() > 0)
-			return execQueue(pathPairs, semaphore, context);
-		else
-			return 0;
-
+		if(pathPairs.size() > 0) return execQueue(pathPairs, semaphore);
+		else return 0;
 	}
 
-	protected int execQueue(List<HamakePathPair> pathPairs,
-			Semaphore job_semaphore, Context context) {
+	protected int execQueue(List<Context> contexes,
+			Semaphore job_semaphore) {
 		Collection<CommandThread> threads = new ArrayList<CommandThread>();
-		for (HamakePathPair pathPair : pathPairs) {
-			context.set("$_", pathPair.input.getPathName().toString());
-			context.set("$@", pathPair.input.getPathName().getParent().toString());
-			context.set("$%", FilenameUtils.getName(pathPair.input.toString()));
-			context.set("$#", FilenameUtils.getBaseName(pathPair.input.toString()));
-			context.set("$^", FilenameUtils.getExtension(pathPair.input.toString()));
-			try{
-				List<HamakePath> outputs;
-				outputs = mapFunction.getOutput(pathPair.input, context);
-				for(HamakePath output : outputs){
-					if(!StringUtils.isEmpty(output.getID())) context.set(output.getID(), output);
-				}
-			}
-			catch(IOException e){
-				LOG.error(e);
-				return -2;
-			}
+		for (Context context : contexes) {
 			try {
 				job_semaphore.acquire();
 			} catch (InterruptedException ex) {

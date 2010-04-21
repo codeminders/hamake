@@ -12,7 +12,6 @@ import java.util.Random;
 import org.apache.commons.lang.StringUtils;
 
 import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.dtr.DataTransformationRule;
 import com.codeminders.hamake.dtr.Fold;
 import com.codeminders.hamake.dtr.Foreach;
@@ -24,7 +23,7 @@ public class TestHelperUtils {
 	public static String generateTemporaryPath(String folder, String prefix){
 		Random rand = new Random();
 		String tempDir = StringUtils.isEmpty(folder) ? System.getProperty("java.io.tmpdir", "/tmp") : folder ;
-		String tempFileName = prefix + "-" + Math.abs(rand.nextInt() % 1000);
+		String tempFileName = prefix + "-" + Math.abs(rand.nextInt() % 10000);
 		return tempDir + File.separator + tempFileName;
 	}
 	
@@ -43,27 +42,36 @@ public class TestHelperUtils {
 	}
 	
 	public static File generateTemporaryFile(String folder) throws IOException{
+		return generateTemporaryFile(folder, null);
+	}
+	
+	public static File generateTemporaryFile(String folder, String extention) throws IOException{
 		if(!new File(folder).exists()){
 			new File(folder).mkdirs();
 		}
-		File f = new File(generateTemporaryPath(folder, "file"));
+		String path = generateTemporaryPath(folder, "file") + (StringUtils.isEmpty(extention)? "" : extention);
+		File f = new File(path);
 		f.createNewFile();
 		return f;
 	}
-
+	
 	public static File[] generateTemporaryFiles(String path, int amount) throws IOException{
+		return generateTemporaryFiles(path, amount, null);
+	}
+
+	public static File[] generateTemporaryFiles(String path, int amount, String extention) throws IOException{
 		File dir = new File(path);
 		if(!dir.exists() || !dir.isDirectory()){
 			dir.mkdirs();
 		}		
 		List<File> files = new ArrayList<File>();
 		for(int i = 0; i < amount; i++){
-			files.add(generateTemporaryFile(path));
+			files.add(generateTemporaryFile(path, extention));
 		}
 		return files.toArray(new File[] {});
 	}
 	
-	public static void setMapTaskInputOutputFolders(Hamake make, String taskName, HamakePath inputFolder, HamakePath outputFolder){
+//	public static void setMapTaskInputOutputFolders(Hamake make, String taskName, HamakePath inputFolder, HamakePath outputFolder){
 //		Collection<DataTransformationRule> tasks = make.getTasks();
 //		Iterator<DataTransformationRule> i = tasks.iterator();
 //		while(i.hasNext()){
@@ -77,9 +85,9 @@ public class TestHelperUtils {
 //				}
 //			}
 //		}
-	}
+//	}
 	
-	public static void setReduceTaskInputOutputFolders(Hamake make, String taskName, HamakePath inputFolder, HamakePath outputFolder){
+//	public static void setReduceTaskInputOutputFolders(Hamake make, String taskName, HamakePath inputFolder, HamakePath outputFolder){
 //		Collection<DataTransformationRule> tasks = make.getTasks();
 //		Iterator<DataTransformationRule> i = tasks.iterator();
 //		while(i.hasNext()){
@@ -96,9 +104,9 @@ public class TestHelperUtils {
 //				}				
 //			}
 //		}
-	}
+//	}
 	
-	public static void setTaskExecBinary(Hamake make, String taskName, String binary) throws IOException{
+//	public static void setTaskExecBinary(Hamake make, String taskName, String binary) throws IOException{
 //		Collection<DataTransformationRule> tasks = make.getTasks();
 //		Iterator<DataTransformationRule> i = tasks.iterator();
 //		while(i.hasNext()){
@@ -118,35 +126,35 @@ public class TestHelperUtils {
 //				}				
 //			}
 //		}
-	}
+//	}
 	
-	public static Foreach createMapTask(String name, HamakePath input, HamakePath[] outputs){
+//	public static Foreach createMapTask(String name, HamakePath input, HamakePath[] outputs){
 //		Foreach map = new Foreach();
 //		map.setName(name);
 //		map.setXinput(input);
 //		map.setOutputs(Arrays.asList(outputs));
 //		return map;
-		return null;
-	}
+//		return null;
+//	}
 	
-	public static Fold createReduceTask(String name, HamakePath[] inputs, HamakePath[] outputs){
+//	public static Fold createReduceTask(String name, HamakePath[] inputs, HamakePath[] outputs){
 //		Fold reduce = new Fold();
 //		reduce.setName(name);
 //		reduce.setInputs(Arrays.asList(inputs));
 //		reduce.setOutputs(Arrays.asList(outputs));
 //		return reduce;
-		return null;
-	}
+//		return null;
+//	}
 	
-	public static Foreach createMapTaskWithTaskDeps(String name, HamakePath input, HamakePath[] outputs, String[] dependsOns){
+//	public static Foreach createMapTaskWithTaskDeps(String name, HamakePath input, HamakePath[] outputs, String[] dependsOns){
 //		Foreach map = new Foreach();
 //		map.setName(name);
 //		map.setXinput(input);
 //		map.setOutputs(Arrays.asList(outputs));
 //		map.setTaskDeps(Arrays.asList(dependsOns));
 //		return map;
-		return null;
-	}		
+//		return null;
+//	}		
 	
 	public static File getExamplesJar() throws IOException{
 		String examplesJar = System.getProperty("examples.jar");

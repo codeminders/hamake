@@ -2,7 +2,6 @@ package com.codeminders.hamake.task;
 
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
-import com.codeminders.hamake.HamakePath;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.HamakeParameter;
 
@@ -10,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,18 +20,14 @@ public class Exec extends Task {
 	
 	public static final Log LOG = LogFactory.getLog(Exec.class);
 
-    private HamakePath binary;
+    private Path binary;
 
     public Exec() {
     }
 
-    public Exec(HamakePath binary) {
-        setBinary(binary);
-    }
-
     public int execute(Context context) throws IOException {
         Collection<String> args = new ArrayList<String>();
-        args.add(getBinary().getPathName().toString());
+        args.add(binary.toString());
         List<HamakeParameter> parameters = getParameters();
         if (parameters != null) {
             for (HamakeParameter p : parameters) {
@@ -49,11 +45,11 @@ public class Exec extends Task {
         return Utils.execute(command);
     }
 
-    public HamakePath getBinary() {
+    public Path getBinary() {
         return binary;
     }
 
-    public void setBinary(HamakePath binary) {
+    public void setBinary(Path binary) {
         this.binary = binary;
     }
 

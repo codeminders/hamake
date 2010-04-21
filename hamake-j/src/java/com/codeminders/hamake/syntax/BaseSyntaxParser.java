@@ -20,6 +20,7 @@ import org.xml.sax.SAXException;
 
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
+import com.codeminders.hamake.InvalidContextVariableException;
 import com.codeminders.hamake.PigNotFoundException;
 import com.codeminders.hamake.Utils;
 
@@ -28,8 +29,7 @@ public abstract class BaseSyntaxParser {
 	protected static boolean isPigAvailable = Utils.isPigAvailable(); 
 
 	public static Hamake parse(Context context, String filename, String wdir, boolean verbose)
-			throws IOException, ParserConfigurationException, SAXException,
-			InvalidMakefileException, PigNotFoundException {
+			throws Exception {
 		InputStream is = new FileInputStream(filename);
 		try {
 			return parse(context, is, wdir, verbose);
@@ -43,7 +43,7 @@ public abstract class BaseSyntaxParser {
 
 	public static Hamake parse(Context context, InputStream is, String wdir, boolean verbose)
 			throws IOException, ParserConfigurationException, SAXException,
-			InvalidMakefileException, PigNotFoundException{
+			InvalidMakefileException, PigNotFoundException, InvalidContextVariableException{
 		Document doc = loadMakefile(is);
 		BaseSyntaxParser syntaxParser = new SyntaxParser(doc, wdir, context, verbose);
 		if(!syntaxParser.isCorrectParser()){
@@ -53,7 +53,7 @@ public abstract class BaseSyntaxParser {
 	}	
 	
 	protected abstract Hamake parseSyntax() throws IOException, ParserConfigurationException, SAXException,
-	InvalidMakefileException, PigNotFoundException;
+	InvalidMakefileException, PigNotFoundException, InvalidContextVariableException;
 	
 	protected abstract boolean isCorrectParser();
 	

@@ -98,12 +98,18 @@ public class Utils {
 		while(matcher.find()){
 			int start = matcher.start();
 			int end = matcher.end();
-			String variable = outputValue.substring(start, end);
+			String variable = outputValue.substring(start + 2, end - 1);
 			if(!StringUtils.isEmpty(context.getString(variable))){
-				outputValue.replace(start, end, variable);
+				outputValue.replace(start, end, context.getString(variable));
 			}
 		}
 		return outputValue.toString();
 	}
+    
+    public static Path resolvePath(String pathStr, String workFolder){
+    	Path path = new Path(pathStr);
+    	if (!path.isAbsolute() && !StringUtils.isEmpty(workFolder)) path = new Path(workFolder, path);
+    	return path;
+    }
     
 }

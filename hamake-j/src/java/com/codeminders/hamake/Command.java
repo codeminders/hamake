@@ -5,5 +5,5 @@ import java.util.List;
 import java.util.Map;
 
 public interface Command {
-    int execute(Map<String, List<HamakePath>> parameters, Map<String, Object> context) throws IOException;
+    int execute(Context context) throws IOException;
 }
