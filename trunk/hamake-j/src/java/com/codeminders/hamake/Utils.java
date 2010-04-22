@@ -94,15 +94,19 @@ public class Utils {
     
     public static String replaceVariables(Context context, String value){
 		Matcher matcher = VARIABLE_PATTERN.matcher(value);
-		StringBuilder outputValue = new StringBuilder(value);
+		StringBuilder outputValue = new StringBuilder();
+		int curPos = 0;
 		while(matcher.find()){
 			int start = matcher.start();
 			int end = matcher.end();
-			String variable = outputValue.substring(start + 2, end - 1);
+			String variable = value.substring(start + 2, end - 1);
 			if(!StringUtils.isEmpty(context.getString(variable))){
-				outputValue.replace(start, end, context.getString(variable));
+				outputValue.append(value.substring(curPos, start));
+				outputValue.append(context.getString(variable));
+				curPos = end;
 			}
 		}
+		outputValue.append(value.substring(curPos, value.length()));
 		return outputValue.toString();
 	}
     

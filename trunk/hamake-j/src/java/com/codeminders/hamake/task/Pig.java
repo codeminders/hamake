@@ -4,6 +4,8 @@ import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.params.HamakeParameter;
+import com.codeminders.hamake.params.Parameter;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -21,6 +23,7 @@ import org.apache.pig.tools.parameters.ParseException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 public class Pig extends Task {
@@ -41,9 +44,9 @@ public class Pig extends Task {
         try {
             fs = script.getFileSystem(conf);
 
-            Collection<HamakeParameter> parameters = getParameters();
+            List<Parameter> parameters = getParameters();
             if (parameters != null) {
-                for (HamakeParameter p : parameters) {
+                for (Parameter p : parameters) {
                     args.add(p.get(context));
                 }
             }

@@ -11,6 +11,9 @@ public class Context {
 	public static final String ENVIRONMENT_VARS_PREFIX = "env:";
 	public static final String HAMAKE_VARS_PREFIX = "hamake:";
 	public static final String FOREACH_VARS_PREFIX = "foreach:";
+	public static final String FOLD_VARS_PREFIX = "fold:";
+	
+	public static final String[] FORBIDDEN_PREFIXES = {SYSTEM_VARS_PREFIX, ENVIRONMENT_VARS_PREFIX, HAMAKE_VARS_PREFIX, FOREACH_VARS_PREFIX, FOLD_VARS_PREFIX};
 
 	Map<String, Object> nameValuePairs;
 
@@ -39,19 +42,16 @@ public class Context {
 
 	public void set(String name, Object value)
 			throws InvalidContextVariableException {
-		if (StringUtils.startsWithIgnoreCase(name, SYSTEM_VARS_PREFIX)
-				|| StringUtils.startsWithIgnoreCase(name,
-						ENVIRONMENT_VARS_PREFIX)
-				|| StringUtils.startsWithIgnoreCase(name, HAMAKE_VARS_PREFIX)) {
-			throw new InvalidContextVariableException(
-					"You can not define variables with prefixes: "
-							+ SYSTEM_VARS_PREFIX + ", "
-							+ ENVIRONMENT_VARS_PREFIX + ", "
-							+ HAMAKE_VARS_PREFIX + ", "
-							+ FOREACH_VARS_PREFIX);
+		for(String forbiddenPrefix : FORBIDDEN_PREFIXES){
+			if(StringUtils.startsWithIgnoreCase(name, forbiddenPrefix)){
+				throw new InvalidContextVariableException("variable " + name + " starts with forbidden prefix " + forbiddenPrefix);
+			}
 		}
 		if (!nameValuePairs.containsKey(name)) {
 			nameValuePairs.put(name, value);
+		}
+		else{
+			throw new InvalidContextVariableException("error setting " + name + ". Could not modify context");
 		}
 	}
 
@@ -88,10 +88,11 @@ public class Context {
 	public Object get(String name) {
 		return nameValuePairs.get(name);
 	}
-
+	
 	public String getString(String name) {
-		if (nameValuePairs.get(name) instanceof String) {
-			return (String) nameValuePairs.get(name);
+		Object obj = get(name);
+		if (obj != null && obj instanceof String) {
+			return (String)obj;
 		}
 		return null;
 	}

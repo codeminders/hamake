@@ -1,97 +1,72 @@
 <project name="test-syntax" default="foreach1">
 
-	<property name="dfsroot" value="/root" />
-	<property name="basedir" value="/base" />
+	<!--  property tmpdir is set by unit test -->
+	<property name="testprop" value="deppath" />
+	<property name="one" value="1" />
+	<property name="two" value="2" />
+	<property name="unixCat" value="cat" />
 	
-	<file id="somedir" path="${basedir}/somedir"/>
-	<fileset id="foreach1Output" path="${dfsroot}/referrers" mask="*.log" />
+	<file id="somedir" path="${tmpdir}/somedir"/>
+	<file id="somefile" path="${tmpdir}/somedir/somefile"/>
+	<fileset id="referrers" path="${tmpdir}/referrers" mask="*.log" />
 
 	<foreach name="foreach1">
 		<dependencies>
-			<file path="${basedir}/somefile.txt"/>
+			<file path="${tmpdir}/${testprop}"/>
 		</dependencies>
 		<description>first foreach</description>
 		<input>
-			<include idref="foreach1Output"/>
+			<include idref="referrers"/>
 		</input>
-		<output>
-			<file id="domainReferrersTotals" path="${dfsroot}/related/domain_referrers_totals/$#.txt" generation="1" />
+		<output expiration="2d">
+			<set>
+				<file id="relatedOne" path="${tmpdir}/related/${one}/${foreach:basename}.txt" generation="1"/>
+				<file id="relatedTwo" path="${tmpdir}/related/${two}/${foreach:filename}" generation="2"/>
+			</set>
 		</output>
-		<mapreduce jar="${basedir}/datamining.jar" main="us.imageshack.datamining.Access2Referrers">
+		<mapreduce jar="${tmpdir}/datamining.jar" main="us.imageshack.datamining.Access2Referrers">
 			<parameter>
-				<literal value="$_" />
-			</parameter>
-			<parameter>
-				<reference idref="domainReferrersTotals" />
+				<literal value="${foreach:path}" />
+				<reference idref="relatedOne" />
 			</parameter>
 		</mapreduce>
 	</foreach>
 	<foreach name="foreach2">
 		<description>second foreach</description>
 		<input>
-			<fileset path="${dfsroot}/related/domain_referrers_totals" generation="2" />
+			<fileset path="${tmpdir}/referrers" generation="2" />
 		</input>
-		<output expiration="2d">
-			<set id="out">
-				<file path="${dfsroot}/related/image_domains1/$@" />
-				<file path="${dfsroot}/related/image_domains2/$@" />
-			</set>
+		<output expiration="2m">
+			<file id="imageDomains1" path="${tmpdir}/related/image_domains1" />
+			<file path="${tmpdir}/related/image_domains2" />
 		</output>
-		<exec binary="cat">
+		<exec binary="${unixCat}">
 			<parameter>
-				<literal value="$_" />
-			</parameter>
-			<parameter>
-				<literal value=">" />
-			</parameter>
-			<parameter> 
-				<reference idref="out" />
-			</parameter>
-		</exec>
-	</foreach>
-	<foreach name="foreach3" disabled="true">
-		<description>second foreach</description>
-		<input>
-			<fileset path="${dfsroot}/related/domain_referrers_totals" generation="2" />
-		</input>
-		<output expiration="2d">
-			<set id="out">
-				<file path="${dfsroot}/related/image_domains1" />
-				<file path="${dfsroot}/related/image_domains2" />
-			</set>
-		</output>
-		<exec binary="cat">
-			<parameter>
-				<literal value="$_" />
+				<literal value="${foreach:path}" />
 			</parameter>
 			<parameter>
 				<literal value=">" />
 			</parameter>
 			<parameter>
-				<reference idref="out" />
+				<reference idref="imageDomains1" />
 			</parameter>
 		</exec>
 	</foreach>
 	<fold name="reduce">
-		<dependencies>
-			<file path="${basedir}/somefile.txt"/>
-		</dependencies>
 		<description>reducer</description>
 		<input>
 			<set>
-				<file id="infile" path="${dfsroot}/image_domains" generation="1"/>
-				<fileset id="infileset" path="${dfsroot}/rev" mask="*.file"/>
+				<include idref="somefile" />
+				<fileset id="infileset" path="${tmpdir}/rev" mask="*.file"/>
 			</set>
 		</input>
 		<output expiration="15h">
-			<set>
-				<file id="outPornStat" path="${dfsroot}/related/porn_stats.tmp"/>
-				<file id="outRelated" path="${dfsroot}/related/" mask="*.file" variant="mask"/>
-			</set>
+			<include idref="somedir" />
+			<fileset id="outRelated" path="${tmpdir}/revout/" mask="*.file"/>
 		</output>
-		<pig script="median.pig">
+		<pig script="${tmpdir}/median.pig">
 			<parameter>
-				<literal value="$_" />
+				<literal value="${somefile}" />
 			</parameter>
 			<jobconf name="jcname" value="jcvalue" />
 			<parameter>

@@ -12,6 +12,8 @@ import java.util.Random;
 import org.apache.commons.lang.StringUtils;
 
 import com.codeminders.hamake.Hamake;
+import com.codeminders.hamake.data.DataFunction;
+import com.codeminders.hamake.data.FileDataFunction;
 import com.codeminders.hamake.dtr.DataTransformationRule;
 import com.codeminders.hamake.dtr.Fold;
 import com.codeminders.hamake.dtr.Foreach;
@@ -128,23 +130,17 @@ public class TestHelperUtils {
 //		}
 //	}
 	
-//	public static Foreach createMapTask(String name, HamakePath input, HamakePath[] outputs){
-//		Foreach map = new Foreach();
-//		map.setName(name);
-//		map.setXinput(input);
-//		map.setOutputs(Arrays.asList(outputs));
-//		return map;
-//		return null;
-//	}
+	public static Foreach createForeachDTR(Context context, String name, FileDataFunction input, List<? extends DataFunction> output){
+		Foreach foreach = new Foreach(context, input, output, null);
+		foreach.setName(name);
+		return foreach;
+	}
 	
-//	public static Fold createReduceTask(String name, HamakePath[] inputs, HamakePath[] outputs){
-//		Fold reduce = new Fold();
-//		reduce.setName(name);
-//		reduce.setInputs(Arrays.asList(inputs));
-//		reduce.setOutputs(Arrays.asList(outputs));
-//		return reduce;
-//		return null;
-//	}
+	public static Fold createFoldDTR(Context context, String name, List<? extends DataFunction> inputs, List<? extends DataFunction> outputs){
+		Fold fold = new Fold(context, inputs, outputs, null);
+		fold.setName(name);
+		return fold;
+	}
 	
 //	public static Foreach createMapTaskWithTaskDeps(String name, HamakePath input, HamakePath[] outputs, String[] dependsOns){
 //		Foreach map = new Foreach();

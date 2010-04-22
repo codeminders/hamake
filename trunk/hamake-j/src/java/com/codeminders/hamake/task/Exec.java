@@ -4,6 +4,7 @@ import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.params.HamakeParameter;
+import com.codeminders.hamake.params.Parameter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -28,9 +29,9 @@ public class Exec extends Task {
     public int execute(Context context) throws IOException {
         Collection<String> args = new ArrayList<String>();
         args.add(binary.toString());
-        List<HamakeParameter> parameters = getParameters();
+        List<Parameter> parameters = getParameters();
         if (parameters != null) {
-            for (HamakeParameter p : parameters) {
+            for (Parameter p : parameters) {
                 try {
                     args.add(p.get(context));
                 } catch (IOException ex) {

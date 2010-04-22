@@ -58,8 +58,16 @@ public class Hamake {
     public void setDefaultTarget(String targetName){
     	defaultTarget = targetName;
     }
+    
+    /**
+     * For unit tests
+     * @return default target name
+     */
+    public String getDefaultTarget() {
+		return defaultTarget;
+	}
 
-    public void addTarget(String target) {
+	public void addTarget(String target) {
         this.targets.add(target);
     }
 
@@ -90,7 +98,7 @@ public class Hamake {
         return ExitCode.OK;
     }
 
-	protected List<DataTransformationRule> getTasks() {
+	public List<DataTransformationRule> getTasks() {
 		return tasks;
 	}
 	

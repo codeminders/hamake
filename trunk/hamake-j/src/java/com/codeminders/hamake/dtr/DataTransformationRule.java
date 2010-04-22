@@ -15,11 +15,11 @@ public abstract class DataTransformationRule {
 	private String name;
 	private Task task;
 	
-	protected abstract List<DataFunction> getInputs();
+	protected abstract List<? extends DataFunction> getInputs();
 	
-	protected abstract List<DataFunction> getOutputs();
+	protected abstract List<? extends DataFunction> getOutputs();
 	
-	protected abstract List<DataFunction> getDeps();
+	protected abstract List<? extends DataFunction> getDeps();
 	
 	protected abstract Context getContext();
 	

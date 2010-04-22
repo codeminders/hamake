@@ -3,15 +3,11 @@ package com.codeminders.hamake.syntax;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -107,64 +103,19 @@ public abstract class BaseSyntaxParser {
 		return null;
 	}
 	
-	protected String getRequiredAttribute(Element root, String name)
-			throws InvalidMakefileException {
-		return getRequiredAttribute(root, name, null, null);
-	}
-
-	protected String getRequiredAttribute(Element root, String name,
-			Pattern variablePattern, Context context) throws InvalidMakefileException {
+	protected String getRequiredAttribute(Element root, String name) throws InvalidMakefileException {
 		if (root.hasAttribute(name)) {
-			String ret = root.getAttribute(name);
-			if (context != null) {
-				ret = substitute(ret, variablePattern, context);
-			}
-			return ret;
+			return root.getAttribute(name);
 		}
 		throw new InvalidMakefileException("Missing '" + name
 				+ "' attribute in '" + getPath(root) + "' element");
 	}
 
 	protected String getOptionalAttribute(Element root, String name) {
-		return getOptionalAttribute(root, name, null, null);
-	}
-
-	protected String getOptionalAttribute(Element root, String name,
-			Pattern variablePattern, Context context) {
 		if (root.hasAttribute(name)) {
-			String ret = root.getAttribute(name);
-			if (context != null) {
-				ret = substitute(ret, variablePattern, context);
-			}
-			return ret;
+			return root.getAttribute(name);
 		}
 		return null;
-	}
-
-	protected String substitute(String s,
-			Pattern variablePlaceholder, Context context) {
-		int pos = 0;
-		Matcher m = variablePlaceholder.matcher(s);
-		while (m.find(pos)) {
-			int start = m.start();
-			int end = m.end();
-			StringBuilder buf = new StringBuilder();
-			if (start > 0)
-				buf.append(s, 0, start);
-			String subst = context.getString(m.group(1));
-			if (subst != null)
-				buf.append(subst);
-			else
-				subst = StringUtils.EMPTY;
-			if (end < s.length() - 1)
-				buf.append(s, end, s.length());
-			s = buf.toString();
-			pos = start + subst.length();
-			if (pos > s.length())
-				break;
-			m = variablePlaceholder.matcher(s);
-		}
-		return s;
 	}
 
 }
