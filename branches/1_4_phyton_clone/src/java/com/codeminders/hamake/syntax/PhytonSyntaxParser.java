@@ -1,13 +1,10 @@
 package com.codeminders.hamake.syntax;
 
-import com.codeminders.hamake.Command;
-import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.HamakePath;
-import com.codeminders.hamake.PigNotFoundException;
-import com.codeminders.hamake.Task;
+import com.codeminders.hamake.*;
 import com.codeminders.hamake.commands.ExecCommand;
 import com.codeminders.hamake.commands.HadoopCommand;
 import com.codeminders.hamake.commands.PigCommand;
+import com.codeminders.hamake.commands.PigJarCommand;
 import com.codeminders.hamake.params.ConstParam;
 import com.codeminders.hamake.params.JobConfParam;
 import com.codeminders.hamake.params.Param;
@@ -29,20 +26,20 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class PhytonSyntaxParser extends BaseSyntaxParser{
-	
-	public static final Pattern VARIABLE_PATTERN = Pattern.compile("%\\(([^\\)]+)\\)[sdiefc]");
-	
-	Document dom;
-	String wdir;
-	boolean verbose;
-	
-	protected PhytonSyntaxParser(Document dom, String wdir, boolean verbose){
-		this.dom = dom;
-		this.wdir = wdir;
-		this.verbose = verbose;
-	}
+  
+  public static final Pattern VARIABLE_PATTERN = Pattern.compile("%\\(([^\\)]+)\\)[sdiefc]");
+  
+  Document dom;
+  String wdir;
+  boolean verbose;
+  
+  protected PhytonSyntaxParser(Document dom, String wdir, boolean verbose){
+    this.dom = dom;
+    this.wdir = wdir;
+    this.verbose = verbose;
+  }
 
-	@Override
+  @Override
     protected Hamake parseSyntax() throws IOException,
             ParserConfigurationException,
             SAXException,
@@ -56,16 +53,16 @@ public class PhytonSyntaxParser extends BaseSyntaxParser{
         parseTasks(ret, dom.getDocumentElement(), properties, verbose, wdir);
         String defaultTask = dom.getDocumentElement().getAttribute("default");
         ret.setProjectName(dom.getDocumentElement().getAttribute("name"));
-        if(!StringUtils.isEmpty(defaultTask)){        	
-        	ret.setDefaultTarget(defaultTask);
+        if(!StringUtils.isEmpty(defaultTask)){          
+          ret.setDefaultTarget(defaultTask);
         }
         return ret;
     }    
     
     @Override
     protected boolean isCorrectParser(){
-		return (dom.getElementsByTagName("map").getLength() > 0) || (dom.getElementsByTagName("reduce").getLength() > 0);
-	}
+    return (dom.getElementsByTagName("map").getLength() > 0) || (dom.getElementsByTagName("reduce").getLength() > 0);
+  }
 
     protected Element parseConfig(Document dom) throws InvalidMakefileException {
         return getMandatory(dom.getDocumentElement(), "config");
@@ -188,13 +185,18 @@ public class PhytonSyntaxParser extends BaseSyntaxParser{
     }
     
     protected Command parsePigCommand(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException, PigNotFoundException {
-        if (!isPigAvailable)
+        String jar = getOptionalAttribute(root, "jar");
+
+        if (jar == null && !isPigAvailable)
             throw new PigNotFoundException("Pig isn't found in classpath. Please, make sure Pig classes are available in classpath.");
 
-        PigCommand res = new PigCommand();
-        res.setScript(new HamakePath(wdir, getRequiredAttribute(root, "script", properties, VARIABLE_PATTERN)));
-        res.setParameters(parseParameters(root, properties));
-        return res;
+
+        HamakePath scriptPath = new HamakePath(wdir, getRequiredAttribute(root, "script"));
+        List<Param> params = parseParameters(root, properties);
+
+        return (jar == null)?
+               new PigCommand(scriptPath, params):
+               new PigJarCommand(jar, scriptPath, params);
     }
 
     protected Command parseExecCommand(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException {

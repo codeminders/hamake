@@ -12,8 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Utils {
-	
-	public static final Log LOG = LogFactory.getLog(Utils.class);              
+  
+  public static final Log LOG = LogFactory.getLog(Utils.class);              
 
     public static Map<String, FileStatus> getFileList(HamakePath ipath)
             throws IOException {
@@ -35,7 +35,7 @@ public class Utils {
                                                       String mask)
             throws IOException {
         if (Config.getInstance().test_mode)
-        	LOG.info("Scanning " + ipath);
+          LOG.info("Scanning " + ipath);
 
         boolean exists;
 
@@ -46,11 +46,11 @@ public class Utils {
             if (create) {
                 LOG.info("Creating " + ipath);
                 synchronized (ipath.getFileSystem()) {
-                	ipath.getFileSystem().mkdirs(ipath.getPathName());
+                  ipath.getFileSystem().mkdirs(ipath.getPathName());
                 }
                 return Collections.emptyMap();
             } else {
-            	LOG.error("Path " + ipath + " does not exist!");
+              LOG.error("Path " + ipath + " does not exist!");
                 return null;
             }
         }
@@ -60,7 +60,7 @@ public class Utils {
             stat = ipath.getFileSystem().getFileStatus(ipath.getPathName());
         }
         if (!stat.isDir()) {
-        	LOG.error("Path " + ipath + " must be dir!");
+          LOG.error("Path " + ipath + " must be dir!");
             return null;
         }
 
@@ -85,49 +85,49 @@ public class Utils {
 
     public static int execute(String command) {
         if (Config.getInstance().verbose)
-        	LOG.info("Executing " + command);
+          LOG.info("Executing " + command);
         try {
             if (Config.getInstance().dryrun)
                 return 0;
             else {
-            	String[] cmd = null;
-            	if(OS.isLinux()){
-            		cmd = new String[] {"/bin/sh", "-c", command};
-            	}
-            	else if(OS.isWindows()){
-            		cmd = new String[] {"cmd", "/C", command};
-            	}
-            	else{
-            		cmd = new String[] {command};
-            	}
-            	return Runtime.getRuntime().exec(cmd).waitFor();
+              String[] cmd = null;
+              if(OS.isLinux()){
+                cmd = new String[] {"/bin/sh", "-c", command};
+              }
+              else if(OS.isWindows()){
+                cmd = new String[] {"cmd", "/C", command};
+              }
+              else{
+                cmd = new String[] {command};
+              }
+              return Runtime.getRuntime().exec(cmd).waitFor();
             }
         } catch (IOException ex) {
-        	LOG.error(command + " execution failed, I/O error", ex);
+          LOG.error(command + " execution failed, I/O error", ex);
         } catch (InterruptedException ex) {
-        	LOG.error(command + " execution is interrupted", ex);
+          LOG.error(command + " execution is interrupted", ex);
         } catch (Exception ex) {
-        	LOG.error(command + " execution failed, internal error", ex);
+          LOG.error(command + " execution failed, internal error", ex);
         }
         return -1000;
     }
 
     public static File copyToTemporaryLocal(String path, FileSystem fs)
             throws IOException {
-    	File srcFile = new File(path);
-    	Path srcPath = new Path(path);    	    	      
-    	if(srcFile.exists()){
-    		return srcFile;
-    	}
-    	else if(fs.exists(srcPath)){
-    		File dstFile = File.createTempFile("hamake", ".jar");
-    		if (Config.getInstance().verbose) {
-    			LOG.info("Downloading " + path + " to " + dstFile.getAbsolutePath());
+      File srcFile = new File(path);
+      Path srcPath = new Path(path);                  
+      if(srcFile.exists()){
+        return srcFile;
+      }
+      else if(fs.exists(srcPath)){
+        File dstFile = File.createTempFile("hamake", ".jar");
+        if (Config.getInstance().verbose) {
+          LOG.info("Downloading " + path + " to " + dstFile.getAbsolutePath());
             }
             fs.copyToLocalFile(srcPath, new Path(dstFile.getAbsolutePath()));
             dstFile.deleteOnExit();
             return dstFile;
-    	}
+      }
         else
             throw new IOException("Path not found: " + path);
         
@@ -141,7 +141,7 @@ public class Utils {
     public static boolean isPigAvailable()
     {
         try {
-            Utils.class.getClassLoader().loadClass(org.apache.pig.Main.class.getCanonicalName());
+            Utils.class.getClassLoader().loadClass("org.apache.pig.Main");
         } catch (ClassNotFoundException e) {
             return false;
         } catch (NoClassDefFoundError e) {

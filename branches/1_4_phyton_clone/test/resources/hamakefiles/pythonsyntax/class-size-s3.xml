@@ -58,4 +58,20 @@
         
     </reduce>
 
+    <map name="map">
+        <input>
+            <path location="%(output)s/class-size-histogram"/>
+        </input>
+        <dependencies/>
+
+        <output>
+            <path location="%(output)s/class-size-median-bin"/>
+        </output>
+
+        <pig script="%(scripts)s/median.pig" jar="s3://elasticmapreduce/libs/pig/0.3/pig-0.3-amzn.jar">
+            <pathparam type="inputfile" name="infile" />
+            <pathparam type="outputfile" name="outfile" />
+        </pig>
+    </map>
+
 </project>
