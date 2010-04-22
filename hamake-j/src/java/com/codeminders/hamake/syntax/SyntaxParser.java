@@ -64,7 +64,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 
 		parseProperties(dom);
 
-		Hamake ret = new Hamake();
+		Hamake ret = new Hamake(context);
 		parseRootDataFunctions(dom);
 		parseDTRs(ret, dom.getDocumentElement(), verbose);
 		String defaultTask = dom.getDocumentElement().getAttribute("default");
@@ -296,7 +296,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 	
 	protected DataFunction parseInclude(Element root, long validityPeriod) throws InvalidMakefileException{		
-		String reference = getOptionalAttribute(root, "idref");
+		String reference = getRequiredAttribute(root, "idref");
 		Object obj = context.getHamake(reference);
 		if(obj == null || !(obj instanceof DataFunction)){
 			throw new InvalidMakefileException("Unknown data function reference found: " + getPath(root));

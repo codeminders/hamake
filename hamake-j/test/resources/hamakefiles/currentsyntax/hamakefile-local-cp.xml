@@ -2,53 +2,46 @@
 	
 <project name="local-cp">
 
-	<property name="basedir" value="/tmp" />
-	<property name="numreducers" value="2" />
+	<!-- properties:
+		tmpdir, cp, ls 
+		are set by unit test
+	-->
 
 	<fold name="reduce">
 		<description>first reduce</description>
 		<input>
-			<!-- this parameter is set by JUnit test programmatically-->
-			<file path="is_set_by_test" />
+			<file id="reduceIn" path="${tmpdir}/map1" />
 		</input>
 		<output>
-			<!-- this parameter is set by JUnit test programmatically-->
-			<file path="is_set_by_test" />
+			<file id="output" path="${tmpdir}/output.txt" />
 		</output>
-		<exec binary="is_set_by_test">
-			<parameter value="${input}" />
-			<parameter value=">" />
-			<parameter value="${output}" />
+		<exec binary="${ls}">
+			<parameter>
+				<reference idref="reduceIn" />
+			</parameter>
+			<parameter>
+				<literal value=">" />
+			</parameter>
+			<parameter>
+				<reference idref="output" />
+			</parameter>
 		</exec>
 	</fold>
-	<foreach name="map2">
-		<description>second map</description>
-		<input>
-			<!-- this parameter is set by JUnit test programmatically-->
-			<fileset path="is_set_by_test" />
-		</input>
-		<output>
-			<!-- this parameter is set by JUnit test programmatically-->
-			<identity path="is_set_by_test" />
-		</output>
-		<exec binary="is_set_by_test">
-			<parameter value="${input}" />
-			<parameter value="${output}" />
-		</exec>
-	</foreach>
-	<foreach name="map1">
+	<foreach name="map">
 		<description>first map</description>
 		<input>
-			<!-- this parameter is set by JUnit test programmatically-->
-			<fileset path="is_set_by_test" />
+			<fileset path="${tmpdir}/input" />
 		</input>
 		<output>
-			<!-- this parameter is set by JUnit test programmatically-->
-			<identity path="is_set_by_test" />
+			<file id="mapOut" path="${tmpdir}/map1/${foreach:filename}" />
 		</output>
-		<exec binary="cp">
-			<parameter value="${input}" />
-			<parameter value="${output}" />
+		<exec binary="${cp}">
+			<parameter>
+				<literal value="${foreach:path}" />
+			</parameter>
+			<parameter>
+				<reference idref="mapOut" />
+			</parameter>
 		</exec>
 	</foreach>
 

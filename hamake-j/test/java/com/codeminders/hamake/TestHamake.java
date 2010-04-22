@@ -35,57 +35,42 @@ public class TestHamake {
 		tempDir = TestHelperUtils.generateTemporaryDirectory();
 	}
 
-//	 @Test
-//	 public void testLocalCpHamakefile() throws IOException,
-//	 ParserConfigurationException, SAXException,
-//	 InvalidMakefileException, InterruptedException, PigNotFoundException, InvalidContextVariableException {
-//	 // generate input and output folders folders
-//	 File tempInDir = TestHelperUtils.generateTemporaryDirectory(tempDir
-//	 .getAbsolutePath());
-//	 TestHelperUtils.generateTemporaryFiles(tempInDir.getAbsolutePath(), 10);
-//	 File tempMap1OutDir = TestHelperUtils
-//	 .generateTemporaryDirectory(tempDir.getAbsolutePath());
-//	 File tempMap2OutDir = TestHelperUtils
-//	 .generateTemporaryDirectory(tempDir.getAbsolutePath());
-//	 File tempReduce1OutDir = TestHelperUtils
-//	 .generateTemporaryDirectory(tempDir.getAbsolutePath());
-//	 File tempReduce1OutFile = TestHelperUtils
-//	 .generateTemporaryFile(tempReduce1OutDir.getAbsolutePath());
-//	 Thread.sleep(5000);
-//	 Hamake make = new Hamake();
-//	 File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-local-cp.xml");
-//	 make = BaseSyntaxParser.parse(new Context(), new FileInputStream(localHamakeFile), null, true);
-//	 if (OS.isLinux()) {
-//	 TestHelperUtils.setTaskExecBinary(make, "map1", "cp");
-//	 TestHelperUtils.setTaskExecBinary(make, "map2", "cp");
-//	 TestHelperUtils.setTaskExecBinary(make, "reduce", "ls");
-//	 } else if (OS.isWindows()) {
-//	 TestHelperUtils.setTaskExecBinary(make, "map1", "copy");
-//	 TestHelperUtils.setTaskExecBinary(make, "map2", "copy");
-//	 TestHelperUtils.setTaskExecBinary(make, "reduce", "dir");
-//	 }
-//	 TestHelperUtils.setMapTaskInputOutputFolders(make, "map1", new
-//	 HamakePath(
-//	 tempInDir.getAbsolutePath()), new HamakePath(tempMap1OutDir
-//	 .getAbsolutePath()));
-//	 TestHelperUtils.setMapTaskInputOutputFolders(make, "map2", new
-//	 HamakePath(
-//	 tempMap1OutDir.getAbsolutePath()), new HamakePath(tempMap2OutDir
-//	 .getAbsolutePath()));
-//	 TestHelperUtils.setReduceTaskInputOutputFolders(make, "reduce",
-//	 new HamakePath(tempMap2OutDir.getAbsolutePath()), new HamakePath(
-//	 tempReduce1OutFile.getAbsolutePath()));
-//	 make.setNumJobs(2);
-//	 make.run();
-//	 int map1Out = FileUtils.listFiles(tempMap1OutDir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
-//	 int map2Out = FileUtils.listFiles(tempMap2OutDir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
-//	 Assert.assertTrue("Amount of output files", map1Out > 8 && map1Out < 11);
-//	 Assert.assertTrue("Amount of output files", map2Out > 8 && map2Out < 11);
-//	 Assert.assertEquals(1, FileUtils.listFiles(tempReduce1OutDir,
-//	 TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size());
-//	 Assert.assertTrue("File size of output is 0 ",
-//	 FileUtils.sizeOfDirectory(tempReduce1OutDir) > 0);
-//	 }
+	@Test
+	public void testLocalCpHamakefile() throws IOException,
+			ParserConfigurationException, SAXException,
+			InvalidMakefileException, InterruptedException,
+			PigNotFoundException, InvalidContextVariableException {
+		
+		File inputDir = new File(tempDir, "input");
+		inputDir.mkdirs();
+		TestHelperUtils.generateTemporaryFiles(inputDir.getAbsolutePath(), 10);
+		File map1Dir = new File(tempDir, "map1");
+		map1Dir.mkdirs();
+		File outputFile = new File(tempDir, "output.txt");
+		String tempDirPath = tempDir.getAbsolutePath().toString();
+		Context context = new Context();
+		context.set("tmpdir", tempDirPath);
+		if (OS.isLinux()) {
+			context.set("cp", "cp");
+			context.set("ls", "ls");
+		} else if (OS.isWindows()) {
+			context.set("cp", "copy");
+			context.set("ls", "dir");
+		}
+		
+		Hamake make = null;
+		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir()
+				+ File.separator + "hamakefile-local-cp.xml");
+		make = BaseSyntaxParser.parse(context, new FileInputStream(
+				localHamakeFile), null, true);
+		make.setNumJobs(2);
+		make.run();
+		int map1OutSize = FileUtils.listFiles(map1Dir,TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
+		Assert.assertEquals(10, map1OutSize);
+		Assert.assertTrue(outputFile.exists());
+		Assert.assertTrue("File size of output is 0 ", FileUtils
+				.sizeOfDirectory(outputFile) > 0);
+	}
 //	
 //	 @Test
 //	 public void test2BranchesLocalCpHamakefile() throws IOException,
