@@ -3,9 +3,9 @@ package com.codeminders.hamake.syntax;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -34,6 +34,7 @@ import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.IdentityProcessingFunction;
 import com.codeminders.hamake.params.JobConfParam;
 import com.codeminders.hamake.params.Literal;
+import com.codeminders.hamake.params.Parameter;
 import com.codeminders.hamake.params.ProcessingFunction;
 import com.codeminders.hamake.params.Reference;
 import com.codeminders.hamake.params.SpaceConcatFunction;
@@ -44,8 +45,6 @@ import com.codeminders.hamake.task.Task;
 
 public class SyntaxParser extends BaseSyntaxParser {
 	
-	public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([^\\}]+)\\}");
-
 	Document dom;
 	String wdir;
 	boolean verbose;
@@ -63,9 +62,10 @@ public class SyntaxParser extends BaseSyntaxParser {
 			throws IOException, ParserConfigurationException, SAXException,
 			InvalidMakefileException, PigNotFoundException, InvalidContextVariableException {
 
-		parseProperties(dom, context);
+		parseProperties(dom);
 
 		Hamake ret = new Hamake();
+		parseRootDataFunctions(dom);
 		parseDTRs(ret, dom.getDocumentElement(), verbose);
 		String defaultTask = dom.getDocumentElement().getAttribute("default");
 		ret.setProjectName(dom.getDocumentElement().getAttribute("name"));
@@ -84,15 +84,35 @@ public class SyntaxParser extends BaseSyntaxParser {
 		return getMandatory(dom.getDocumentElement(), "config");
 	}
 
-	protected void parseProperties(Document dom, Context context)
+	protected void parseProperties(Document dom)
 			throws InvalidMakefileException, InvalidContextVariableException {
 		NodeList c = dom.getElementsByTagName("property");
 		context.set(Hamake.SYS_PROPERTY_WORKING_FOLDER, wdir);
 
 		for (int i = 0, sz = c.getLength(); i < sz; i++) {
 			Element e = (Element) c.item(i);
-			context.set(getRequiredAttribute(e, "name", VARIABLE_PATTERN, context), getRequiredAttribute(
-					e, "value", VARIABLE_PATTERN, context));
+			context.set(getRequiredAttribute(e, "name"), getRequiredAttribute(e, "value"));
+		}
+	}
+	
+	protected void parseRootDataFunctions(Document dom)
+			throws InvalidMakefileException, IOException,
+			InvalidContextVariableException {
+		NodeList children = dom.getDocumentElement().getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				Element child = (Element) children.item(i);
+				if (child.getNodeName().equals("file")) {
+					DataFunction func = parseFile(child, Long.MAX_VALUE);
+					if(!StringUtils.isEmpty(func.getId()))context.setHamake(func.getId(), func);
+				} else if (child.getNodeName().equals("fileset")) {
+					DataFunction func = parseFileset(child, Long.MAX_VALUE);
+					if(!StringUtils.isEmpty(func.getId()))context.setHamake(func.getId(), func);
+				} else if (child.getNodeName().equals("set")) {
+					DataFunction func = parseSet(child, Long.MAX_VALUE);
+					if(!StringUtils.isEmpty(func.getId()))context.setHamake(func.getId(), func);
+				}
+			}
 		}
 	}
 
@@ -101,11 +121,11 @@ public class SyntaxParser extends BaseSyntaxParser {
 		NodeList tx = config.getElementsByTagName("foreach");
 		for (int i = 0, sz = tx.getLength(); i < sz; i++) {
 			Element t = (Element) tx.item(i);
-			String dattr = getOptionalAttribute(t, "disabled", VARIABLE_PATTERN, context);
+			String dattr = getOptionalAttribute(t, "disabled");
 			if ("yes".equalsIgnoreCase(dattr) || "true".equalsIgnoreCase(dattr)) {
 				if (verbose)
 					System.out.println("Ignoring disabled task "
-							+ getOptionalAttribute(t, "name", VARIABLE_PATTERN, context));
+							+ getOptionalAttribute(t, "name"));
 				continue;
 			}
 			hamake.addTask(parseForeachDTR(t));
@@ -113,11 +133,11 @@ public class SyntaxParser extends BaseSyntaxParser {
 		tx = config.getElementsByTagName("fold");
 		for (int i = 0, sz = tx.getLength(); i < sz; i++) {
 			Element t = (Element) tx.item(i);
-			String dattr = getOptionalAttribute(t, "disabled", VARIABLE_PATTERN, context);
+			String dattr = getOptionalAttribute(t, "disabled");
 			if ("yes".equalsIgnoreCase(dattr) || "true".equalsIgnoreCase(dattr)) {
 				if (verbose)
 					System.out.println("Ignoring disabled task "
-							+ getOptionalAttribute(t, "name", VARIABLE_PATTERN, context));
+							+ getOptionalAttribute(t, "name"));
 				continue;
 			}
 			hamake.addTask(parseFoldDTR(t));
@@ -126,14 +146,21 @@ public class SyntaxParser extends BaseSyntaxParser {
 
 	protected DataTransformationRule parseForeachDTR(Element root)
 			throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextVariableException {
-		String name = getRequiredAttribute(root, "name", VARIABLE_PATTERN, context);
+		String name = getRequiredAttribute(root, "name");
 
 		Element input = getOneSubElement(root, "input");
-		DataFunction inputFunc = parseDTRData(input, Arrays.asList("fileset"), 1).get(0);
+		if(input == null){
+			throw new InvalidMakefileException(getPath(root) + " should have one input sub-element");
+		}
+		DataFunction inputFunc = parseDTRData(input, Arrays.asList("fileset", "include"), 1, 1).get(0);
 		Element output = getOneSubElement(root, "output");
-		List<DataFunction> outputFuncs = parseDTRData(output, Arrays.asList("fileset", "file", "set", "include"), Integer.MAX_VALUE);
+		if(output == null){
+			throw new InvalidMakefileException(getPath(root) + " should have one output sub-element");
+		}
+		List<DataFunction> outputFuncs = parseDTRData(output, Arrays.asList("fileset", "file", "set", "include"), 1, Integer.MAX_VALUE);
 		Element dependencies = getOneSubElement(root, "dependencies");
-		List<DataFunction> deps = parseDTRData(dependencies, Arrays.asList("fileset", "file", "set", "include"), Integer.MAX_VALUE);
+		List<DataFunction> deps = null;
+		deps = parseDTRData(dependencies, Arrays.asList("fileset", "file", "set", "include"), 0, Integer.MAX_VALUE);
 
 		Task task = parseTask(root, wdir);
 
@@ -144,14 +171,21 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 
 	protected DataTransformationRule parseFoldDTR(Element root) throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextVariableException {
-        String name = getRequiredAttribute(root, "name", VARIABLE_PATTERN, context);
+        String name = getRequiredAttribute(root, "name");
 
         Element input = getOneSubElement(root, "input");
-        List<DataFunction> inputFuncs = parseDTRData(input, Arrays.asList("fileset", "file", "set", "include"), Integer.MAX_VALUE);
+        if(input == null){
+			throw new InvalidMakefileException(getPath(root) + " should have one input sub-element");
+		}
+        List<DataFunction> inputFuncs = parseDTRData(input, Arrays.asList("fileset", "file", "set", "include"), 1, Integer.MAX_VALUE);
         Element output = getOneSubElement(root, "output");
-        List<DataFunction> outputFuncs = parseDTRData(output, Arrays.asList("fileset", "file", "set", "include"), Integer.MAX_VALUE);
+        if(output == null){
+			throw new InvalidMakefileException(getPath(root) + " should have one output sub-element");
+		}
+        List<DataFunction> outputFuncs = parseDTRData(output, Arrays.asList("fileset", "file", "set", "include"), 1, Integer.MAX_VALUE);
         Element dependencies = getOneSubElement(root, "dependencies");
-        List<DataFunction> dependenciesFunc = parseDTRData(dependencies, Arrays.asList("fileset", "file", "set", "include"), Integer.MAX_VALUE);
+        List<DataFunction> dependenciesFunc = null;
+        dependenciesFunc = parseDTRData(dependencies, Arrays.asList("fileset", "file", "set", "include"), 0, Integer.MAX_VALUE);
 
         Task task = parseTask(root, wdir);
 
@@ -161,7 +195,8 @@ public class SyntaxParser extends BaseSyntaxParser {
         return res;
     }
 	
-	protected List<DataFunction> parseDTRData(Element root, List<String> allowedSubElements, int subElementsAmount) throws InvalidMakefileException, IOException, InvalidContextVariableException {
+	protected List<DataFunction> parseDTRData(Element root, List<String> allowedSubElements, int minElementsAmount, int maxElementsAmount) throws InvalidMakefileException, IOException, InvalidContextVariableException {
+		if(root == null) return Collections.emptyList();
 		List<DataFunction> functions = new ArrayList<DataFunction>();
 		String expiration = getOptionalAttribute(root, "expiration");
 		long validityPeriod = parseValidityPeriod(expiration);
@@ -176,11 +211,11 @@ public class SyntaxParser extends BaseSyntaxParser {
 				}
 			}
 		}
-		if(functions.size() < 1){
+		if(functions.size() < minElementsAmount){
 			throw new InvalidMakefileException(getPath(root) + " should have at least one of " + StringUtils.join(allowedSubElements, ","));
 		}
-		if(functions.size() > subElementsAmount){
-			throw new InvalidMakefileException(getPath(root) + " should have no more then " + subElementsAmount + " sub-elements");
+		if(functions.size() > maxElementsAmount){
+			throw new InvalidMakefileException(getPath(root) + " should have no more then " + maxElementsAmount + " sub-elements");
 		}
 		return functions;
 	}
@@ -203,10 +238,10 @@ public class SyntaxParser extends BaseSyntaxParser {
 
 	protected DataFunction parseFileset(Element root, long validityPeriod)
 			throws InvalidMakefileException, IOException, InvalidContextVariableException{
-		String id = getOptionalAttribute(root, "id", VARIABLE_PATTERN, context);
-		String path = getRequiredAttribute(root, "path", VARIABLE_PATTERN, context);
-		String mask = getOptionalAttribute(root, "mask", VARIABLE_PATTERN, context);
-		String generation = getOptionalAttribute(root, "generation", VARIABLE_PATTERN, context);
+		String id = getOptionalAttribute(root, "id");
+		String path = getRequiredAttribute(root, "path");
+		String mask = getOptionalAttribute(root, "mask");
+		String generation = getOptionalAttribute(root, "generation");
 		int gen;
 		if (generation == null)
 			gen = 0;
@@ -220,9 +255,9 @@ public class SyntaxParser extends BaseSyntaxParser {
 	protected DataFunction parseFile(Element root, long validityPeriod)
 			throws InvalidMakefileException, IOException, InvalidContextVariableException {
 
-		String id = getOptionalAttribute(root, "id", VARIABLE_PATTERN, context);
-		String path = getRequiredAttribute(root, "path", VARIABLE_PATTERN, context);
-		String gen_s = getOptionalAttribute(root, "generation", VARIABLE_PATTERN, context);
+		String id = getOptionalAttribute(root, "id");
+		String path = getRequiredAttribute(root, "path");
+		String gen_s = getOptionalAttribute(root, "generation");
 		int generation;
 		if (gen_s == null)
 			generation = 0;
@@ -234,7 +269,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 
 	protected DataFunction parseSet(Element root, long validityPeriod) throws InvalidMakefileException, InvalidContextVariableException, IOException{
-		String id = getOptionalAttribute(root, "id", VARIABLE_PATTERN, context);
+		String id = getOptionalAttribute(root, "id");
 		SetDataFunction set = new SetDataFunction(id);
 		NodeList children = root.getChildNodes();		
 		for(int i = 0; i < children.getLength(); i ++){
@@ -262,8 +297,8 @@ public class SyntaxParser extends BaseSyntaxParser {
 	
 	protected DataFunction parseInclude(Element root, long validityPeriod) throws InvalidMakefileException{		
 		String reference = getOptionalAttribute(root, "idref");
-		Object obj = context.get(reference);
-		if(obj != null || !(obj instanceof DataFunction)){
+		Object obj = context.getHamake(reference);
+		if(obj == null || !(obj instanceof DataFunction)){
 			throw new InvalidMakefileException("Unknown data function reference found: " + getPath(root));
 		}
 		return (DataFunction)obj;
@@ -292,9 +327,8 @@ public class SyntaxParser extends BaseSyntaxParser {
 	protected Task parseMapReduceTask(Element root)
 			throws InvalidMakefileException {
 		MapReduce res = new MapReduce();
-		res.setJar(Utils.resolvePath(wdir,
-				getRequiredAttribute(root, "jar", VARIABLE_PATTERN, context)).toString());
-		res.setMain(getRequiredAttribute(root, "main", VARIABLE_PATTERN, context));
+		res.setJar(Utils.resolvePath(Utils.replaceVariables(context, getRequiredAttribute(root, "jar")), wdir).toString());
+		res.setMain(getRequiredAttribute(root, "main"));
 		res.setParameters(parseParametersList(root));
 		return res;
 	}
@@ -306,8 +340,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 					"Pig isn't found in classpath. Please, make sure Pig classes are available in classpath.");
 
 		Pig res = new Pig();
-		res.setScript(Utils.resolvePath(wdir, getRequiredAttribute(root, "script",
-				VARIABLE_PATTERN, context)));
+		res.setScript(Utils.resolvePath(Utils.replaceVariables(context, getRequiredAttribute(root, "script")), wdir));
 		res.setParameters(parseParametersList(root));
 		return res;
 	}
@@ -315,14 +348,13 @@ public class SyntaxParser extends BaseSyntaxParser {
 	protected Task parseExecTask(Element root)
 			throws InvalidMakefileException, IOException {
 		Exec res = new Exec();
-		res.setBinary(Utils.resolvePath(wdir, getRequiredAttribute(root, "binary",
-				VARIABLE_PATTERN, context)));
+		res.setBinary(Utils.resolvePath(Utils.replaceVariables(context, getRequiredAttribute(root, "binary")), wdir));
 		res.setParameters(parseParametersList(root));
 		return res;
 	}
 
-	protected List<HamakeParameter> parseParametersList(Element root) throws InvalidMakefileException {
-		List<HamakeParameter> parameters = new ArrayList<HamakeParameter>();
+	protected List<Parameter> parseParametersList(Element root) throws InvalidMakefileException {
+		List<Parameter> parameters = new ArrayList<Parameter>();
 		NodeList children = root.getChildNodes();
 		int counter = 0;
 		for (int i = 0; i < children.getLength(); i++) {
@@ -330,6 +362,9 @@ public class SyntaxParser extends BaseSyntaxParser {
 				Element element = (Element)children.item(i);
 				if ("parameter".equals(element.getNodeName())) {
 					parameters.add(parseParameter(element, counter));
+				}
+				else if ("jobconf".equals(element.getNodeName())) {
+					parameters.add(new JobConfParam(getRequiredAttribute(element, "name"), getRequiredAttribute(element, "value")));
 				}
 			}
 		}
@@ -361,10 +396,10 @@ public class SyntaxParser extends BaseSyntaxParser {
 			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				Element element = (Element)children.item(i);
 				if ("reference".equals(element.getNodeName())) {
-					values.add(new Reference(getOptionalAttribute(root, "idref")));
+					values.add(new Reference(getRequiredAttribute(element, "idref")));
 				}
 				else if ("literal".equals(element.getNodeName())) {
-					values.add(new Literal(getOptionalAttribute(root, "value")));
+					values.add(new Literal(getRequiredAttribute(element, "value")));
 				}
 				else{
 					throw new InvalidMakefileException("unknown sub-element found whithin " + getPath(root));
@@ -372,11 +407,6 @@ public class SyntaxParser extends BaseSyntaxParser {
 			}
 		}
         return new HamakeParameter(values, concatFunction, processingFunc);
-    }
-	
-	protected JobConfParam parseJobConfParameter(Element root, Map<String, String> properties) throws InvalidMakefileException {
-        return new JobConfParam(getRequiredAttribute(root, "name", VARIABLE_PATTERN, context),
-                getRequiredAttribute(root, "value", VARIABLE_PATTERN, context));
     }
 	
 	protected long parseValidityPeriod(String expiration) throws InvalidMakefileException{

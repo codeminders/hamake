@@ -46,6 +46,24 @@ public class SetDataFunction extends DataFunction {
 		return paths;
 	}
 	
+	@Override
+	public int getGeneration() {
+		int generation = Integer.MIN_VALUE;
+		for(DataFunction func : dataFunctions){
+			generation  = (generation < func.getGeneration() ? func.getGeneration() : generation);
+		}
+		return generation;
+	}
+
+	@Override
+	public long getValidityPeriod() {
+		long validityPeriod = Long.MAX_VALUE;
+		for(DataFunction func : dataFunctions){
+			validityPeriod  = (validityPeriod > func.getValidityPeriod() ? func.getValidityPeriod() : validityPeriod);
+		}
+		return validityPeriod;
+	}
+	
 	public void addDataFunction(DataFunction func){
 		dataFunctions.add(func);
 	}

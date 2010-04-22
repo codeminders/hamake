@@ -17,13 +17,13 @@ public class Fold extends DataTransformationRule {
 
 	public static final Log LOG = LogFactory.getLog(Fold.class);
 
-	private List<DataFunction> inputs = new ArrayList<DataFunction>();
-	private List<DataFunction> outputs = new ArrayList<DataFunction>();
-	private List<DataFunction> deps = new ArrayList<DataFunction>();
+	private List<? extends DataFunction> inputs = new ArrayList<DataFunction>();
+	private List<? extends DataFunction> outputs = new ArrayList<DataFunction>();
+	private List<? extends DataFunction> deps = new ArrayList<DataFunction>();
 	private Context context;
 
-	public Fold(Context parentContext, List<DataFunction> inputs,
-			List<DataFunction> outputs, List<DataFunction> deps) {
+	public Fold(Context parentContext, List<? extends DataFunction> inputs,
+			List<? extends DataFunction> outputs, List<? extends DataFunction> deps) {
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.deps = deps;
@@ -31,17 +31,17 @@ public class Fold extends DataTransformationRule {
 	}
 
 	@Override
-	protected List<DataFunction> getDeps() {
+	protected List<? extends DataFunction> getDeps() {
 		return deps;
 	}
 
 	@Override
-	protected List<DataFunction> getInputs() {
+	protected List<? extends DataFunction> getInputs() {
 		return inputs;
 	}
 
 	@Override
-	protected List<DataFunction> getOutputs() {
+	protected List<? extends DataFunction> getOutputs() {
 		return outputs;
 	}
 	

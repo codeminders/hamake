@@ -1,7 +1,10 @@
 package com.codeminders.hamake.params;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.codeminders.hamake.Context;
 
@@ -18,18 +21,18 @@ public class HamakeParameter implements Parameter{
 	private ProcessingFunction processingFunc;
 	
 	public String get(Context context) throws IOException{
-		StringBuilder parameter = new StringBuilder();
+		List<String> parameters = new ArrayList<String>();
 		for(Object value : values){
 			if(value instanceof Reference){
 				Reference reference = (Reference)value;
-				parameter.append(concatFunc.concat(parameter.toString(), processingFunc.process(reference.getValue(context))));
+				parameters.add(processingFunc.process(reference.getValue(context)));
 			}
 			else if(value instanceof Literal){
 				Literal literal = (Literal)value;
-				parameter.append(concatFunc.concat(parameter.toString(), processingFunc.process(literal.getValue(context))));
+				parameters.add(processingFunc.process(literal.getValue(context)));
 			}
 		}
-		return parameter.toString();
+		return concatFunc.concat(parameters.toArray(new String[] {}));
 	}
 	
 }

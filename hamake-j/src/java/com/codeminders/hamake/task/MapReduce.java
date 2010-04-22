@@ -5,6 +5,7 @@ import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.ExitException;
 import com.codeminders.hamake.params.HamakeParameter;
+import com.codeminders.hamake.params.Parameter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -38,9 +39,9 @@ public class MapReduce extends Task {
             return -1000;
         }
         args.add(getMain());
-        Collection<HamakeParameter> params = getParameters();
+        List<Parameter> params = getParameters();
         if (params != null) {
-            for (HamakeParameter p : params) {
+            for (Parameter p : params) {
                     try {
                         args.add(p.get(context));
                     } catch (IOException ex) {

@@ -1,7 +1,7 @@
 package com.codeminders.hamake.task;
 
 import com.codeminders.hamake.Context;
-import com.codeminders.hamake.params.HamakeParameter;
+import com.codeminders.hamake.params.Parameter;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -11,19 +11,19 @@ import java.util.List;
 
 public abstract class Task{
 
-    private List<HamakeParameter> parameters = new ArrayList<HamakeParameter>();
+    private List<Parameter> parameters = new ArrayList<Parameter>();
     
     public abstract int execute(Context context) throws IOException;
     
-    public List<HamakeParameter> getParameters() {
+    public List<Parameter> getParameters() {
         return parameters;
     }
 
-    public void setParameters(List<HamakeParameter> parameters) {
+    public void setParameters(List<Parameter> parameters) {
         this.parameters = parameters;
     }
 
-    public void addParameter(HamakeParameter param) {
+    public void addParameter(Parameter param) {
         parameters.add(param);
     }
 

@@ -35,13 +35,13 @@ public class Foreach extends DataTransformationRule {
 	public static final Log LOG = LogFactory.getLog(Foreach.class);
 
 	private DataFunction input;
-	private List<DataFunction> output;
-	private List<DataFunction> deps;
+	private List<? extends DataFunction> output;
+	private List<? extends DataFunction> deps;
 	private Context context;
 
 
-	public Foreach(Context parentContext, DataFunction input, List<DataFunction> output,
-			List<DataFunction> dependencies) {
+	public Foreach(Context parentContext, DataFunction input, List<? extends DataFunction> output,
+			List<? extends DataFunction> dependencies) {
 		this.output = output;
 		this.input = input;
 		this.deps = dependencies;
@@ -49,17 +49,17 @@ public class Foreach extends DataTransformationRule {
 	}
 
 	@Override
-	protected List<DataFunction> getDeps() {
+	protected List<? extends DataFunction> getDeps() {
 		return deps;
 	}
 
 	@Override
-	protected List<DataFunction> getInputs() {
+	protected List<? extends DataFunction> getInputs() {
 		return Arrays.asList(input);
 	}
 
 	@Override
-	protected List<DataFunction> getOutputs(){
+	protected List<? extends DataFunction> getOutputs(){
 		return output;
 	}
 	

@@ -84,15 +84,15 @@ public abstract class DataFunction {
 		return modificationTime;
     }
 	
-	protected int getGeneration() {
+	public int getGeneration() {
 		return generation;
 	}
 
-	protected long getValidityPeriod() {
+	public long getValidityPeriod() {
 		return validityPeriod;
 	}
 
-	protected String getWorkFolder() {
+	public String getWorkFolder() {
 		return workFolder;
 	}
 	

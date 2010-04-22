@@ -17,6 +17,27 @@ public class FileDataFunction extends DataFunction {
 	
 	private String path;
 	
+	/**
+	 * Constructor that is used in unit tests
+	 * @param path location of a file or a folder
+	 * @param generation 'generation' of DataFunction
+	 * @throws IOException
+	 */
+	public FileDataFunction(String path, int generation) throws IOException{
+		super(null, generation, Long.MAX_VALUE, null);
+		this.path = path;
+	}
+	
+	/**
+	 * Constructor that is used in unit tests
+	 * @param path location of a file or a folder
+	 * @throws IOException
+	 */
+	public FileDataFunction(String path) throws IOException{
+		super(null, 0, Long.MAX_VALUE, null);
+		this.path = path;
+	}
+	
 	public FileDataFunction(String id, int generation, long validityPeriod, String workFolder, String path) throws IOException{
 		super(id, generation, validityPeriod, workFolder);
 		this.path = path;

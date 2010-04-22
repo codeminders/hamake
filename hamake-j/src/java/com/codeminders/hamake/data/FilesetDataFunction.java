@@ -61,8 +61,8 @@ public class FilesetDataFunction extends DataFunction {
 		FileSystem fs = getFileSystem(context);
 		
 		Path path = toPath(context);
-		if (!fs.getFileStatus(path).isDir()) {
-			throw new IOException("Path " + path + " should be a folder");
+		if (!fs.exists(path) || !fs.getFileStatus(path).isDir()) {
+			throw new IOException("Folder " + path + " should exist and be a folder");
 		}
 		List<Path> filesList = new ArrayList<Path>();
 		Boolean create = false;
