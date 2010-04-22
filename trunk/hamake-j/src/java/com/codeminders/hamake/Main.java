@@ -90,7 +90,6 @@ public class Main {
             wdir = line.getOptionValue('w');
 
         Hamake make = null;
-        Context context = new Context();       
 
         InputStream is = null;
         try {
@@ -109,7 +108,7 @@ public class Main {
                 FileSystem fs = makefilePath.getFileSystem(hadoopCfg);
                 is = fs.open(makefilePath);
             }
-            make = BaseSyntaxParser.parse(context, is, wdir, config.verbose);
+            make = BaseSyntaxParser.parse(new Context(), is, wdir, config.verbose);
             if(line.getArgs().length > 0){
             	for(String target : line.getArgs()){
             		make.addTarget(target);
@@ -147,7 +146,6 @@ public class Main {
             IOUtils.closeQuietly(is);
         }
 
-        make.setContext(context);
         make.setNumJobs(njobs);        
 
         int status;

@@ -54,11 +54,13 @@ public abstract class DataFunction {
 	
 	public boolean intersects(Context context, DataFunction that) throws IOException {
 		for(Path thispath : this.getPath(context)){
+			FileSystem thisFs = getFileSystem(context);
+			Path thisDir = thisFs.isFile(thispath)? thispath.getParent() : thispath;
+			String thisFileName = thisFs.isFile(thispath)? thispath.getName() : null;
 			for(Path thatpath : that.getPath(context)){
-				Path thisDir = getFileSystem(context).isFile(thispath)? thispath.getParent() : thispath;
-				Path thatDir = getFileSystem(context).isFile(thatpath)? thatpath.getParent() : thatpath;
-				String thisFileName = getFileSystem(context).isFile(thispath)? thispath.getName() : null;
-				String thatFileName = getFileSystem(context).isFile(thatpath)? thatpath.getName() : null;
+				FileSystem thatFs = getFileSystem(context);
+				Path thatDir = thatFs.isFile(thatpath)? thatpath.getParent() : thatpath;
+				String thatFileName = thatFs.isFile(thatpath)? thatpath.getName() : null;
 				boolean intersects = StringUtils.equals(thisDir.toString(), thatDir.toString())
 				&& getGeneration() >= that.getGeneration()
 				&& (thisFileName == null || thatFileName == null || StringUtils

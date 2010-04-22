@@ -89,8 +89,8 @@ public class Foreach extends DataTransformationRule {
 			}
 			Context context = new Context(this.context);
 			context.setForeach(FULL_FILENAME_VAR, path.toString());
-			context.setForeach(SHORT_FILENAME_VAR, path.getParent().toString());
-			context.setForeach(PARENT_FOLDER_VAR, FilenameUtils.getName(path.toString()));
+			context.setForeach(SHORT_FILENAME_VAR, FilenameUtils.getName(path.toString()));
+			context.setForeach(PARENT_FOLDER_VAR, path.getParent().toString());
 			context.setForeach(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(path.toString()));
 			context.setForeach(EXTENTION_VAR, FilenameUtils.getExtension(path.toString()));
 			for (DataFunction outputFunc : output) {
@@ -100,14 +100,13 @@ public class Foreach extends DataTransformationRule {
 								+ " is already present and fresh");
 						return 0;
 					}
-					else{						
-						if(!StringUtils.isEmpty(outputFunc.getId())){
-							outputFunc.clear(context);
-							context.setHamake(outputFunc.getId(), outputFunc);
-						}
-					}
 				} 
-				
+				else{						
+					if(!StringUtils.isEmpty(outputFunc.getId())){
+						outputFunc.clear(context);
+						context.setHamake(outputFunc.getId(), outputFunc);
+					}
+				}
 			}
 			pathPairs.add(context);
 		}
@@ -133,7 +132,6 @@ public class Foreach extends DataTransformationRule {
 			} catch (Exception ex) {
 				LOG.error(ex);
 				job_semaphore.release();
-
 			}
 		}
 		int rc = 0;

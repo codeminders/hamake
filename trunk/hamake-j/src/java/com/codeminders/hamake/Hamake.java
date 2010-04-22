@@ -38,19 +38,16 @@ public class Hamake {
 	protected List<DataTransformationRule> tasks;
 	protected String defaultTarget;
 
-    public Hamake() {
+    public Hamake(Context context) {
         this.tasks = new ArrayList<DataTransformationRule>();
         this.targets = new ArrayList<String>();
+        this.context = context;
     }
 
     public void setNumJobs(int numJobs) {
         this.numJobs = numJobs;
     }
     
-    public void setContext(Context context) {
-		this.context = context;
-	}
-
 	public void addTask(DataTransformationRule task) {
         tasks.add(task);
     }
