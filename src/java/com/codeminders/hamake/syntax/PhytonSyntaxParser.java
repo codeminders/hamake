@@ -14,6 +14,10 @@ import com.codeminders.hamake.tasks.MapTask;
 import com.codeminders.hamake.tasks.ReduceTask;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.conf.Configuration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -22,12 +26,15 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.net.URI;
 
 public class PhytonSyntaxParser extends BaseSyntaxParser{
   
   public static final Pattern VARIABLE_PATTERN = Pattern.compile("%\\(([^\\)]+)\\)[sdiefc]");
+  public static final String awsEMRPigJarPath = "s3://elasticmapreduce/libs/pig/0.3/pig-0.3-amzn.jar";
   
   Document dom;
   String wdir;
@@ -187,9 +194,22 @@ public class PhytonSyntaxParser extends BaseSyntaxParser{
     protected Command parsePigCommand(Element root, Map<String, String> properties, String wdir) throws InvalidMakefileException, IOException, PigNotFoundException {
         String jar = getOptionalAttribute(root, "jar");
 
+        if (jar == null)
+        {
+            FileSystem fs = FileSystem.get(URI.create(awsEMRPigJarPath), new Configuration());
+            FileStatus stat;
+
+            try {
+                stat = fs.getFileStatus(new Path(awsEMRPigJarPath));
+                if (!stat.isDir())
+                    jar = awsEMRPigJarPath;
+            } catch (FileNotFoundException e) {
+
+            }
+        }
+
         if (jar == null && !isPigAvailable)
             throw new PigNotFoundException("Pig isn't found in classpath. Please, make sure Pig classes are available in classpath.");
-
 
         HamakePath scriptPath = new HamakePath(wdir, getRequiredAttribute(root, "script"));
         List<Param> params = parseParameters(root, properties);
