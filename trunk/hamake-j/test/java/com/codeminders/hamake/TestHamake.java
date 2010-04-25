@@ -2,6 +2,7 @@ package com.codeminders.hamake;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.Permission;
 
@@ -62,14 +63,13 @@ public class TestHamake {
 		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir()
 				+ File.separator + "hamakefile-local-cp.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
-				localHamakeFile), null, true);
+				localHamakeFile), true);
 		make.setNumJobs(2);
 		make.run();
 		int map1OutSize = FileUtils.listFiles(map1Dir,TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
 		Assert.assertEquals(10, map1OutSize);
 		Assert.assertTrue(outputFile.exists());
-		Assert.assertTrue("File size of output is 0 ", FileUtils
-				.sizeOfDirectory(outputFile) > 0);
+		Assert.assertTrue("File size of output is 0 ", outputFile.length() > 0);
 	}
 //	
 //	 @Test

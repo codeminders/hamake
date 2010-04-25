@@ -6,7 +6,6 @@ import com.codeminders.hamake.Context;
 import com.codeminders.hamake.data.DataFunction;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,7 +72,6 @@ public class Foreach extends DataTransformationRule {
 			throws IOException {
 		
 		List<Path> inputlist = input.getPath(context);
-		FileSystem inputfs = input.getFileSystem(context);
 		List<Context> pathPairs = new ArrayList<Context>();
 		if (inputlist == null || inputlist.isEmpty()){
 			LOG.error("Input folder of DTR " + getName()
@@ -82,7 +80,8 @@ public class Foreach extends DataTransformationRule {
 		}
 		
 		for(Path path : inputlist){
-			if(!inputfs.isFile(path)){
+			FileSystem inputfs = input.getFileSystem(context, path);
+			if(inputfs.getFileStatus(path).isDir()){
 				LOG.error(path.toString() + " from input of DTR " + getName()
 						+ " is not a file. Ignoring");
 				continue;
@@ -94,18 +93,20 @@ public class Foreach extends DataTransformationRule {
 			context.setForeach(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(path.toString()));
 			context.setForeach(EXTENTION_VAR, FilenameUtils.getExtension(path.toString()));
 			for (DataFunction outputFunc : output) {
-				if (outputFunc.getTimeStamp(context) >= input.getTimeStamp(context)) {
+				if(outputFunc.isFolder(context)){
+					LOG.error("Output of DTR " + getName()
+							+ " contains not only files");
+					return 1;
+				}
+				if (outputFunc.getMinTimeStamp(context) >= input.getMinTimeStamp(context)) {
 					if (Config.getInstance().verbose){
 						LOG.info("Output " + outputFunc.getPath(context)
 								+ " is already present and fresh");
 						return 0;
 					}
 				} 
-				else{						
-					if(!StringUtils.isEmpty(outputFunc.getId())){
-						outputFunc.clear(context);
-						context.setHamake(outputFunc.getId(), outputFunc);
-					}
+				else{
+					outputFunc.clear(context);
 				}
 			}
 			pathPairs.add(context);

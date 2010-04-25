@@ -2,8 +2,6 @@ package com.codeminders.hamake.task;
 
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
-import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.Parameter;
 
 import org.apache.commons.io.IOUtils;
@@ -37,7 +35,7 @@ public class Pig extends Task {
 
     public int execute(Context context) {
         FileSystem fs;
-        Configuration conf = context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) != null? (Configuration)context.get(Hamake.SYS_PROPERTY_HADOOP_CONFIGURATION) : new Configuration();
+        Configuration conf = context.getHamake(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION) != null? (Configuration)context.getHamake(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION) : new Configuration();
         Collection<String> args = new ArrayList<String>();
         BufferedReader in = null;
 

@@ -1,6 +1,5 @@
 package com.codeminders.hamake;
 
-import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -14,7 +13,6 @@ public class TaskThread extends Thread {
 	
 	public static final Log LOG = LogFactory.getLog(TaskThread.class);
 
-    private Context context;
     private Semaphore semaphore;
     private DataTransformationRule task;
     private boolean finished;
@@ -22,10 +20,9 @@ public class TaskThread extends Thread {
     private Lock lock;
     private int rc = 0;
 
-    public TaskThread(DataTransformationRule task, Semaphore semaphore, Lock lock, Condition cv, Context context) {
+    public TaskThread(DataTransformationRule task, Semaphore semaphore, Lock lock, Condition cv) {
         super("Task " + task.getName());
         setDaemon(true);
-        this.context = context;
         this.semaphore = semaphore;
         this.task = task;
         this.cv = cv;

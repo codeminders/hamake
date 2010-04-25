@@ -7,9 +7,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.*;
 
 import java.io.*;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,11 +97,14 @@ public class Utils {
 			int start = matcher.start();
 			int end = matcher.end();
 			String variable = value.substring(start + 2, end - 1);
+			outputValue.append(value.substring(curPos, start));
 			if(!StringUtils.isEmpty(context.getString(variable))){
-				outputValue.append(value.substring(curPos, start));
 				outputValue.append(context.getString(variable));
-				curPos = end;
 			}
+			else{
+				outputValue.append("*");
+			}
+			curPos = end;
 		}
 		outputValue.append(value.substring(curPos, value.length()));
 		return outputValue.toString();

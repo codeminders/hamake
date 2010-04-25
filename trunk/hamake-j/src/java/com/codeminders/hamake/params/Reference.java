@@ -7,7 +7,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
 
 import com.codeminders.hamake.Context;
-import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.data.DataFunction;
 
 public class Reference{

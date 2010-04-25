@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -23,9 +22,6 @@ import com.codeminders.hamake.PigNotFoundException;
 import com.codeminders.hamake.TestHelperUtils;
 import com.codeminders.hamake.dtr.Fold;
 import com.codeminders.hamake.dtr.Foreach;
-import com.codeminders.hamake.params.HamakeParameter;
-import com.codeminders.hamake.params.JobConfParam;
-import com.codeminders.hamake.params.Literal;
 import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
 import com.codeminders.hamake.task.Exec;
@@ -71,7 +67,7 @@ public class TestSyntaxParser {
 		context.setForeach("path", tempDir.getAbsolutePath().toString() + "/referrers/1.log");
 		context.setForeach("basename", "1");
 		
-		Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(localHamakeFile), null, true);
+		Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(localHamakeFile), true);
 		//project
 		Assert.assertEquals("test-syntax", make.getProjectName());
 		Assert.assertEquals("foreach1", make.getDefaultTarget());
@@ -117,7 +113,7 @@ public class TestSyntaxParser {
 		Pig pig = (Pig)fold.getTask();
 		Assert.assertEquals(tempDirPath + "/median.pig", pig.getScript().toString());
 		Assert.assertEquals(3, pig.getParameters().size());
-		Assert.assertEquals("${somefile}", pig.getParameters().get(0).get(context));
+		Assert.assertEquals("*", pig.getParameters().get(0).get(context));
 		Assert.assertEquals("-jobconf jcname=jcvalue", pig.getParameters().get(1).get(context));
 	}
 }
