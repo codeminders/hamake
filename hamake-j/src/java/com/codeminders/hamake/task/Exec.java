@@ -3,7 +3,6 @@ package com.codeminders.hamake.task;
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Utils;
-import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.Parameter;
 
 import org.apache.commons.lang.StringUtils;

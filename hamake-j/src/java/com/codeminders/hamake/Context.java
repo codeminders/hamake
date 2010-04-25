@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 
 public class Context {
 
@@ -13,12 +14,24 @@ public class Context {
 	public static final String FOREACH_VARS_PREFIX = "foreach:";
 	public static final String FOLD_VARS_PREFIX = "fold:";
 	
+	public static final String HAMAKE_PROPERTY_WORKING_FOLDER = "workdir";
+	public static final String HAMAKE_PROPERTY_HADOOP_CONFIGURATION = "hadoop.configuration";
+	public static final String HAMAKE_PROPERTY_HAMAKE_VERSION = "hamake.version";
+	
 	public static final String[] FORBIDDEN_PREFIXES = {SYSTEM_VARS_PREFIX, ENVIRONMENT_VARS_PREFIX, HAMAKE_VARS_PREFIX, FOREACH_VARS_PREFIX, FOLD_VARS_PREFIX};
 
 	Map<String, Object> nameValuePairs;
 
 	public Context() {
 		this(null);
+	}
+	
+	public static Context initContext(Configuration hadoopConf, String workDir, String hamakeVersion){
+		Context context = new Context();
+		context.setHamake(HAMAKE_PROPERTY_HADOOP_CONFIGURATION, new Configuration());
+		context.setHamake(HAMAKE_PROPERTY_WORKING_FOLDER, workDir);
+		context.setHamake(HAMAKE_PROPERTY_HAMAKE_VERSION, hamakeVersion);
+		return context;
 	}
 
 	public Context(Context parentContext) {

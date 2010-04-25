@@ -24,11 +24,11 @@ public abstract class BaseSyntaxParser {
 	
 	protected static boolean isPigAvailable = Utils.isPigAvailable(); 
 
-	public static Hamake parse(Context context, String filename, String wdir, boolean verbose)
+	public static Hamake parse(Context context, String filename, boolean verbose)
 			throws Exception {
 		InputStream is = new FileInputStream(filename);
 		try {
-			return parse(context, is, wdir, verbose);
+			return parse(context, is, verbose);
 		} finally {
 			try {
 				is.close();
@@ -37,11 +37,11 @@ public abstract class BaseSyntaxParser {
 		}
 	}
 
-	public static Hamake parse(Context context, InputStream is, String wdir, boolean verbose)
+	public static Hamake parse(Context context, InputStream is, boolean verbose)
 			throws IOException, ParserConfigurationException, SAXException,
 			InvalidMakefileException, PigNotFoundException, InvalidContextVariableException{
 		Document doc = loadMakefile(is);
-		BaseSyntaxParser syntaxParser = new SyntaxParser(doc, wdir, context, verbose);
+		BaseSyntaxParser syntaxParser = new SyntaxParser(doc, context, verbose);
 		if(!syntaxParser.isCorrectParser()){
 			throw new InvalidMakefileException("Unknown hamakefile syntax");
 		}

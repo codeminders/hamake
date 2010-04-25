@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -28,24 +27,34 @@ public abstract class DataFunction {
 	
 	public abstract boolean clear(Context context) throws IOException;
 	
-	public abstract FileSystem getFileSystem(Context context) throws IOException;
+	public abstract FileSystem getFileSystem(Context context, Path path) throws IOException;
+	
+	public abstract long getMinTimeStamp(Context context) throws IOException;
 	
 	public String getId(){
 		return this.id;
 	}
 	
 	public boolean isFile(Context context) throws IOException{
-		if(getPath(context).size() == 1){
-			return getFileSystem(context).isFile(getPath(context).get(0));
+		List<Path> path = getPath(context);
+		if(path.size() == 1){
+			FileSystem fs = getFileSystem(context, path.get(0));
+			if(fs.exists(path.get(0))){
+				return !fs.getFileStatus(path.get(0)).isDir();
+			}
 		}
-		else return false;
+		return false;
 	}
 	
 	public boolean isFolder(Context context) throws IOException{
-		if(getPath(context).size() == 1){
-			return !getFileSystem(context).isFile(getPath(context).get(0));
+		List<Path> path = getPath(context);
+		if(path.size() == 1){
+			FileSystem fs = getFileSystem(context, path.get(0));
+			if(fs.exists(path.get(0))){
+				return fs.getFileStatus(path.get(0)).isDir();
+			}
 		}
-		else return false;
+		return false;
 	}
 	
 	public boolean isSet(Context context) throws IOException{
@@ -53,38 +62,22 @@ public abstract class DataFunction {
 	}
 	
 	public boolean intersects(Context context, DataFunction that) throws IOException {
-		for(Path thispath : this.getPath(context)){
-			FileSystem thisFs = getFileSystem(context);
-			Path thisDir = thisFs.isFile(thispath)? thispath.getParent() : thispath;
-			String thisFileName = thisFs.isFile(thispath)? thispath.getName() : null;
-			for(Path thatpath : that.getPath(context)){
-				FileSystem thatFs = getFileSystem(context);
-				Path thatDir = thatFs.isFile(thatpath)? thatpath.getParent() : thatpath;
-				String thatFileName = thatFs.isFile(thatpath)? thatpath.getName() : null;
-				boolean intersects = StringUtils.equals(thisDir.toString(), thatDir.toString())
-				&& getGeneration() >= that.getGeneration()
-				&& (thisFileName == null || thatFileName == null || StringUtils
-						.equals(thisFileName, thatFileName));
+		
+		for(Path thisPath : getPath(context)){
+			FileSystem thisFS = this.getFileSystem(context, thisPath);
+			String thisDir = (thisFS.isFile(thisPath)? thisPath.getParent().toString() : thisPath.toString());
+			thisDir += (thisFS.isFile(thisPath)? thisPath.getName() : "*");
+			for(Path thatPath : that.getPath(context)){
+				FileSystem thatFS = that.getFileSystem(context, thatPath);
+				String thatDir = (thatFS.isFile(thatPath)? thatPath.getParent().toString() : thatPath.toString());
+				thatDir += (thatFS.isFile(thatPath)? thatPath.getName() : "*");
+				boolean intersects = (matches(thatDir, thisDir) || matches(thisDir, thatDir))
+				&& getGeneration() >= that.getGeneration();
 				if(intersects) return true;
 			}
 		}
 		return false;
 	}
-	
-	public long getTimeStamp(Context context) throws IOException {
-		FileSystem fs = getFileSystem(context);
-		long modificationTime = Long.MIN_VALUE;
-		for(Path p : getPath(context)){
-			if (!fs.exists(p)) continue;
-	
-	        FileStatus stat = fs.getFileStatus(p);
-	
-	        if(stat.getModificationTime() > modificationTime) {
-	        	modificationTime = stat.getModificationTime();
-	        }
-		}
-		return modificationTime;
-    }
 	
 	public int getGeneration() {
 		return generation;
@@ -96,6 +89,25 @@ public abstract class DataFunction {
 
 	public String getWorkFolder() {
 		return workFolder;
+	}
+	
+	protected static boolean matches(String a, String b){
+		String[] B = StringUtils.split(b, "*");
+		int start = 0, end = B.length;
+		if(!b.startsWith("*")){
+			if(!a.startsWith(B[0]))return false;
+			start++;
+		}
+		if(!b.endsWith("*")){
+			if(!a.endsWith(B[B.length - 1]))return false;
+			end--;
+		}
+		int lastPos = 0;
+		for(int i = start; i < end; i++){
+			lastPos = StringUtils.indexOf(a, B[i], lastPos); 
+				if(lastPos == -1) return false;
+		}
+		return true;
 	}
 	
 }

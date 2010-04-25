@@ -4,7 +4,6 @@ import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.ExitException;
-import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.Parameter;
 
 import org.apache.commons.lang.StringUtils;
@@ -18,7 +17,6 @@ import org.apache.hadoop.util.RunJar;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class MapReduce extends Task {

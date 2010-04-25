@@ -1,7 +1,12 @@
 package com.codeminders.hamake;
 
 public class PigNotFoundException extends Exception {
-    public PigNotFoundException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 2908826012585883631L;
+
+	public PigNotFoundException() {
     }
 
     public PigNotFoundException(String message) {

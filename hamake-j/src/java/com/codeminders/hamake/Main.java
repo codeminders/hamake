@@ -108,7 +108,8 @@ public class Main {
                 FileSystem fs = makefilePath.getFileSystem(hadoopCfg);
                 is = fs.open(makefilePath);
             }
-            make = BaseSyntaxParser.parse(new Context(), is, wdir, config.verbose);
+            Context context = Context.initContext(hadoopCfg, wdir, Hamake.HAMAKE_VERSION);
+            make = BaseSyntaxParser.parse(context, is, config.verbose);
             if(line.getArgs().length > 0){
             	for(String target : line.getArgs()){
             		make.addTarget(target);

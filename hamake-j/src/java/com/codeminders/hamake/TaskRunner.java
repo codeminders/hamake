@@ -17,7 +17,6 @@ public class TaskRunner {
 	public static final Log LOG = LogFactory.getLog(TaskRunner.class);
 
 	private ExecutionGraph graph;
-	private Context context;
 	private Map<String, DataTransformationRule> tasks;
 	private List<String> targets;
 
@@ -28,10 +27,8 @@ public class TaskRunner {
 	private Lock lock;
 	private Condition condition;
 
-	public TaskRunner(List<DataTransformationRule> tasks, int numJobs, List<String> targets,
-			Context context) throws IOException {
+	public TaskRunner(List<DataTransformationRule> tasks, int numJobs, List<String> targets) throws IOException {
 		graph = new NoDepsExecutionGraph(tasks);
-		this.context = context;
 		this.tasks = new HashMap<String, DataTransformationRule>();
 		for (DataTransformationRule t : tasks)
 			this.tasks.put(t.getName(), t);
@@ -60,8 +57,7 @@ public class TaskRunner {
 		for (String task : tasks) {
 			LOG.info("Starting " + task);
 			DataTransformationRule t = this.tasks.get(task);
-			TaskThread tt = new TaskThread(t, job_semaphore, lock, condition,
-					context);
+			TaskThread tt = new TaskThread(t, job_semaphore, lock, condition);
 			running.add(tt);
 			tt.start();
 		}

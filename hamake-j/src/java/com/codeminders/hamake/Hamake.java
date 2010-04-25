@@ -1,22 +1,18 @@
 package com.codeminders.hamake;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
 
 import com.codeminders.hamake.dtr.DataTransformationRule;
 
 import java.io.IOException;
 import java.security.Permission;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Hamake {
 	
-	public static final String SYS_PROPERTY_WORKING_FOLDER = "workdir";
-	public static final String SYS_PROPERTY_HADOOP_CONFIGURATION = "hadoop.configuration";
-
+	public static final String HAMAKE_VERSION = "1.0";
+	
     enum ExitCode {
         OK,
         BADOPT,
@@ -76,15 +72,13 @@ public class Hamake {
     	
     	SecurityManager securityManager = System.getSecurityManager();
         System.setSecurityManager(new NoExitSecurityManager());        
-        context.setSystem(SYS_PROPERTY_HADOOP_CONFIGURATION, new Configuration());
         try{
 	        if(targets.size() <= 0 && !StringUtils.isEmpty(defaultTarget)){
 	        	targets.add(defaultTarget);
 	        }        
 	        TaskRunner runner = new TaskRunner(tasks,
 	                numJobs,
-	                targets,
-	                context);
+	                targets);
 	        runner.run();
 	        if (runner.getFailed() > 0)
 	            return ExitCode.FAILED;

@@ -25,7 +25,7 @@ public class TestHelperUtils {
 	public static String generateTemporaryPath(String folder, String prefix){
 		Random rand = new Random();
 		String tempDir = StringUtils.isEmpty(folder) ? System.getProperty("java.io.tmpdir", "/tmp") : folder ;
-		String tempFileName = prefix + "-" + Math.abs(rand.nextInt() % 10000);
+		String tempFileName = prefix + "-" + Math.abs(rand.nextInt() % 100000);
 		return tempDir + File.separator + tempFileName;
 	}
 	
