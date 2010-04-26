@@ -4,8 +4,11 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" ref="property" minOccurs="0"/>
-        <xs:element maxOccurs="unbounded" ref="file" minOccurs="0"/>
-        <xs:element ref="fileset" maxOccurs="unbounded" minOccurs="0"/>
+        <xs:choice maxOccurs="unbounded" minOccurs="0">
+          <xs:element maxOccurs="unbounded" ref="file"/>
+          <xs:element maxOccurs="unbounded" ref="fileset"/>
+          <xs:element maxOccurs="unbounded" ref="set"/>
+        </xs:choice>
         <xs:choice maxOccurs="unbounded">
           <xs:element ref="foreach"/>
           <xs:element ref="fold"/>
@@ -17,15 +20,15 @@
   </xs:element>
   <xs:element name="property">
     <xs:complexType>
-      <xs:attribute name="name" use="required" type="xs:NCName"/>
-      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+      <xs:attribute name="name" use="required" type="xs:string"/>
+      <xs:attribute name="value" use="required" type="xs:string"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="foreach">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" ref="dependencies"/>
         <xs:element ref="description" minOccurs="0"/>
+        <xs:element minOccurs="0" ref="dependencies"/>
         <xs:element name="input">
           <xs:complexType>
             <xs:choice>
@@ -46,26 +49,29 @@
   </xs:element>
   <xs:element name="dependencies">
     <xs:complexType>
-      <xs:all>
-        <xs:element minOccurs="0" ref="file"/>
-        <xs:element minOccurs="0" ref="fileset"/>
-        <xs:element minOccurs="0" ref="set"/>
-      </xs:all>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element maxOccurs="unbounded" ref="file"/>
+        <xs:element maxOccurs="unbounded" ref="fileset"/>
+        <xs:element maxOccurs="unbounded" ref="include"/>
+        <xs:element maxOccurs="unbounded" ref="set"/>
+      </xs:choice>
     </xs:complexType>
   </xs:element>
   <xs:element name="exec">
     <xs:complexType>
-      <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="parameter"/>
-      </xs:sequence>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="parameter"/>
+        <xs:element ref="jobconf"/>
+      </xs:choice>
       <xs:attribute name="binary" use="required" type="xs:string"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="mapreduce">
     <xs:complexType>
-      <xs:sequence>
+      <xs:choice maxOccurs="unbounded">
         <xs:element ref="parameter"/>
-      </xs:sequence>
+        <xs:element ref="jobconf"/>
+      </xs:choice>
       <xs:attribute name="jar" use="required"/>
       <xs:attribute name="main" use="required"/>
     </xs:complexType>
@@ -73,15 +79,16 @@
   <xs:element name="fold">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="description"/>
+        <xs:element ref="description" minOccurs="0"/>
+        <xs:element minOccurs="0" ref="dependencies"/>
         <xs:element name="input">
           <xs:complexType>
-            <xs:sequence>
-              <xs:element maxOccurs="unbounded" minOccurs="0" ref="file"/>
-              <xs:element maxOccurs="unbounded" minOccurs="0" ref="fileset"/>
-              <xs:element maxOccurs="unbounded" minOccurs="0" ref="set"/>
-              <xs:element maxOccurs="unbounded" minOccurs="0" ref="include"/>
-            </xs:sequence>
+            <xs:choice maxOccurs="unbounded">
+              <xs:element maxOccurs="unbounded" ref="file"/>
+              <xs:element maxOccurs="unbounded" ref="fileset"/>
+              <xs:element maxOccurs="unbounded" ref="set"/>
+              <xs:element maxOccurs="unbounded" ref="include"/>
+            </xs:choice>
           </xs:complexType>
         </xs:element>
         <xs:element ref="output"/>
@@ -127,15 +134,13 @@
   <xs:element name="description" type="xs:string"/>
   <xs:element name="output">
     <xs:complexType>
-      <xs:sequence>
-        <xs:choice maxOccurs="unbounded">
-          <xs:element minOccurs="0" ref="file"/>
-          <xs:element minOccurs="0" ref="set"/>
-          <xs:element minOccurs="0" ref="include"/>
-          <xs:element minOccurs="0" ref="fileset"/>
-        </xs:choice>
-      </xs:sequence>
-      <xs:attribute name="expiration" use="required" type="xs:NMTOKEN"/>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element maxOccurs="unbounded" ref="file"/>
+        <xs:element maxOccurs="unbounded" ref="fileset"/>
+        <xs:element maxOccurs="unbounded" ref="include"/>
+        <xs:element maxOccurs="unbounded" ref="set"/>
+      </xs:choice>
+      <xs:attribute name="expiration" type="xs:NMTOKEN"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="parameter">
@@ -146,6 +151,9 @@
           <xs:element minOccurs="0" ref="reference"/>
         </xs:choice>
       </xs:sequence>
+      <xs:attribute name="concat_function" type="xs:string"/>
+      <xs:attribute name="processing_function" type="xs:string"/>
+      <xs:attribute name="name" type="xs:string"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="literal">
@@ -167,12 +175,12 @@
   </xs:element>
   <xs:element name="set">
     <xs:complexType>
-      <xs:sequence>
-        <xs:element maxOccurs="unbounded" minOccurs="0" ref="file"/>
-        <xs:element maxOccurs="unbounded" minOccurs="0" ref="fileset"/>
-        <xs:element maxOccurs="unbounded" minOccurs="0" ref="set"/>
-        <xs:element maxOccurs="unbounded" minOccurs="0" ref="include"/>
-      </xs:sequence>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element maxOccurs="unbounded" ref="file"/>
+        <xs:element maxOccurs="unbounded" ref="fileset"/>
+        <xs:element maxOccurs="unbounded" ref="include"/>
+        <xs:element maxOccurs="unbounded" ref="set"/>
+      </xs:choice>
     </xs:complexType>
   </xs:element>
 </xs:schema>
