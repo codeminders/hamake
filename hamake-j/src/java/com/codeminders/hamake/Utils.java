@@ -5,18 +5,19 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.*;
-
-import com.codeminders.hamake.data.DataFunction;
+import org.apache.hadoop.conf.Configuration;
 
 import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.net.URI;
 
 public class Utils {
 	
 	public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([^\\}]+)\\}");
-	
-	public static final Log LOG = LogFactory.getLog(Utils.class);              
+	public static final URI AmazonEMRPigJarURI = URI.create("s3://elasticmapreduce/libs/pig/0.3/pig-0.3-amzn.jar");
+
+	public static final Log LOG = LogFactory.getLog(Utils.class);
 
     public static String getenv(String name, String defaultValue) {
         String ret = System.getenv(name);
@@ -81,7 +82,7 @@ public class Utils {
     public static boolean isPigAvailable()
     {
         try {
-            Utils.class.getClassLoader().loadClass(org.apache.pig.Main.class.getCanonicalName());
+            Utils.class.getClassLoader().loadClass("org.apache.pig.Main");
         } catch (ClassNotFoundException e) {
             return false;
         } catch (NoClassDefFoundError e) {
@@ -89,6 +90,22 @@ public class Utils {
         }
 
         return true;
+    }
+
+    public static boolean isAmazonEMRPigAvailable()
+    {
+        try {
+            FileSystem fs = FileSystem.get(AmazonEMRPigJarURI, new Configuration());
+            FileStatus stat;
+
+            stat = fs.getFileStatus(new Path(AmazonEMRPigJarURI.toString()));
+            if (stat != null && !stat.isDir())
+                return true;
+        } catch (Exception e) {
+
+        }
+
+        return false;
     }
     
     public static String replaceVariables(Context context, String value){

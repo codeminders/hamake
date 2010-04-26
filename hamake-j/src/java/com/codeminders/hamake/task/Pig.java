@@ -2,6 +2,7 @@ package com.codeminders.hamake.task;
 
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
+import com.codeminders.hamake.data.DataFunction;
 import com.codeminders.hamake.params.Parameter;
 
 import org.apache.commons.io.IOUtils;
@@ -31,6 +32,11 @@ public class Pig extends Task {
     private Path script;
 
     public Pig() {
+    }
+
+    public Pig(Path script, List<Parameter> params) {
+        this.script = script;
+        setParameters(params);
     }
 
     public int execute(Context context) {

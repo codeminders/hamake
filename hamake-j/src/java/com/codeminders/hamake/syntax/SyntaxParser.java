@@ -9,6 +9,7 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.Path;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -27,7 +28,6 @@ import com.codeminders.hamake.data.SetDataFunction;
 import com.codeminders.hamake.dtr.DataTransformationRule;
 import com.codeminders.hamake.dtr.Fold;
 import com.codeminders.hamake.dtr.Foreach;
-import com.codeminders.hamake.params.CommaConcatFunction;
 import com.codeminders.hamake.params.ConcatFunction;
 import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.IdentityProcessingFunction;
@@ -38,10 +38,7 @@ import com.codeminders.hamake.params.Parameter;
 import com.codeminders.hamake.params.ProcessingFunction;
 import com.codeminders.hamake.params.Reference;
 import com.codeminders.hamake.params.SpaceConcatFunction;
-import com.codeminders.hamake.task.Exec;
-import com.codeminders.hamake.task.MapReduce;
-import com.codeminders.hamake.task.Pig;
-import com.codeminders.hamake.task.Task;
+import com.codeminders.hamake.task.*;
 
 public class SyntaxParser extends BaseSyntaxParser {
 	
@@ -331,14 +328,21 @@ public class SyntaxParser extends BaseSyntaxParser {
 
 	protected Task parsePigTask(Element root)
 			throws InvalidMakefileException, IOException, PigNotFoundException {
-		if (!isPigAvailable)
-			throw new PigNotFoundException(
-					"Pig isn't found in classpath. Please, make sure Pig classes are available in classpath.");
 
-		Pig res = new Pig();
-		res.setScript(Utils.resolvePath(Utils.replaceVariables(context, getRequiredAttribute(root, "script")), (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER)));
-		res.setParameters(parseParametersList(root));
-		return res;
+        String jar = getOptionalAttribute(root, "jar");
+
+        if (jar == null && Utils.isAmazonEMRPigAvailable())
+            jar = Utils.AmazonEMRPigJarURI.toString();
+
+        if (jar == null && !isPigAvailable)
+            throw new PigNotFoundException("Pig isn't found in classpath. Please, make sure Pig classes are available in classpath.");
+
+        Path scriptPath = Utils.resolvePath(Utils.replaceVariables(context, getRequiredAttribute(root, "script")), (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER));
+        List<Parameter> params = parseParametersList(root);
+
+        return (jar == null)?
+               new Pig(scriptPath, params):
+               new PigJar(jar, scriptPath, params);		
 	}
 
 	protected Task parseExecTask(Element root)
@@ -380,6 +384,7 @@ public class SyntaxParser extends BaseSyntaxParser {
         	concatFunction = new AppendConcatFunction();
         }
         String processingFuncIdentificator = getOptionalAttribute(root, "processing_function");
+        String parameterName = getOptionalAttribute(root, "name");
         ProcessingFunction processingFunc = null;
         if(!StringUtils.isEmpty(processingFuncIdentificator)){
         	if("identity".equals(processingFuncIdentificator)) concatFunction = new SpaceConcatFunction();
@@ -404,7 +409,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 				}
 			}
 		}
-        return new HamakeParameter(values, concatFunction, processingFunc);
+        return new HamakeParameter(parameterName, values, concatFunction, processingFunc);
     }
 	
 	protected long parseValidityPeriod(String expiration) throws InvalidMakefileException{

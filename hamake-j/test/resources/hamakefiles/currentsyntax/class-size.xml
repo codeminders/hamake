@@ -15,12 +15,12 @@
             <file id="jarListing" path="${output}/jar-listings/${foreach:filename}"/>
         </output>
         <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListing">
-        	<parameter>
-            	<literal value="${foreach:path}"/>
-        	</parameter>
-        	<parameter>
-            	<reference idref="jarListing"/>
-        	</parameter>
+          <parameter>
+              <literal value="${foreach:path}"/>
+          </parameter>
+          <parameter>
+              <reference idref="jarListing"/>
+          </parameter>
         </mapreduce>
     </foreach>
 
@@ -32,12 +32,12 @@
             <file id="filterListing" path="${output}/jar-listings-filtered/${foreach:filename}"/>
         </output>
         <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
-        	<parameter>
-        		<literal value="${foreach:path}"/>
-        	</parameter>
-        	<parameter>
-        		<reference idref="filterListing"/>
-        	</parameter>
+          <parameter>
+            <literal value="${foreach:path}"/>
+          </parameter>
+          <parameter>
+            <reference idref="filterListing"/>
+          </parameter>
         </mapreduce>
     </foreach>
 
@@ -49,12 +49,12 @@
             <file id="histogramOut" path="${output}/class-size-histogram"/>
         </output>
         <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
-        	<parameter>
-        		<reference idref="histogramIn"/>
-        	</parameter>
-        	<parameter>
-        		<reference idref="histogramOut"/>
-        	</parameter>
+          <parameter>
+            <reference idref="histogramIn"/>
+          </parameter>
+          <parameter>
+            <reference idref="histogramOut"/>
+          </parameter>
         </mapreduce>
     </fold>
 
@@ -66,14 +66,12 @@
             <file id="medianOut" path="${output}/class-size-median-bin"/>
         </output>
         <pig script="${scripts}/median.pig">
-        	<parameter concat_function="append">
-        		<literal value="infile="/>
-        		<reference idref="medianIn"/>
-        	</parameter>
-        	<parameter concat_function="append">
-        		<literal value="outfile="/>
-        		<reference idref="medianOut"/>
-        	</parameter>
+          <parameter name="infile">
+            <reference idref="medianIn"/>
+          </parameter>
+          <parameter name="outfile">
+            <reference idref="medianOut"/>
+          </parameter>
         </pig>
     </fold>
 
