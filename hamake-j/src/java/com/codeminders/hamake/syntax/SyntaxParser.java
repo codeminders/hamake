@@ -33,6 +33,7 @@ import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.IdentityProcessingFunction;
 import com.codeminders.hamake.params.JobConfParam;
 import com.codeminders.hamake.params.Literal;
+import com.codeminders.hamake.params.AppendConcatFunction;
 import com.codeminders.hamake.params.Parameter;
 import com.codeminders.hamake.params.ProcessingFunction;
 import com.codeminders.hamake.params.Reference;
@@ -74,7 +75,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	
 	@Override
 	protected boolean isCorrectParser(){		
-		return (dom.getElementsByTagName("foreach").getLength() > 0) || (dom.getElementsByTagName("foreach").getLength() > 0);
+		return (dom.getElementsByTagName("foreach").getLength() > 0) || (dom.getElementsByTagName("fold").getLength() > 0);
 	}
 
 	protected Element parseConfig(Document dom) throws InvalidMakefileException {
@@ -371,10 +372,12 @@ public class SyntaxParser extends BaseSyntaxParser {
         ConcatFunction concatFunction = null;
         if(!StringUtils.isEmpty(concatFuncIdentificator)){
         	if("space".equals(concatFuncIdentificator)) concatFunction = new SpaceConcatFunction();
+        	if("comma".equals(concatFuncIdentificator)) concatFunction = new SpaceConcatFunction();
+        	if("append".equals(concatFuncIdentificator)) concatFunction = new AppendConcatFunction();
         	else throw new InvalidMakefileException("'concat_function' attribute of " + getPath(root) + "contains unknown function");
         }
         else{
-        	concatFunction = new CommaConcatFunction();
+        	concatFunction = new AppendConcatFunction();
         }
         String processingFuncIdentificator = getOptionalAttribute(root, "processing_function");
         ProcessingFunction processingFunc = null;

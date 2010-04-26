@@ -79,25 +79,20 @@ public class Foreach extends DataTransformationRule {
 			return -1;
 		}
 		
-		for(Path path : inputlist){
-			FileSystem inputfs = input.getFileSystem(context, path);
-			if(inputfs.getFileStatus(path).isDir()){
-				LOG.error(path.toString() + " from input of DTR " + getName()
-						+ " is not a file. Ignoring");
+		for(Path ipath : inputlist){
+			FileSystem inputfs = input.getFileSystem(context, ipath);
+			if(!inputfs.exists(ipath)){
+				LOG.error(ipath.toString() + " from input of DTR " + getName()
+						+ " does not exist. Ignoring");
 				continue;
 			}
 			Context context = new Context(this.context);
-			context.setForeach(FULL_FILENAME_VAR, path.toString());
-			context.setForeach(SHORT_FILENAME_VAR, FilenameUtils.getName(path.toString()));
-			context.setForeach(PARENT_FOLDER_VAR, path.getParent().toString());
-			context.setForeach(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(path.toString()));
-			context.setForeach(EXTENTION_VAR, FilenameUtils.getExtension(path.toString()));
+			context.setForeach(FULL_FILENAME_VAR, ipath.toString());
+			context.setForeach(SHORT_FILENAME_VAR, FilenameUtils.getName(ipath.toString()));
+			context.setForeach(PARENT_FOLDER_VAR, ipath.getParent().toString());
+			context.setForeach(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
+			context.setForeach(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
 			for (DataFunction outputFunc : output) {
-				if(outputFunc.isFolder(context)){
-					LOG.error("Output of DTR " + getName()
-							+ " contains not only files");
-					return 1;
-				}
 				if (outputFunc.getMinTimeStamp(context) >= input.getMinTimeStamp(context)) {
 					if (Config.getInstance().verbose){
 						LOG.info("Output " + outputFunc.getPath(context)

@@ -101,6 +101,10 @@ public class Fold extends DataTransformationRule {
 
 			return getTask().execute(context);
 		}
+		else{
+			LOG.info("Output of " + getName()
+					+ " is already present and fresh");
+		}
 		// all fresh
 		return 0;
 	}

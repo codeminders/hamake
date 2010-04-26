@@ -2,7 +2,6 @@ package com.codeminders.hamake;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.Permission;
 
@@ -17,10 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import com.codeminders.hamake.dtr.Foreach;
 import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
-import com.codeminders.hamake.task.MapReduce;
 
 public class TestHamake {
 
@@ -110,60 +107,61 @@ public class TestHamake {
 				localHamakeFile), true);
 		make.setNumJobs(2);
 		make.run();
-		int map21OutSize = FileUtils.listFiles(map21Dir, TrueFileFilter.INSTANCE,
-				TrueFileFilter.INSTANCE).size();
+		int map21OutSize = FileUtils.listFiles(map21Dir,
+				TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
 		Assert.assertEquals(10, map21OutSize);
-		int map22OutSize = FileUtils.listFiles(map22Dir, TrueFileFilter.INSTANCE,
-				TrueFileFilter.INSTANCE).size();
+		int map22OutSize = FileUtils.listFiles(map22Dir,
+				TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
 		Assert.assertEquals(10, map22OutSize);
 		Assert.assertTrue(output1File.exists());
-		Assert.assertTrue("File size of output is 0 ", output1File.length() > 0);
+		Assert
+				.assertTrue("File size of output is 0 ",
+						output1File.length() > 0);
 		Assert.assertTrue(output2File.exists());
-		Assert.assertTrue("File size of output is 0 ", output2File.length() > 0);
+		Assert
+				.assertTrue("File size of output is 0 ",
+						output2File.length() > 0);
 	}
 
-	// @Test
-	// public void testSystemExitIsProhibited() throws IOException,
-	// ParserConfigurationException, SAXException,
-	// InvalidMakefileException, InterruptedException, SecurityException,
-	// NoSuchFieldException, IllegalArgumentException, IllegalAccessException,
-	// PigNotFoundException, InvalidContextVariableException {
-	// SecurityManager securityManager = System.getSecurityManager();
-	// @SuppressWarnings(value = { "unused" })
-	// SecurityManager manager = new SecurityManager(){
-	// boolean exitCalled = false;
-	// @Override
-	// public void checkPermission(Permission perm) { }
-	//
-	// @Override
-	// public void checkPermission(Permission perm, Object context) { }
-	//
-	// @Override
-	// public void checkExit(int status) {
-	// exitCalled = true;
-	// throw new SecurityException();
-	// }
-	// };
-	// System.setSecurityManager(manager);
-	// File tempInDir = TestHelperUtils.generateTemporaryDirectory(tempDir
-	// .getAbsolutePath());
-	// TestHelperUtils.generateTemporaryFiles(tempInDir.getAbsolutePath(), 1);
-	// File tempOutDir = TestHelperUtils.generateTemporaryDirectory(tempDir
-	// .getAbsolutePath());
-	// File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() +
-	// File.separator + "hamakefile-testexit.xml");
-	// final Hamake make = BaseSyntaxParser.parse(new Context(), new
-	// FileInputStream(localHamakeFile), null, true);
-	// make.setNumJobs(1);
-	// ((MapReduce) ((Foreach) make.getTasks().get(0)).getTask())
-	// .setJar(TestHelperUtils.getExamplesJar().getAbsolutePath());
-	// TestHelperUtils.setMapTaskInputOutputFolders(make, "map",
-	// new HamakePath(tempInDir.getAbsolutePath()), new HamakePath(
-	// tempOutDir.getAbsolutePath()));
-	// make.run();
-	// Assert.assertFalse("Hamake has passed System.exit()",
-	// manager.getClass().getDeclaredField("exitCalled").getBoolean(manager));
-	// System.setSecurityManager(securityManager);
-	// }
+	@Test
+	public void testSystemExitIsProhibited() throws IOException,
+			ParserConfigurationException, SAXException,
+			InvalidMakefileException, InterruptedException, SecurityException,
+			NoSuchFieldException, IllegalArgumentException,
+			IllegalAccessException, PigNotFoundException,
+			InvalidContextVariableException {
+		SecurityManager securityManager = System.getSecurityManager();
+		@SuppressWarnings(value = { "unused" })
+		SecurityManager manager = new SecurityManager() {
+			boolean exitCalled = false;
+
+			@Override
+			public void checkPermission(Permission perm) {
+			}
+
+			@Override
+			public void checkPermission(Permission perm, Object context) {
+			}
+
+			@Override
+			public void checkExit(int status) {
+				exitCalled = true;
+				throw new SecurityException();
+			}
+		};
+		System.setSecurityManager(manager);
+		Context context = new Context();
+		context.set("examples.jar", TestHelperUtils.getExamplesJar()
+				.getAbsolutePath());
+		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir()
+				+ File.separator + "hamakefile-testexit.xml");
+		final Hamake make = BaseSyntaxParser.parse(context,
+				new FileInputStream(localHamakeFile), true);
+		make.setNumJobs(1);
+		make.run();
+		Assert.assertFalse("Hamake has passed System.exit()", manager
+				.getClass().getDeclaredField("exitCalled").getBoolean(manager));
+		System.setSecurityManager(securityManager);
+	}
 
 }

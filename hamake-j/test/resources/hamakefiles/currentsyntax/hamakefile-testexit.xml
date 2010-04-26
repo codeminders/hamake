@@ -1,17 +1,23 @@
 <project name="test-system.exit">
 
-	<foreach name="map">
+	<!-- property
+		examples.jar 
+		is set by unit test
+	-->	
+	
+	<fold name="fold">
 		<description>second map</description>
 		<input>
-			<fileset path="is_set_by_test" />
+			<file path="does_not_matter"/>
 		</input>
 		<output>
-			<identity path="is_set_by_test" />
+			<file path="does_not_matter1"/>
 		</output>
-		<mapreduce jar="is_set_by_test" main="com.codeminders.hamake.examples.DummyJobThatCallsSystemExit">
-            <parameter value="${input}" />
-			<parameter value="${output}" />
-        </mapreduce>
-	</foreach>	
+		<mapreduce jar="${examples.jar}" main="com.codeminders.hamake.examples.DummyJobThatCallsSystemExit">
+			<parameter>
+				<literal value="does_not_matter" />
+			</parameter>
+		</mapreduce>
+	</fold>
 
 </project>
