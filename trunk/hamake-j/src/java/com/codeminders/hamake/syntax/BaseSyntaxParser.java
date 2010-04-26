@@ -1,5 +1,6 @@
 package com.codeminders.hamake.syntax;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,7 +8,12 @@ import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -40,18 +46,22 @@ public abstract class BaseSyntaxParser {
 	public static Hamake parse(Context context, InputStream is, boolean verbose)
 			throws IOException, ParserConfigurationException, SAXException,
 			InvalidMakefileException, PigNotFoundException, InvalidContextVariableException{
-		Document doc = loadMakefile(is);
-		BaseSyntaxParser syntaxParser = new SyntaxParser(doc, context, verbose);
-		if(!syntaxParser.isCorrectParser()){
+		BaseSyntaxParser syntaxParser = new SyntaxParser(context, verbose);
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		bos.write(is);
+		if(syntaxParser.validate(new ByteArrayInputStream(bos.toByteArray()))){
+			Document doc = loadMakefile(new ByteArrayInputStream(bos.toByteArray()));
+			return syntaxParser.parseSyntax(doc);
+		}
+		else{
 			throw new InvalidMakefileException("Unknown hamakefile syntax");
 		}
-		return syntaxParser.parseSyntax();
 	}	
 	
-	protected abstract Hamake parseSyntax() throws IOException, ParserConfigurationException, SAXException,
+	protected abstract Hamake parseSyntax(Document dom) throws IOException, ParserConfigurationException, SAXException,
 	InvalidMakefileException, PigNotFoundException, InvalidContextVariableException;
 	
-	protected abstract boolean isCorrectParser();
+	protected abstract boolean validate(InputStream is) throws SAXException, IOException;
 	
 	protected static Document loadMakefile(InputStream is) throws IOException,
 			ParserConfigurationException, SAXException {
