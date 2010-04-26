@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.codeminders.hamake.Context;
@@ -96,7 +97,7 @@ public class FilesetDataFunction extends DataFunction {
 			FileStatus[] list = fs.listStatus(path);
 
 			for (FileStatus s : list) {
-				Path p = new Path(s.getPath().toUri().getPath());
+				Path p = ((fs instanceof LocalFileSystem? new Path(s.getPath().toUri().toString()) : new Path(s.getPath().toString())));
 				if (Utils.matches(p, mask))
 					filesList.add(p);
 			}

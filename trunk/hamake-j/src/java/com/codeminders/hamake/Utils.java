@@ -6,6 +6,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.*;
 
+import com.codeminders.hamake.data.DataFunction;
+
 import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
