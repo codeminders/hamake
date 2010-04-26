@@ -139,27 +139,13 @@ public class FilesetDataFunction extends DataFunction {
 	}
 
 	@Override
-	public boolean intersects(Context context, DataFunction that)
-			throws IOException {
-		if (that instanceof FilesetDataFunction) {
-			String thatParentPath = ((FilesetDataFunction) that)
-					.toPath(context).toString();
-			String thisParentPath = this.toPath(context).toString();
-			return (matches(thatParentPath, thisParentPath) || matches(
-					thisParentPath, thatParentPath))
-					&& getGeneration() >= that.getGeneration()
-					&& ((FilesetDataFunction) that).mask.equals(this.mask);
-		} else
-			return super.intersects(context, that);
+	protected String[] toString(Context context){
+		return new String[] {Utils.resolvePath(Utils.replaceVariables(context, this.path) + (StringUtils.isEmpty(mask) ? "" : mask), getWorkFolder()).toString()};
 	}
 
 	private Path toPath(Context context) throws IOException {
-		String processedPath = Utils.replaceVariables(context, this.path);
-		Path path = new Path(processedPath);
-		if (!path.isAbsolute() && !StringUtils.isEmpty(getWorkFolder()))
-			path = new Path(getWorkFolder(), processedPath);
-
-		return path;
+		return Utils.resolvePath(Utils.replaceVariables(context, this.path),
+				getWorkFolder());
 	}
 
 }

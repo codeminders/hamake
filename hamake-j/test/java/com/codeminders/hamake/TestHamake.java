@@ -41,7 +41,7 @@ public class TestHamake {
 			ParserConfigurationException, SAXException,
 			InvalidMakefileException, InterruptedException,
 			PigNotFoundException, InvalidContextVariableException {
-		
+
 		File inputDir = new File(tempDir, "input");
 		inputDir.mkdirs();
 		TestHelperUtils.generateTemporaryFiles(inputDir.getAbsolutePath(), 10);
@@ -58,7 +58,7 @@ public class TestHamake {
 			context.set("cp", "copy");
 			context.set("ls", "dir");
 		}
-		
+
 		Hamake make = null;
 		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir()
 				+ File.separator + "hamakefile-local-cp.xml");
@@ -66,132 +66,104 @@ public class TestHamake {
 				localHamakeFile), true);
 		make.setNumJobs(2);
 		make.run();
-		int map1OutSize = FileUtils.listFiles(map1Dir,TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
+		int map1OutSize = FileUtils.listFiles(map1Dir, TrueFileFilter.INSTANCE,
+				TrueFileFilter.INSTANCE).size();
 		Assert.assertEquals(10, map1OutSize);
 		Assert.assertTrue(outputFile.exists());
 		Assert.assertTrue("File size of output is 0 ", outputFile.length() > 0);
 	}
-//	
-//	 @Test
-//	 public void test2BranchesLocalCpHamakefile() throws IOException,
-//	 ParserConfigurationException, SAXException,
-//	 InvalidMakefileException, InterruptedException, PigNotFoundException, InvalidContextVariableException {
-//	 // generate input and output folders folders
-//	 File tempInDir = TestHelperUtils.generateTemporaryDirectory(tempDir
-//	 .getAbsolutePath());
-//	 TestHelperUtils.generateTemporaryFiles(tempInDir.getAbsolutePath(), 10);
-//	 File tempMap11OutDir = TestHelperUtils
-//	 .generateTemporaryDirectory(tempDir.getAbsolutePath());
-//	 File tempMap12OutDir = TestHelperUtils
-//	 .generateTemporaryDirectory(tempDir.getAbsolutePath());
-//	 File tempMap21OutDir = TestHelperUtils
-//	 .generateTemporaryDirectory(tempDir.getAbsolutePath());
-//	 File tempMap22OutDir = TestHelperUtils
-//	 .generateTemporaryDirectory(tempDir.getAbsolutePath());
-//	 File tempReduce1OutDir = TestHelperUtils
-//	 .generateTemporaryDirectory(tempDir.getAbsolutePath());
-//	 File tempReduce1OutFile = TestHelperUtils
-//	 .generateTemporaryFile(tempReduce1OutDir.getAbsolutePath());
-//	 File tempReduce2OutDir = TestHelperUtils
-//	 .generateTemporaryDirectory(tempDir.getAbsolutePath());
-//	 File tempReduce2OutFile = TestHelperUtils
-//	 .generateTemporaryFile(tempReduce2OutDir.getAbsolutePath());
-//	 Thread.sleep(5000);
-//	 Hamake make = new Hamake();
-//	 File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-local-2-branches-cp.xml");
-//	 make = BaseSyntaxParser.parse(new Context(), new FileInputStream(localHamakeFile), null, true);
-//	 if (OS.isLinux()) {
-//	 TestHelperUtils.setTaskExecBinary(make, "map11", "cp");
-//	 TestHelperUtils.setTaskExecBinary(make, "map12", "cp");
-//	 TestHelperUtils.setTaskExecBinary(make, "map21", "cp");
-//	 TestHelperUtils.setTaskExecBinary(make, "map22", "cp");
-//	 TestHelperUtils.setTaskExecBinary(make, "reduce1", "ls");
-//	 TestHelperUtils.setTaskExecBinary(make, "reduce2", "ls");
-//	 } else if (OS.isWindows()) {
-//	 TestHelperUtils.setTaskExecBinary(make, "map11", "copy");
-//	 TestHelperUtils.setTaskExecBinary(make, "map12", "copy");
-//	 TestHelperUtils.setTaskExecBinary(make, "map21", "copy");
-//	 TestHelperUtils.setTaskExecBinary(make, "map21", "copy");
-//	 TestHelperUtils.setTaskExecBinary(make, "reduce1", "dir");
-//	 TestHelperUtils.setTaskExecBinary(make, "reduce2", "dir");
-//	 }
-//	 TestHelperUtils.setMapTaskInputOutputFolders(make, "map11", new
-//	 HamakePath(
-//	 tempInDir.getAbsolutePath()), new HamakePath(tempMap11OutDir
-//	 .getAbsolutePath()));
-//	 TestHelperUtils.setMapTaskInputOutputFolders(make, "map12", new
-//	 HamakePath(
-//	 tempInDir.getAbsolutePath()), new HamakePath(tempMap12OutDir
-//	 .getAbsolutePath()));
-//	 TestHelperUtils.setMapTaskInputOutputFolders(make, "map21", new
-//	 HamakePath(
-//	 tempMap11OutDir.getAbsolutePath()), new HamakePath(tempMap21OutDir
-//	 .getAbsolutePath()));
-//	 TestHelperUtils.setMapTaskInputOutputFolders(make, "map22", new
-//	 HamakePath(
-//	 tempMap12OutDir.getAbsolutePath()), new HamakePath(tempMap22OutDir
-//	 .getAbsolutePath()));
-//	 TestHelperUtils.setReduceTaskInputOutputFolders(make, "reduce1",
-//	 new HamakePath(tempMap21OutDir.getAbsolutePath()), new HamakePath(
-//	 tempReduce1OutFile.getAbsolutePath()));
-//	 TestHelperUtils.setReduceTaskInputOutputFolders(make, "reduce2",
-//	 new HamakePath(tempMap22OutDir.getAbsolutePath()), new HamakePath(
-//	 tempReduce2OutFile.getAbsolutePath()));
-//	 make.setNumJobs(2);
-//	 make.run();
-//	 int map11Out = FileUtils.listFiles(tempMap11OutDir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
-//	 int map21Out = FileUtils.listFiles(tempMap21OutDir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
-//	 int map22Out = FileUtils.listFiles(tempMap22OutDir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
-//	 Assert.assertTrue("Amount of map11 output files", map11Out > 8 && map11Out < 11);
-//	 Assert.assertTrue("Amount of map11 output files", map21Out > 8 && map21Out < 11);
-//	 Assert.assertTrue("Amount of map11 output files", map22Out > 8 && map22Out < 11);
-//	 Assert.assertEquals(1, FileUtils.listFiles(tempReduce1OutDir,
-//	 TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size());
-//	 Assert.assertTrue("File size of output is 0 ",
-//	 FileUtils.sizeOfDirectory(tempReduce1OutDir) > 0);
-//	 Assert.assertEquals(1, FileUtils.listFiles(tempReduce2OutDir,
-//	 TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size());
-//	 Assert.assertTrue("File size of output is 0 ",
-//	 FileUtils.sizeOfDirectory(tempReduce2OutDir) > 0);
-//	 }
 
-//	@Test	
-//	public void testSystemExitIsProhibited() throws IOException,
-//			ParserConfigurationException, SAXException,
-//			InvalidMakefileException, InterruptedException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, PigNotFoundException, InvalidContextVariableException {
-//		SecurityManager securityManager = System.getSecurityManager();
-//		@SuppressWarnings(value = { "unused" })		
-//		SecurityManager manager = new SecurityManager(){			
-//			boolean exitCalled = false;
-//			@Override
-//	        public void checkPermission(Permission perm) { }
-//
-//	        @Override
-//	        public void checkPermission(Permission perm, Object context) { }
-//
-//	        @Override
-//	        public void checkExit(int status) {
-//	        	exitCalled = true;
-//	        	throw new SecurityException();
-//	        }
-//		};	
-//		System.setSecurityManager(manager);
-//		File tempInDir = TestHelperUtils.generateTemporaryDirectory(tempDir
-//				.getAbsolutePath());
-//		TestHelperUtils.generateTemporaryFiles(tempInDir.getAbsolutePath(), 1);
-//		File tempOutDir = TestHelperUtils.generateTemporaryDirectory(tempDir
-//				.getAbsolutePath());
-//		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testexit.xml");
-//		final Hamake make = BaseSyntaxParser.parse(new Context(), new FileInputStream(localHamakeFile), null, true);
-//		make.setNumJobs(1);
-//		((MapReduce) ((Foreach) make.getTasks().get(0)).getTask())
-//				.setJar(TestHelperUtils.getExamplesJar().getAbsolutePath());
-//		TestHelperUtils.setMapTaskInputOutputFolders(make, "map",
-//				new HamakePath(tempInDir.getAbsolutePath()), new HamakePath(
-//						tempOutDir.getAbsolutePath()));
-//		make.run();
-//		Assert.assertFalse("Hamake has passed System.exit()", manager.getClass().getDeclaredField("exitCalled").getBoolean(manager));
-//		System.setSecurityManager(securityManager);
-//	}
+	@Test
+	public void test2BranchesLocalCpHamakefile() throws IOException,
+			ParserConfigurationException, SAXException,
+			InvalidMakefileException, InterruptedException,
+			PigNotFoundException, InvalidContextVariableException {
+
+		File inputDir = new File(tempDir, "input");
+		inputDir.mkdirs();
+		TestHelperUtils.generateTemporaryFiles(inputDir.getAbsolutePath(), 10);
+		File map11Dir = new File(tempDir, "map11");
+		map11Dir.mkdirs();
+		File map12Dir = new File(tempDir, "map12");
+		map12Dir.mkdirs();
+		File map21Dir = new File(tempDir, "map21");
+		map21Dir.mkdirs();
+		File map22Dir = new File(tempDir, "map22");
+		map22Dir.mkdirs();
+		File output1File = new File(tempDir, "output1.txt");
+		File output2File = new File(tempDir, "output2.txt");
+		String tempDirPath = tempDir.getAbsolutePath().toString();
+		Context context = new Context();
+		context.set("tmpdir", tempDirPath);
+		if (OS.isLinux()) {
+			context.set("cp", "cp");
+			context.set("ls", "ls");
+		} else if (OS.isWindows()) {
+			context.set("cp", "copy");
+			context.set("ls", "dir");
+		}
+
+		Hamake make = null;
+		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir()
+				+ File.separator + "hamakefile-local-2-branches-cp.xml");
+		make = BaseSyntaxParser.parse(context, new FileInputStream(
+				localHamakeFile), true);
+		make.setNumJobs(2);
+		make.run();
+		int map21OutSize = FileUtils.listFiles(map21Dir, TrueFileFilter.INSTANCE,
+				TrueFileFilter.INSTANCE).size();
+		Assert.assertEquals(10, map21OutSize);
+		int map22OutSize = FileUtils.listFiles(map22Dir, TrueFileFilter.INSTANCE,
+				TrueFileFilter.INSTANCE).size();
+		Assert.assertEquals(10, map22OutSize);
+		Assert.assertTrue(output1File.exists());
+		Assert.assertTrue("File size of output is 0 ", output1File.length() > 0);
+		Assert.assertTrue(output2File.exists());
+		Assert.assertTrue("File size of output is 0 ", output2File.length() > 0);
+	}
+
+	// @Test
+	// public void testSystemExitIsProhibited() throws IOException,
+	// ParserConfigurationException, SAXException,
+	// InvalidMakefileException, InterruptedException, SecurityException,
+	// NoSuchFieldException, IllegalArgumentException, IllegalAccessException,
+	// PigNotFoundException, InvalidContextVariableException {
+	// SecurityManager securityManager = System.getSecurityManager();
+	// @SuppressWarnings(value = { "unused" })
+	// SecurityManager manager = new SecurityManager(){
+	// boolean exitCalled = false;
+	// @Override
+	// public void checkPermission(Permission perm) { }
+	//
+	// @Override
+	// public void checkPermission(Permission perm, Object context) { }
+	//
+	// @Override
+	// public void checkExit(int status) {
+	// exitCalled = true;
+	// throw new SecurityException();
+	// }
+	// };
+	// System.setSecurityManager(manager);
+	// File tempInDir = TestHelperUtils.generateTemporaryDirectory(tempDir
+	// .getAbsolutePath());
+	// TestHelperUtils.generateTemporaryFiles(tempInDir.getAbsolutePath(), 1);
+	// File tempOutDir = TestHelperUtils.generateTemporaryDirectory(tempDir
+	// .getAbsolutePath());
+	// File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() +
+	// File.separator + "hamakefile-testexit.xml");
+	// final Hamake make = BaseSyntaxParser.parse(new Context(), new
+	// FileInputStream(localHamakeFile), null, true);
+	// make.setNumJobs(1);
+	// ((MapReduce) ((Foreach) make.getTasks().get(0)).getTask())
+	// .setJar(TestHelperUtils.getExamplesJar().getAbsolutePath());
+	// TestHelperUtils.setMapTaskInputOutputFolders(make, "map",
+	// new HamakePath(tempInDir.getAbsolutePath()), new HamakePath(
+	// tempOutDir.getAbsolutePath()));
+	// make.run();
+	// Assert.assertFalse("Hamake has passed System.exit()",
+	// manager.getClass().getDeclaredField("exitCalled").getBoolean(manager));
+	// System.setSecurityManager(securityManager);
+	// }
 
 }

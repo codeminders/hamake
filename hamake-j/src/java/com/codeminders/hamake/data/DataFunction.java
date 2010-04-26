@@ -31,6 +31,8 @@ public abstract class DataFunction {
 	
 	public abstract long getMinTimeStamp(Context context) throws IOException;
 	
+	protected abstract String[] toString(Context context) throws IOException;
+	
 	public String getId(){
 		return this.id;
 	}
@@ -62,18 +64,12 @@ public abstract class DataFunction {
 	}
 	
 	public boolean intersects(Context context, DataFunction that) throws IOException {
-		
-		for(Path thisPath : getPath(context)){
-			FileSystem thisFS = this.getFileSystem(context, thisPath);
-			String thisDir = (thisFS.isFile(thisPath)? thisPath.getParent().toString() : thisPath.toString());
-			thisDir += (thisFS.isFile(thisPath)? thisPath.getName() : "*");
-			for(Path thatPath : that.getPath(context)){
-				FileSystem thatFS = that.getFileSystem(context, thatPath);
-				String thatDir = (thatFS.isFile(thatPath)? thatPath.getParent().toString() : thatPath.toString());
-				thatDir += (thatFS.isFile(thatPath)? thatPath.getName() : "*");
-				boolean intersects = (matches(thatDir, thisDir) || matches(thisDir, thatDir))
+		for(String thisPath : this.toString(context)){
+			for(String thatPath : that.toString(context)){
+				boolean matches = false;
+				matches = (matches(thisPath, thatPath) || matches(thatPath, thisPath))
 				&& getGeneration() >= that.getGeneration();
-				if(intersects) return true;
+				if(matches) return true;
 			}
 		}
 		return false;
@@ -93,6 +89,9 @@ public abstract class DataFunction {
 	
 	protected static boolean matches(String a, String b){
 		String[] B = StringUtils.split(b, "*");
+		for(int i = 0; i < B.length; i++){
+			B[i] = StringUtils.removeEnd(B[i], "/");
+		}
 		int start = 0, end = B.length;
 		if(!b.startsWith("*")){
 			if(!a.startsWith(B[0]))return false;
