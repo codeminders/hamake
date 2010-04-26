@@ -25,7 +25,7 @@
 			</set>
 		</output>
 		<mapreduce jar="${tmpdir}/datamining.jar" main="us.imageshack.datamining.Access2Referrers">
-			<parameter>
+			<parameter concat_function="comma">
 				<literal value="${foreach:path}" />
 				<reference idref="relatedOne" />
 			</parameter>

@@ -1,12 +1,17 @@
 package com.codeminders.hamake.syntax;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -28,6 +33,7 @@ import com.codeminders.hamake.data.SetDataFunction;
 import com.codeminders.hamake.dtr.DataTransformationRule;
 import com.codeminders.hamake.dtr.Fold;
 import com.codeminders.hamake.dtr.Foreach;
+import com.codeminders.hamake.params.CommaConcatFunction;
 import com.codeminders.hamake.params.ConcatFunction;
 import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.IdentityProcessingFunction;
@@ -42,21 +48,22 @@ import com.codeminders.hamake.task.*;
 
 public class SyntaxParser extends BaseSyntaxParser {
 	
+	private static final String SCHEMA_NAME = "hamakefile-" + Hamake.HAMAKE_VERSION + ".xsd";
+	
 	Document dom;
 	boolean verbose;
 	Context context;
 	
-	protected SyntaxParser(Document dom, Context context, boolean verbose){
-		this.dom = dom;
+	protected SyntaxParser(Context context, boolean verbose){
 		this.verbose = verbose;
 		this.context = context;
 	}
 
 	@Override
-	protected Hamake parseSyntax()
+	protected Hamake parseSyntax(Document dom)
 			throws IOException, ParserConfigurationException, SAXException,
 			InvalidMakefileException, PigNotFoundException, InvalidContextVariableException {
-
+		this.dom = dom;
 		parseProperties(dom);
 
 		Hamake ret = new Hamake(context);
@@ -71,8 +78,12 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 	
 	@Override
-	protected boolean isCorrectParser(){		
-		return (dom.getElementsByTagName("foreach").getLength() > 0) || (dom.getElementsByTagName("fold").getLength() > 0);
+	protected boolean validate(InputStream is) throws SAXException, IOException{		
+//			SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+//			Schema schema = factory.newSchema(new StreamSource(SyntaxParser.class.getResourceAsStream(SCHEMA_NAME)));
+//			Validator validator = schema.newValidator();
+//            validator.validate(new StreamSource(is));
+            return true;
 	}
 
 	protected Element parseConfig(Document dom) throws InvalidMakefileException {
@@ -376,9 +387,9 @@ public class SyntaxParser extends BaseSyntaxParser {
         ConcatFunction concatFunction = null;
         if(!StringUtils.isEmpty(concatFuncIdentificator)){
         	if("space".equals(concatFuncIdentificator)) concatFunction = new SpaceConcatFunction();
-        	if("comma".equals(concatFuncIdentificator)) concatFunction = new SpaceConcatFunction();
-        	if("append".equals(concatFuncIdentificator)) concatFunction = new AppendConcatFunction();
-        	else throw new InvalidMakefileException("'concat_function' attribute of " + getPath(root) + "contains unknown function");
+        	else if("comma".equals(concatFuncIdentificator)) concatFunction = new CommaConcatFunction();
+        	else if("append".equals(concatFuncIdentificator)) concatFunction = new AppendConcatFunction();
+        	else throw new InvalidMakefileException("'concat_function' attribute of " + getPath(root) + " contains unknown function");
         }
         else{
         	concatFunction = new AppendConcatFunction();

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="project">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="property" minOccurs="0"/>
+        <xs:element maxOccurs="unbounded" ref="file" minOccurs="0"/>
+        <xs:element ref="fileset" maxOccurs="unbounded" minOccurs="0"/>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element ref="foreach"/>
+          <xs:element ref="fold"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="default" type="xs:NCName"/>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="property">
+    <xs:complexType>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute name="value" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="foreach">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" ref="dependencies"/>
+        <xs:element ref="description" minOccurs="0"/>
+        <xs:element name="input">
+          <xs:complexType>
+            <xs:choice>
+              <xs:element ref="fileset"/>
+              <xs:element ref="include"/>
+            </xs:choice>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="output"/>
+        <xs:choice>
+          <xs:element ref="exec"/>
+          <xs:element ref="mapreduce"/>
+          <xs:element ref="pig"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="dependencies">
+    <xs:complexType>
+      <xs:all>
+        <xs:element minOccurs="0" ref="file"/>
+        <xs:element minOccurs="0" ref="fileset"/>
+        <xs:element minOccurs="0" ref="set"/>
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="exec">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="parameter"/>
+      </xs:sequence>
+      <xs:attribute name="binary" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="mapreduce">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="parameter"/>
+      </xs:sequence>
+      <xs:attribute name="jar" use="required"/>
+      <xs:attribute name="main" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="fold">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="description"/>
+        <xs:element name="input">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" minOccurs="0" ref="file"/>
+              <xs:element maxOccurs="unbounded" minOccurs="0" ref="fileset"/>
+              <xs:element maxOccurs="unbounded" minOccurs="0" ref="set"/>
+              <xs:element maxOccurs="unbounded" minOccurs="0" ref="include"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="output"/>
+        <xs:choice>
+          <xs:element ref="mapreduce"/>
+          <xs:element ref="pig"/>
+          <xs:element ref="exec"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="pig">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="parameter"/>
+        <xs:element ref="jobconf"/>
+      </xs:choice>
+      <xs:attribute name="script" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="jobconf">
+    <xs:complexType>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute name="value" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="file">
+    <xs:complexType>
+      <xs:attribute name="generation" type="xs:integer"/>
+      <xs:attribute name="id" type="xs:NCName"/>
+      <xs:attribute name="path" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="fileset">
+    <xs:complexType>
+      <xs:attribute name="generation" type="xs:integer"/>
+      <xs:attribute name="id" type="xs:NCName"/>
+      <xs:attribute name="mask"/>
+      <xs:attribute name="path" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="description" type="xs:string"/>
+  <xs:element name="output">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element minOccurs="0" ref="file"/>
+          <xs:element minOccurs="0" ref="set"/>
+          <xs:element minOccurs="0" ref="include"/>
+          <xs:element minOccurs="0" ref="fileset"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="expiration" use="required" type="xs:NMTOKEN"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="parameter">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element minOccurs="0" ref="literal"/>
+          <xs:element minOccurs="0" ref="reference"/>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="literal">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:string"/>
+      <xs:attribute name="name" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="reference">
+    <xs:complexType>
+      <xs:attribute name="idref" use="required" type="xs:NCName"/>
+      <xs:attribute name="name" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="include">
+    <xs:complexType>
+      <xs:attribute name="idref" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="set">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="file"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="fileset"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="set"/>
+        <xs:element maxOccurs="unbounded" minOccurs="0" ref="include"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -92,6 +92,9 @@
     <javac classpathref="library.commons.classpath" destdir="${build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
       <src path="${src.dir}" />
     </javac>
+  	<copy todir="${build.dir}/classes">
+  		<fileset dir="${src.dir}" includes="**/*.xsd"/>
+  	</copy>
   </target>
 
   <target name="compile-test" depends="compile">
@@ -121,7 +124,8 @@
       <manifest>
         <attribute name="Main-Class" value="com.codeminders.hamake.Main" />
       </manifest>
-      <fileset dir="${build.dir}/classes" includes="**/*.class" excludes="com/codeminders/hamake/examples/**" />
+      <fileset dir="${build.dir}/classes" includes="**/*.class, **/*.xsd" excludes="com/codeminders/hamake/examples/**" />
+      <fileset dir="${build.dir}" includes="lib/*.jar" />
       <fileset dir="${build.dir}" includes="lib/*.jar" />
     </jar>
     <mkdir dir="${dist.examples.dir}/hamakefiles" />
