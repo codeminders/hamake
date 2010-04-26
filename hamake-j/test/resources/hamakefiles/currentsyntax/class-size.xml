@@ -58,22 +58,23 @@
         </mapreduce>
     </fold>
 
-    <foreach name="median">
+    <fold name="median">
         <input>
-            <fileset path="${output}/class-size-histogram"/>
+            <file id="medianIn" path="${output}/class-size-histogram"/>
         </input>
         <output>
-            <file id="medianOut" path="${output}/class-size-median-bin/${foreach:filename}"/>
+            <file id="medianOut" path="${output}/class-size-median-bin"/>
         </output>
         <pig script="${scripts}/median.pig">
-        	<parameter>
-        		<literal value="infile=${foreach:path}"/>
+        	<parameter concat_function="append">
+        		<literal value="infile="/>
+        		<reference idref="medianIn"/>
         	</parameter>
-        	<parameter>
+        	<parameter concat_function="append">
         		<literal value="outfile="/>
         		<reference idref="medianOut"/>
         	</parameter>
         </pig>
-    </foreach>
+    </fold>
 
 </project>
