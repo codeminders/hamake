@@ -10,7 +10,7 @@
 	<fold name="reduce">
 		<description>first reduce</description>
 		<input>
-			<file id="reduceIn" path="${tmpdir}/map1" />
+			<file id="reduceIn" path="${tmpdir}/map1/" />
 		</input>
 		<output>
 			<file id="output" path="${tmpdir}/output.txt" />

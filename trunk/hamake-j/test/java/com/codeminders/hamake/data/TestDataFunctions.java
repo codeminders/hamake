@@ -149,6 +149,9 @@ public class TestDataFunctions {
 		pathA = "/home/user/path/file.jpg";
 		pathB = "/home/**/*.txt";
 		Assert.assertFalse(DataFunction.matches(pathA, pathB));
+		pathA = "/tmp/map1";
+		pathB = "/tmp/map1/*";
+		Assert.assertTrue(DataFunction.matches(pathA, pathB));
 	}
 
 }

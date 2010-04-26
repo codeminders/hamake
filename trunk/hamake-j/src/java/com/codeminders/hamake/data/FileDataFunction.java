@@ -101,7 +101,14 @@ public class FileDataFunction extends DataFunction {
 
 		return stat.getModificationTime();
 	}
-
+	
+	@Override
+	protected String[] toString(Context context) throws IOException{
+		Path path = getPath(context).get(0);
+		FileSystem fs = this.getFileSystem(context, path);
+		return new String[] {fs.isFile(path)? path.getParent().toString() : path.toString()};
+	}
+	
 	private Path toPath(Context context) throws IOException {
 		return Utils.resolvePath(Utils.replaceVariables(context, this.path),
 				getWorkFolder());

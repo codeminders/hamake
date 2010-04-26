@@ -2,10 +2,12 @@ package com.codeminders.hamake.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -89,7 +91,16 @@ public class SetDataFunction extends DataFunction {
 		}
 		return modificationTime;
 	}
-
+	
+	@Override
+	protected String[] toString(Context context) throws IOException{
+		List<String> paths = new ArrayList<String>();
+		for(DataFunction func : dataFunctions){
+			paths.addAll(Arrays.asList(func.toString(context)));
+		}
+		return paths.toArray(new String[] {});
+	}
+	
 	public void addDataFunction(DataFunction func) {
 		dataFunctions.add(func);
 	}
