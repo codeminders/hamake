@@ -13,10 +13,16 @@ public class HamakeParameter implements Parameter{
 		this.concatFunc = concatFunc;
 		this.processingFunc = processingFunc;
 	}
-	
-	private List<Object> values;
+
+    public HamakeParameter(String name, List<Object> values, ConcatFunction concatFunc, ProcessingFunction processingFunc) {
+        this(values, concatFunc, processingFunc);
+        this.name = name;
+    }
+
+    private List<Object> values;
 	private ConcatFunction concatFunc;
 	private ProcessingFunction processingFunc;
+    private String name = null;
 	
 	public String get(Context context) throws IOException{
 		List<String> parameters = new ArrayList<String>();
@@ -32,5 +38,12 @@ public class HamakeParameter implements Parameter{
 		}
 		return concatFunc.concat(parameters.toArray(new String[] {}));
 	}
-	
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
