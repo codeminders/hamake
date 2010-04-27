@@ -56,9 +56,9 @@
 
 
   <!-- Project Libraries -->
-	
+  
   <path id="pig.classpath">
-  	<fileset file="${lib.dir}/hadoop-${hadoop.version}/pig-*-core.jar" />
+    <fileset file="${lib.dir}/hadoop-${hadoop.version}/pig-*-core.jar" />
   </path>
 
   <path id="library.commons.classpath">
@@ -92,9 +92,9 @@
     <javac classpathref="library.commons.classpath" destdir="${build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
       <src path="${src.dir}" />
     </javac>
-  	<copy todir="${build.dir}/classes">
-  		<fileset dir="${src.dir}" includes="**/*.xsd"/>
-  	</copy>
+    <copy todir="${build.dir}/classes">
+      <fileset dir="${src.dir}" includes="**/*.xsd"/>
+    </copy>
   </target>
 
   <target name="compile-test" depends="compile">
@@ -138,6 +138,35 @@
     <copy todir="${dist.examples.dir}/scripts">     
       <fileset file="${test.resources.dir}/scripts/median.pig" />
     </copy>
+
+  </target>
+
+  <target name="build-rpm" depends="dist">
+    <delete dir="${dist.dir}/destroot" />
+
+    <mkdir dir="${dist.dir}/rpmroot" />
+    <mkdir dir="${dist.dir}/rpmroot/SPECS" />
+    <mkdir dir="${dist.dir}/rpmroot/BUILD" />
+    <mkdir dir="${dist.dir}/rpmroot/RPMS/" />
+    <mkdir dir="${dist.dir}/rpmroot/usr/lib/hamake"/>
+    <mkdir dir="${dist.dir}/rpmroot/usr/local/hamake"/>
+
+    <copy todir="${dist.dir}/rpmroot/SPECS">
+      <fileset dir="${basedir}/etc/rpm-spec" includes="*.spec"/>
+    </copy>
+
+    <copy file="${dist.dir}/hamake-j-${hamake.version}.jar" tofile="${dist.dir}/rpmroot/usr/lib/hamake/hamake-${hamake.version}.jar"/>
+    <copy todir="${dist.dir}/rpmroot/usr/local/hamake">
+      <fileset dir="${dist.dir}/examples">
+        <include name="**"/>
+      </fileset>
+    </copy>
+
+    <rpm
+         specFile="hamake.spec"
+         topDir="${dist.dir}/rpmroot"
+         cleanBuildDir="false"
+         failOnError="true"/>
   </target>
 
   <target name="build-examples" depends="compile">
