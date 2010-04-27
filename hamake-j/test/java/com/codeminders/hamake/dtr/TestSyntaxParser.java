@@ -10,6 +10,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,9 +21,10 @@ import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.InvalidContextVariableException;
 import com.codeminders.hamake.PigNotFoundException;
-import com.codeminders.hamake.TestHelperUtils;
+import com.codeminders.hamake.HelperUtils;
 import com.codeminders.hamake.dtr.Fold;
 import com.codeminders.hamake.dtr.Foreach;
+import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
 import com.codeminders.hamake.task.Exec;
@@ -39,30 +42,30 @@ public class TestSyntaxParser {
 
 	@Before
 	public void setUp() {
-		tempDir = TestHelperUtils.generateTemporaryDirectory();
+		tempDir = HelperUtils.generateTemporaryDirectory();
 	}
 	
 	@Test
-	public void testCorrectHamakefile() throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InvalidContextVariableException{
-		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testsyntax.xml");
+	public void testFull() throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InvalidContextVariableException{
+		File localHamakeFile = new File(HelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testsyntax.xml");
 		File depPath = new File(tempDir, "deppath");
 		depPath.mkdirs();
 		File someDir = new File(tempDir, "somedir");
 		someDir.mkdirs();
 		File referrersDir = new File(tempDir, "referrers");
 		referrersDir.mkdirs();
-		TestHelperUtils.generateTemporaryFiles(referrersDir.getAbsolutePath(), 3, ".log");
-		TestHelperUtils.generateTemporaryFiles(referrersDir.getAbsolutePath(), 3, ".fog");
+		HelperUtils.generateTemporaryFiles(referrersDir.getAbsolutePath(), 3, ".log");
+		HelperUtils.generateTemporaryFiles(referrersDir.getAbsolutePath(), 3, ".fog");
 		File relatedOneDir = new File(tempDir, "related/one");
 		relatedOneDir.mkdirs();
 		File relatedTwoDir = new File(tempDir, "related/two");
 		relatedTwoDir.mkdirs();
 		File revDir = new File(tempDir, "rev");
-		TestHelperUtils.generateTemporaryFiles(revDir.getAbsolutePath(), 2, ".file");
+		HelperUtils.generateTemporaryFiles(revDir.getAbsolutePath(), 2, ".file");
 		File revOutDir = new File(tempDir, "revout");
-		TestHelperUtils.generateTemporaryFiles(revOutDir.getAbsolutePath(), 4, ".file");
+		HelperUtils.generateTemporaryFiles(revOutDir.getAbsolutePath(), 4, ".file");
 		String tempDirPath = tempDir.getAbsolutePath().toString();
-		Context context = new Context();
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		context.set("tmpdir", tempDirPath);
 		context.setForeach("path", tempDir.getAbsolutePath().toString() + "/referrers/1.log");
 		context.setForeach("basename", "1");
@@ -115,5 +118,41 @@ public class TestSyntaxParser {
 		Assert.assertEquals(3, pig.getParameters().size());
 		Assert.assertEquals("*", pig.getParameters().get(0).get(context));
 		Assert.assertEquals("-jobconf jcname=jcvalue", pig.getParameters().get(1).get(context));
+	}
+	
+	@Test
+	public void testMinimal() throws IOException, InvalidContextVariableException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException{
+		File localHamakeFile = new File(HelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testsyntax-minimal.xml");
+		File fileset = new File(tempDir, "fileset");
+		fileset.mkdirs();
+		HelperUtils.generateTemporaryFiles(fileset.getAbsolutePath(), 3);
+		
+		File folder = new File(tempDir, "folder");
+		folder.mkdirs();
+		
+		File file = new File(tempDir, "file");
+		file.mkdirs();
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		context.set("tmpdir", tempDir.getAbsolutePath().toString());
+		
+		Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(localHamakeFile), true);
+		Assert.assertNotNull(make.getProjectName());
+		Assert.assertTrue(StringUtils.isEmpty(make.getDefaultTarget()));
+		//1st foreach
+		Foreach mdtr1 = (Foreach)make.getTasks().get(0);
+		Assert.assertNotNull(mdtr1.getName());
+		Assert.assertEquals(3, mdtr1.getInputs().get(0).getPath(context).size());
+		Assert.assertEquals(0, mdtr1.getInputs().get(0).getGeneration());
+		Assert.assertEquals(1, mdtr1.getOutputs().get(0).getPath(context).size());
+		Assert.assertEquals(0, mdtr1.getOutputs().get(0).getGeneration());
+		Assert.assertEquals(Long.MAX_VALUE, mdtr1.getOutputs().get(0).getValidityPeriod());
+		Assert.assertEquals(0, mdtr1.getDeps().size());
+		Assert.assertTrue(mdtr1.getTask() instanceof MapReduce);
+		MapReduce mr = (MapReduce)mdtr1.getTask();
+		Assert.assertEquals(tempDir.getAbsoluteFile().toString() + "/datamining.jar", mr.getJar());
+		Assert.assertEquals("us.imageshack.datamining.Access2Referrers", mr.getMain());
+		Assert.assertEquals(1, mr.getParameters().size());
+		Assert.assertEquals(">", mr.getParameters().get(0).get(context));
+		Assert.assertNotNull(((HamakeParameter)mr.getParameters().get(0)).getName());
 	}
 }

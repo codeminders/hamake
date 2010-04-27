@@ -8,18 +8,18 @@ import com.codeminders.hamake.Context;
 
 public class HamakeParameter implements Parameter{
 	
-	public HamakeParameter(List<Object> values, ConcatFunction concatFunc, ProcessingFunction processingFunc){
+	public HamakeParameter(List<? extends ParameterItem> values, ConcatFunction concatFunc, ProcessingFunction processingFunc){
 		this.values = values;
 		this.concatFunc = concatFunc;
 		this.processingFunc = processingFunc;
 	}
 
-    public HamakeParameter(String name, List<Object> values, ConcatFunction concatFunc, ProcessingFunction processingFunc) {
+	public HamakeParameter(String name, List<? extends ParameterItem> values, ConcatFunction concatFunc, ProcessingFunction processingFunc) {
         this(values, concatFunc, processingFunc);
         this.name = name;
     }
 
-    private List<Object> values;
+    private List<? extends ParameterItem> values;
 	private ConcatFunction concatFunc;
 	private ProcessingFunction processingFunc;
     private String name = null;

@@ -8,10 +8,6 @@ import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.w3c.dom.Document;
@@ -54,7 +50,7 @@ public abstract class BaseSyntaxParser {
 			return syntaxParser.parseSyntax(doc);
 		}
 		else{
-			throw new InvalidMakefileException("Unknown hamakefile syntax");
+			throw new InvalidMakefileException("Hamake-file validation error");
 		}
 	}	
 	
@@ -122,10 +118,14 @@ public abstract class BaseSyntaxParser {
 	}
 
 	protected String getOptionalAttribute(Element root, String name) {
+		return getOptionalAttribute(root, name, null);
+	}
+	
+	protected String getOptionalAttribute(Element root, String name, String defaultValue) {
 		if (root.hasAttribute(name)) {
 			return root.getAttribute(name);
 		}
-		return null;
+		return defaultValue;
 	}
 
 }

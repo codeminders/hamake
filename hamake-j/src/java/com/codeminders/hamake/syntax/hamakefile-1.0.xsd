@@ -15,13 +15,13 @@
         </xs:choice>
       </xs:sequence>
       <xs:attribute name="default" type="xs:NCName"/>
-      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute name="name" type="xs:string"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="property">
     <xs:complexType>
-      <xs:attribute name="name" use="required" type="xs:string"/>
-      <xs:attribute name="value" use="required" type="xs:string"/>
+      <xs:attribute name="name" use="required" type="xs:normalizedString"/>
+      <xs:attribute name="value" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="foreach">
@@ -34,6 +34,7 @@
             <xs:choice>
               <xs:element ref="fileset"/>
               <xs:element ref="include"/>
+              <xs:element ref="file"/>
             </xs:choice>
           </xs:complexType>
         </xs:element>
@@ -44,16 +45,16 @@
           <xs:element ref="pig"/>
         </xs:choice>
       </xs:sequence>
-      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute name="name" type="xs:NCName"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="dependencies">
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
-        <xs:element maxOccurs="unbounded" ref="file"/>
-        <xs:element maxOccurs="unbounded" ref="fileset"/>
-        <xs:element maxOccurs="unbounded" ref="include"/>
-        <xs:element maxOccurs="unbounded" ref="set"/>
+        <xs:element ref="file"/>
+        <xs:element ref="fileset"/>
+        <xs:element ref="include"/>
+        <xs:element ref="set"/>
       </xs:choice>
     </xs:complexType>
   </xs:element>
@@ -63,7 +64,7 @@
         <xs:element ref="parameter"/>
         <xs:element ref="jobconf"/>
       </xs:choice>
-      <xs:attribute name="binary" use="required" type="xs:string"/>
+      <xs:attribute name="binary" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="mapreduce">
@@ -72,8 +73,8 @@
         <xs:element ref="parameter"/>
         <xs:element ref="jobconf"/>
       </xs:choice>
-      <xs:attribute name="jar" use="required"/>
-      <xs:attribute name="main" use="required"/>
+      <xs:attribute name="jar" use="required" type="xs:normalizedString"/>
+      <xs:attribute name="main" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="fold">
@@ -84,10 +85,10 @@
         <xs:element name="input">
           <xs:complexType>
             <xs:choice maxOccurs="unbounded">
-              <xs:element maxOccurs="unbounded" ref="file"/>
-              <xs:element maxOccurs="unbounded" ref="fileset"/>
-              <xs:element maxOccurs="unbounded" ref="set"/>
-              <xs:element maxOccurs="unbounded" ref="include"/>
+              <xs:element ref="file"/>
+              <xs:element ref="fileset"/>
+              <xs:element ref="set"/>
+              <xs:element ref="include"/>
             </xs:choice>
           </xs:complexType>
         </xs:element>
@@ -107,70 +108,68 @@
         <xs:element ref="parameter"/>
         <xs:element ref="jobconf"/>
       </xs:choice>
-      <xs:attribute name="script" use="required"/>
+      <xs:attribute name="script" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="jobconf">
     <xs:complexType>
-      <xs:attribute name="name" use="required" type="xs:NCName"/>
-      <xs:attribute name="value" use="required" type="xs:NCName"/>
+      <xs:attribute name="name" use="required" type="xs:normalizedString"/>
+      <xs:attribute name="value" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="file">
     <xs:complexType>
-      <xs:attribute name="generation" type="xs:integer"/>
-      <xs:attribute name="id" type="xs:NCName"/>
-      <xs:attribute name="path" use="required"/>
+      <xs:attribute name="generation" type="xs:positiveInteger"/>
+      <xs:attribute name="id" type="xs:ID"/>
+      <xs:attribute name="path" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="fileset">
     <xs:complexType>
-      <xs:attribute name="generation" type="xs:integer"/>
-      <xs:attribute name="id" type="xs:NCName"/>
-      <xs:attribute name="mask"/>
-      <xs:attribute name="path" use="required"/>
+      <xs:attribute name="generation" type="xs:positiveInteger"/>
+      <xs:attribute name="id" type="xs:ID"/>
+      <xs:attribute name="mask" type="xs:normalizedString"/>
+      <xs:attribute name="path" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="description" type="xs:string"/>
   <xs:element name="output">
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
-        <xs:element maxOccurs="unbounded" ref="file"/>
-        <xs:element maxOccurs="unbounded" ref="fileset"/>
-        <xs:element maxOccurs="unbounded" ref="include"/>
-        <xs:element maxOccurs="unbounded" ref="set"/>
+        <xs:element ref="file"/>
+        <xs:element ref="fileset"/>
+        <xs:element ref="include"/>
+        <xs:element ref="set"/>
       </xs:choice>
-      <xs:attribute name="expiration" type="xs:NMTOKEN"/>
+      <xs:attribute name="expiration" type="expiration" form="unqualified"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="parameter">
     <xs:complexType>
-      <xs:sequence>
-        <xs:choice maxOccurs="unbounded">
-          <xs:element minOccurs="0" ref="literal"/>
-          <xs:element minOccurs="0" ref="reference"/>
-        </xs:choice>
-      </xs:sequence>
-      <xs:attribute name="concat_function" type="xs:string"/>
-      <xs:attribute name="processing_function" type="xs:string"/>
-      <xs:attribute name="name" type="xs:string"/>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="reference"/>
+        <xs:element ref="literal"/>
+      </xs:choice>
+      <xs:attribute name="concat_function" type="xs:normalizedString"/>
+      <xs:attribute name="processing_function" type="xs:normalizedString"/>
+      <xs:attribute name="name" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="literal">
     <xs:complexType>
-      <xs:attribute name="value" use="required" type="xs:string"/>
-      <xs:attribute name="name" type="xs:string"/>
+      <xs:attribute name="value" use="required" type="xs:normalizedString"/>
+      <xs:attribute name="name" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="reference">
     <xs:complexType>
-      <xs:attribute name="idref" use="required" type="xs:NCName"/>
-      <xs:attribute name="name" type="xs:string"/>
+      <xs:attribute name="idref" use="required" type="xs:IDREF"/>
+      <xs:attribute name="name" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="include">
     <xs:complexType>
-      <xs:attribute name="idref" use="required" type="xs:NCName"/>
+      <xs:attribute name="idref" use="required" type="xs:IDREF"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="set">
@@ -181,6 +180,15 @@
         <xs:element maxOccurs="unbounded" ref="include"/>
         <xs:element maxOccurs="unbounded" ref="set"/>
       </xs:choice>
+      <xs:attribute name="id" type="xs:ID"/>
     </xs:complexType>
   </xs:element>
+  <xs:simpleType name="expiration">
+    <xs:restriction base="xs:token">
+      <xs:minLength value="1"/>
+      <xs:maxLength value="4"/>
+      <xs:whiteSpace value="collapse"/>
+      <xs:pattern value="[0-9]+[s|m|h|d|w]"/>
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

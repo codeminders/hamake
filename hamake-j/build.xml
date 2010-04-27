@@ -152,9 +152,12 @@
         <path refid="test.runtime.classpath" />
       </classpath>
 
-      <test name="com.codeminders.hamake.AllHamakeTests" haltonfailure="no" outfile="hamake" todir="${test.build.dir}/test_report" fork="yes">
+      <batchtest haltonfailure="no" todir="${test.build.dir}/test_report" fork="yes">
+      	<fileset dir="${test.build.dir}/classes">
+      		<include name="**/*Test*.class"/>
+      	</fileset>
         <formatter type="xml" />
-      </test>
+      </batchtest>
       <sysproperty key="examples.jar" value="${dist.examples.dir}/hamake-examples-${hamake.version}.jar" />
       <sysproperty key="hamakefiles.dir" value="${test.current.hamakefiles.dir}" />
 

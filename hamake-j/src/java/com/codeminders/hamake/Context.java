@@ -16,21 +16,23 @@ public class Context {
 	
 	public static final String HAMAKE_PROPERTY_WORKING_FOLDER = "workdir";
 	public static final String HAMAKE_PROPERTY_HADOOP_CONFIGURATION = "hadoop.configuration";
-	public static final String HAMAKE_PROPERTY_HAMAKE_VERSION = "hamake.version";
+	public static final String HAMAKE_PROPERTY_HAMAKE_VERSION = "version";
+	public static final String HAMAKE_PROPERTY_WITH_DEPENDENCIES = "dependencies.enabled";
 	
 	public static final String[] FORBIDDEN_PREFIXES = {SYSTEM_VARS_PREFIX, ENVIRONMENT_VARS_PREFIX, HAMAKE_VARS_PREFIX, FOREACH_VARS_PREFIX, FOLD_VARS_PREFIX};
 
 	Map<String, Object> nameValuePairs;
 
-	public Context() {
+	private Context() {
 		this(null);
 	}
 	
-	public static Context initContext(Configuration hadoopConf, String workDir, String hamakeVersion){
+	public static Context initContext(Configuration hadoopConf, String workDir, String hamakeVersion, boolean dependenciesEnabled){
 		Context context = new Context();
 		context.setHamake(HAMAKE_PROPERTY_HADOOP_CONFIGURATION, new Configuration());
 		context.setHamake(HAMAKE_PROPERTY_WORKING_FOLDER, workDir);
 		context.setHamake(HAMAKE_PROPERTY_HAMAKE_VERSION, hamakeVersion);
+		context.setHamake(HAMAKE_PROPERTY_WITH_DEPENDENCIES, dependenciesEnabled);
 		return context;
 	}
 
