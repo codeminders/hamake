@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.data.DataFunction;
@@ -38,7 +40,6 @@ public abstract class DataTransformationRule {
 					return true;
 			}
 		}
-
 		return false;
 	}
 
@@ -56,8 +57,21 @@ public abstract class DataTransformationRule {
 				task).append("outputs", getOutputs())
 				.append("deps", getDeps()).toString();
 	}
+	
+	public int executeIfCan(Semaphore semaphore) throws IOException{
+		boolean canStart = true;
+		if((Boolean)getContext().getHamake(Context.HAMAKE_PROPERTY_WITH_DEPENDENCIES)){
+			for(DataFunction depDataFunc : getDeps()){
+				for(Path path : depDataFunc.getPath(getContext())){
+					FileSystem fs = depDataFunc.getFileSystem(getContext(), path);
+					if(!fs.exists(path))canStart = false;
+				}
+			}
+		}
+		return canStart? execute(semaphore) : 0;
+	}
 
-	public abstract int execute(Semaphore semaphore)
+	protected abstract int execute(Semaphore semaphore)
 			throws IOException;		
 
 }

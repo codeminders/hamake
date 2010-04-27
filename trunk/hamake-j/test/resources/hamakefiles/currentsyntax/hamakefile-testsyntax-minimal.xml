@@ -1,0 +1,17 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<!--  property tmpdir is set by unit test -->
+	<foreach>
+		<input>
+			<fileset path="${tmpdir}/fileset" />
+		</input>
+		<output>
+			<file path="${tmpdir}/file"/>
+		</output>
+		<mapreduce jar="${tmpdir}/datamining.jar" main="us.imageshack.datamining.Access2Referrers">
+			<parameter>
+				<literal value=">" />
+			</parameter>
+		</mapreduce>
+	</foreach>
+</project>

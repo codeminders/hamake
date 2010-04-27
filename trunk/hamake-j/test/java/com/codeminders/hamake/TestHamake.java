@@ -3,7 +3,6 @@ package com.codeminders.hamake;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.Permission;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -11,6 +10,7 @@ import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,7 @@ import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
 
 public class TestHamake {
-
+	
 	private File tempDir;
 
 	@After
@@ -30,7 +30,7 @@ public class TestHamake {
 
 	@Before
 	public void setUp() {
-		tempDir = TestHelperUtils.generateTemporaryDirectory();
+		tempDir = HelperUtils.generateTemporaryDirectory();
 	}
 
 	@Test
@@ -41,12 +41,12 @@ public class TestHamake {
 
 		File inputDir = new File(tempDir, "input");
 		inputDir.mkdirs();
-		TestHelperUtils.generateTemporaryFiles(inputDir.getAbsolutePath(), 10);
+		HelperUtils.generateTemporaryFiles(inputDir.getAbsolutePath(), 10);
 		File map1Dir = new File(tempDir, "map1");
 		map1Dir.mkdirs();
 		File outputFile = new File(tempDir, "output.txt");
 		String tempDirPath = tempDir.getAbsolutePath().toString();
-		Context context = new Context();
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		context.set("tmpdir", tempDirPath);
 		if (OS.isLinux()) {
 			context.set("cp", "cp");
@@ -57,7 +57,7 @@ public class TestHamake {
 		}
 
 		Hamake make = null;
-		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir()
+		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
 				+ File.separator + "hamakefile-local-cp.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile), true);
@@ -78,7 +78,7 @@ public class TestHamake {
 
 		File inputDir = new File(tempDir, "input");
 		inputDir.mkdirs();
-		TestHelperUtils.generateTemporaryFiles(inputDir.getAbsolutePath(), 10);
+		HelperUtils.generateTemporaryFiles(inputDir.getAbsolutePath(), 10);
 		File map11Dir = new File(tempDir, "map11");
 		map11Dir.mkdirs();
 		File map12Dir = new File(tempDir, "map12");
@@ -90,7 +90,7 @@ public class TestHamake {
 		File output1File = new File(tempDir, "output1.txt");
 		File output2File = new File(tempDir, "output2.txt");
 		String tempDirPath = tempDir.getAbsolutePath().toString();
-		Context context = new Context();
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		context.set("tmpdir", tempDirPath);
 		if (OS.isLinux()) {
 			context.set("cp", "cp");
@@ -101,7 +101,7 @@ public class TestHamake {
 		}
 
 		Hamake make = null;
-		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir()
+		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
 				+ File.separator + "hamakefile-local-2-branches-cp.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile), true);
@@ -131,29 +131,12 @@ public class TestHamake {
 			IllegalAccessException, PigNotFoundException,
 			InvalidContextVariableException {
 		SecurityManager securityManager = System.getSecurityManager();
-		@SuppressWarnings(value = { "unused" })
-		SecurityManager manager = new SecurityManager() {
-			boolean exitCalled = false;
-
-			@Override
-			public void checkPermission(Permission perm) {
-			}
-
-			@Override
-			public void checkPermission(Permission perm, Object context) {
-			}
-
-			@Override
-			public void checkExit(int status) {
-				exitCalled = true;
-				throw new SecurityException();
-			}
-		};
+		ExitSecurityManager manager = new ExitSecurityManager();
 		System.setSecurityManager(manager);
-		Context context = new Context();
-		context.set("examples.jar", TestHelperUtils.getExamplesJar()
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		context.set("examples.jar", HelperUtils.getExamplesJar()
 				.getAbsolutePath());
-		File localHamakeFile = new File(TestHelperUtils.getHamakefilesDir()
+		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
 				+ File.separator + "hamakefile-testexit.xml");
 		final Hamake make = BaseSyntaxParser.parse(context,
 				new FileInputStream(localHamakeFile), true);

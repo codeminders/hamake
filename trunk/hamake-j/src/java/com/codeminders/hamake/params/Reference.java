@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.Path;
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.data.DataFunction;
 
-public class Reference{
+public class Reference extends ParameterItem{
 	private String refid;
 	
 	public Reference(String refid){

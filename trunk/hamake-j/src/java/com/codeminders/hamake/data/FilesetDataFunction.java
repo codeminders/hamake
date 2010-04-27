@@ -97,7 +97,7 @@ public class FilesetDataFunction extends DataFunction {
 			FileStatus[] list = fs.listStatus(path);
 
 			for (FileStatus s : list) {
-				Path p = ((fs instanceof LocalFileSystem? new Path(s.getPath().toUri().toString()) : new Path(s.getPath().toString())));
+				Path p = ((fs instanceof LocalFileSystem? new Path(s.getPath().toUri().getPath()) : new Path(s.getPath().toString())));
 				if (Utils.matches(p, mask))
 					filesList.add(p);
 			}

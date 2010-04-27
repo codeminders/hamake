@@ -44,7 +44,7 @@ public class TaskThread extends Thread {
     public void run() {
         int rc;
         try {
-            rc = task.execute(semaphore);
+            rc = task.executeIfCan(semaphore);
         } catch (Exception ex) {
         	LOG.error("Unexpected exception occured during task " + task.getName(), ex);
             rc = -1000;

@@ -1,4 +1,6 @@
-<project name="test-syntax" default="foreach1">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ name="test-syntax"
+ default="foreach1">
 
 	<!--  property tmpdir is set by unit test -->
 	<property name="testprop" value="deppath" />
@@ -11,10 +13,10 @@
 	<fileset id="referrers" path="${tmpdir}/referrers" mask="*.log" />
 
 	<foreach name="foreach1">
+		<description>first foreach</description>
 		<dependencies>
 			<file path="${tmpdir}/${testprop}"/>
 		</dependencies>
-		<description>first foreach</description>
 		<input>
 			<include idref="referrers"/>
 		</input>

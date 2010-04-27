@@ -7,14 +7,16 @@ import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.codeminders.hamake.Context;
+import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.InvalidContextVariableException;
-import com.codeminders.hamake.TestHelperUtils;
+import com.codeminders.hamake.HelperUtils;
 
 public class TestDataFunctions {
 	
@@ -27,15 +29,15 @@ public class TestDataFunctions {
 
 	@Before
 	public void setUp() {
-		tempDir = TestHelperUtils.generateTemporaryDirectory();
+		tempDir = HelperUtils.generateTemporaryDirectory();
 	}
 	
 	@Test
 	public void testFileDataFunction() throws IOException, InvalidContextVariableException{
-		Context context = new Context();
-		File file1 = TestHelperUtils.generateTemporaryFile(tempDir.getAbsolutePath());
-		File folder = TestHelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
-		File file2 = TestHelperUtils.generateTemporaryFile(folder.getAbsolutePath());
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		File file1 = HelperUtils.generateTemporaryFile(tempDir.getAbsolutePath());
+		File folder = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
+		File file2 = HelperUtils.generateTemporaryFile(folder.getAbsolutePath());
 		context.set("somepath", FilenameUtils.getFullPath(file2.getAbsolutePath()));
 		FileDataFunction fileFunc1 = new FileDataFunction("1", 0, Long.MAX_VALUE, null, file1.getAbsolutePath());
 		Assert.assertEquals(1, fileFunc1.getPath(context).size());
@@ -68,11 +70,11 @@ public class TestDataFunctions {
 	
 	@Test
 	public void testFilesetDataFunction() throws IOException{
-		Context context = new Context();
-		File folder1 = TestHelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
-		TestHelperUtils.generateTemporaryFiles(folder1.getAbsolutePath(), 10, ".txt");
-		File folder2 = TestHelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
-		TestHelperUtils.generateTemporaryFiles(folder1.getAbsolutePath(), 10, ".jar");
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		File folder1 = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
+		HelperUtils.generateTemporaryFiles(folder1.getAbsolutePath(), 10, ".txt");
+		File folder2 = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
+		HelperUtils.generateTemporaryFiles(folder1.getAbsolutePath(), 10, ".jar");
 		FilesetDataFunction fileset1 = new FilesetDataFunction("id", 0, Long.MAX_VALUE, null, folder1.getAbsolutePath(), "*.txt");
 		Assert.assertEquals(10, fileset1.getPath(context).size());
 		Assert.assertTrue(fileset1 + " should be a set", fileset1.isSet(context));
@@ -85,13 +87,13 @@ public class TestDataFunctions {
 	
 	@Test
 	public void testSetDataFunction() throws IOException{
-		Context context = new Context();
-		File set1 = TestHelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
-		TestHelperUtils.generateTemporaryFiles(set1.getAbsolutePath(), 10, ".txt");
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		File set1 = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
+		HelperUtils.generateTemporaryFiles(set1.getAbsolutePath(), 10, ".txt");
 		FilesetDataFunction filesetFunc = new FilesetDataFunction("id", 0, Long.MAX_VALUE, null, set1.getAbsolutePath(), "*.txt");
-		File file1 = TestHelperUtils.generateTemporaryFile(tempDir.getAbsolutePath());
+		File file1 = HelperUtils.generateTemporaryFile(tempDir.getAbsolutePath());
 		FileDataFunction fileFunc = new FileDataFunction("1", 0, Long.MAX_VALUE, null, file1.getAbsolutePath());
-		File folder1 = TestHelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
+		File folder1 = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
 		FileDataFunction folderFunc = new FileDataFunction("1", 0, Long.MAX_VALUE, null, folder1.getAbsolutePath());
 		SetDataFunction setFunc = new SetDataFunction("id");
 		SetDataFunction setSetFunc = new SetDataFunction("id2");
@@ -106,13 +108,13 @@ public class TestDataFunctions {
 	
 	@Test
 	public void testIntersects() throws IOException{
-		Context context = new Context();
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		FileDataFunction fileFuncA = new FileDataFunction("A", 0, Long.MAX_VALUE, null, "/tmp/test/${A}");
 		FileDataFunction fileFuncB = new FileDataFunction("B", 0, Long.MAX_VALUE, null, "/${B}/test/${C}");
 		Assert.assertTrue(fileFuncA.intersects(context, fileFuncB));
 		Assert.assertTrue(fileFuncB.intersects(context, fileFuncA));
-		File folder1 = TestHelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
-		File file1 = TestHelperUtils.generateTemporaryFile(tempDir.getAbsolutePath());
+		File folder1 = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
+		File file1 = HelperUtils.generateTemporaryFile(tempDir.getAbsolutePath());
 		FileDataFunction fileFuncC = new FileDataFunction("C", 0, Long.MAX_VALUE, null, folder1.getAbsolutePath().toString());
 		FileDataFunction fileFuncD = new FileDataFunction("D", 0, Long.MAX_VALUE, null, tempDir.getAbsolutePath().toString() + "/{D}/" + file1.getName());
 		

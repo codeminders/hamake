@@ -14,7 +14,7 @@ import com.codeminders.hamake.dtr.Fold;
 import com.codeminders.hamake.dtr.Foreach;
 
 
-public class TestHelperUtils {
+public class HelperUtils {
 	
 	public static String generateTemporaryPath(String folder, String prefix){
 		String tempDir = StringUtils.isEmpty(folder) ? System.getProperty("java.io.tmpdir", "/tmp") : folder ;
@@ -68,6 +68,11 @@ public class TestHelperUtils {
 	
 	public static Foreach createForeachDTR(Context context, String name, FileDataFunction input, List<? extends DataFunction> output){
 		Foreach foreach = new Foreach(context, input, output, null);
+		foreach.setName(name);
+		return foreach;
+	}
+	public static Foreach createForeachDTR(Context context, String name, FileDataFunction input, List<? extends DataFunction> output, List<? extends DataFunction> deps){
+		Foreach foreach = new Foreach(context, input, output, deps);
 		foreach.setName(name);
 		return foreach;
 	}

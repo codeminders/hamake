@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
@@ -14,12 +16,16 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
@@ -41,6 +47,7 @@ import com.codeminders.hamake.params.JobConfParam;
 import com.codeminders.hamake.params.Literal;
 import com.codeminders.hamake.params.AppendConcatFunction;
 import com.codeminders.hamake.params.Parameter;
+import com.codeminders.hamake.params.ParameterItem;
 import com.codeminders.hamake.params.ProcessingFunction;
 import com.codeminders.hamake.params.Reference;
 import com.codeminders.hamake.params.SpaceConcatFunction;
@@ -48,48 +55,66 @@ import com.codeminders.hamake.task.*;
 
 public class SyntaxParser extends BaseSyntaxParser {
 	
+	public static final Log LOG = LogFactory.getLog(SyntaxParser.class);
+	public static boolean validationSucceeded = true;
+	
+	public class ForgivingErrorHandler implements ErrorHandler {
+
+		@Override
+		public void error(SAXParseException e) throws SAXException {
+			LOG.error(e.getMessage() + " at line " + e.getLineNumber() + ", column " + e.getColumnNumber());
+			validationSucceeded = false;
+		}
+
+		@Override
+		public void fatalError(SAXParseException e) throws SAXException {
+			LOG.error(e.getMessage() + " at line " + e.getLineNumber() + ", column " + e.getColumnNumber());
+			validationSucceeded = false;
+		}
+
+		@Override
+		public void warning(SAXParseException e) throws SAXException {
+			LOG.warn(e.getMessage() + " at line " + e.getLineNumber() + ", column " + e.getColumnNumber());
+		}
+
+	}
+	
+	private Random random = new Random();
+	private boolean verbose;
+	private Context context;
 	private static final String SCHEMA_NAME = "hamakefile-" + Hamake.HAMAKE_VERSION + ".xsd";
 	
-	Document dom;
-	boolean verbose;
-	Context context;
 	
 	protected SyntaxParser(Context context, boolean verbose){
 		this.verbose = verbose;
 		this.context = context;
 	}
-
+	
+	@Override
+	protected boolean validate(InputStream is) throws SAXException, IOException{	
+		ForgivingErrorHandler errorHandler = new ForgivingErrorHandler();
+		SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+		Schema schema = factory.newSchema(new StreamSource(SyntaxParser.class.getResourceAsStream(SCHEMA_NAME)));
+		Validator validator = schema.newValidator();
+		validator.setErrorHandler(errorHandler);
+        validator.validate(new StreamSource(is));
+        return validationSucceeded;
+	}
+	
 	@Override
 	protected Hamake parseSyntax(Document dom)
 			throws IOException, ParserConfigurationException, SAXException,
 			InvalidMakefileException, PigNotFoundException, InvalidContextVariableException {
-		this.dom = dom;
-		parseProperties(dom);
 
 		Hamake ret = new Hamake(context);
+		parseProperties(dom);
 		parseRootDataFunctions(dom);
 		parseDTRs(ret, dom.getDocumentElement(), verbose);
-		String defaultTask = dom.getDocumentElement().getAttribute("default");
-		ret.setProjectName(dom.getDocumentElement().getAttribute("name"));
-		if (!StringUtils.isEmpty(defaultTask)) {
-			ret.setDefaultTarget(defaultTask);
-		}
+		ret.setDefaultTarget(dom.getDocumentElement().getAttribute("default"));
+		ret.setProjectName(getOptionalAttribute(dom.getDocumentElement(), "name", "project" + Math.abs(random.nextInt() % 1000)));
 		return ret;
 	}
 	
-	@Override
-	protected boolean validate(InputStream is) throws SAXException, IOException{		
-//			SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
-//			Schema schema = factory.newSchema(new StreamSource(SyntaxParser.class.getResourceAsStream(SCHEMA_NAME)));
-//			Validator validator = schema.newValidator();
-//            validator.validate(new StreamSource(is));
-            return true;
-	}
-
-	protected Element parseConfig(Document dom) throws InvalidMakefileException {
-		return getMandatory(dom.getDocumentElement(), "config");
-	}
-
 	protected void parseProperties(Document dom)
 			throws InvalidMakefileException, InvalidContextVariableException {
 		NodeList c = dom.getElementsByTagName("property");
@@ -150,7 +175,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 
 	protected DataTransformationRule parseForeachDTR(Element root)
 			throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextVariableException {
-		String name = getRequiredAttribute(root, "name");
+		String name = getOptionalAttribute(root, "name", "foreach" + Math.abs(random.nextInt() % 1000));
 
 		Element input = getOneSubElement(root, "input");
 		if(input == null){
@@ -175,7 +200,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 
 	protected DataTransformationRule parseFoldDTR(Element root) throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextVariableException {
-        String name = getRequiredAttribute(root, "name");
+        String name = getOptionalAttribute(root, "name", "fold" + Math.abs(random.nextInt() % 1000));
 
         Element input = getOneSubElement(root, "input");
         if(input == null){
@@ -242,16 +267,12 @@ public class SyntaxParser extends BaseSyntaxParser {
 
 	protected DataFunction parseFileset(Element root, long validityPeriod)
 			throws InvalidMakefileException, IOException, InvalidContextVariableException{
-		String id = getOptionalAttribute(root, "id");
+		String id = getOptionalAttribute(root, "id", UUID.randomUUID().toString());
 		String path = getRequiredAttribute(root, "path");
-		String mask = getOptionalAttribute(root, "mask");
-		String generation = getOptionalAttribute(root, "generation");
-		int gen;
-		if (generation == null)
-			gen = 0;
-		else
-			gen = Integer.parseInt(generation);
-		FilesetDataFunction fileset = new FilesetDataFunction(id, gen, validityPeriod, (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER), path, mask);
+		String mask = getOptionalAttribute(root, "mask", "*");
+		String generationValue = getOptionalAttribute(root, "generation", "0");
+		int generation = Integer.parseInt(generationValue);
+		FilesetDataFunction fileset = new FilesetDataFunction(id, generation, validityPeriod, (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER), path, mask);
 		if(!StringUtils.isEmpty(id)) context.set(id, fileset);
 		return fileset;
 	}
@@ -259,21 +280,17 @@ public class SyntaxParser extends BaseSyntaxParser {
 	protected DataFunction parseFile(Element root, long validityPeriod)
 			throws InvalidMakefileException, IOException, InvalidContextVariableException {
 
-		String id = getOptionalAttribute(root, "id");
+		String id = getOptionalAttribute(root, "id", UUID.randomUUID().toString());
 		String path = getRequiredAttribute(root, "path");
-		String gen_s = getOptionalAttribute(root, "generation");
-		int generation;
-		if (gen_s == null)
-			generation = 0;
-		else
-			generation = Integer.parseInt(gen_s);
+		String generationValue = getOptionalAttribute(root, "generation", "0");
+		int	generation = Integer.parseInt(generationValue);
 		FileDataFunction file = new FileDataFunction(id, generation, validityPeriod, (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER), path);
 		if(!StringUtils.isEmpty(id)) context.set(id, file);
 		return file;
 	}
 
 	protected DataFunction parseSet(Element root, long validityPeriod) throws InvalidMakefileException, InvalidContextVariableException, IOException{
-		String id = getOptionalAttribute(root, "id");
+		String id = getOptionalAttribute(root, "id", UUID.randomUUID().toString());
 		SetDataFunction set = new SetDataFunction(id);
 		NodeList children = root.getChildNodes();		
 		for(int i = 0; i < children.getLength(); i ++){
@@ -395,7 +412,7 @@ public class SyntaxParser extends BaseSyntaxParser {
         	concatFunction = new AppendConcatFunction();
         }
         String processingFuncIdentificator = getOptionalAttribute(root, "processing_function");
-        String parameterName = getOptionalAttribute(root, "name");
+        String parameterName = getOptionalAttribute(root, "name", "param" + Math.abs(random.nextInt() % 10000));
         ProcessingFunction processingFunc = null;
         if(!StringUtils.isEmpty(processingFuncIdentificator)){
         	if("identity".equals(processingFuncIdentificator)) concatFunction = new SpaceConcatFunction();
@@ -404,7 +421,7 @@ public class SyntaxParser extends BaseSyntaxParser {
         else{
         	processingFunc = new IdentityProcessingFunction();
         }
-        List<Object> values = new ArrayList<Object>();
+        List<ParameterItem> values = new ArrayList<ParameterItem>();
         NodeList children = root.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
 			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {

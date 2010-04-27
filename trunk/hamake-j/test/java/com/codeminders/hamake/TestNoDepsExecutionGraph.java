@@ -3,11 +3,15 @@ package com.codeminders.hamake;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import junit.framework.Assert;
+
+import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 
+import com.codeminders.hamake.data.DataFunction;
 import com.codeminders.hamake.data.FileDataFunction;
 import com.codeminders.hamake.dtr.DataTransformationRule;
 import com.codeminders.hamake.dtr.Fold;
@@ -17,16 +21,16 @@ public class TestNoDepsExecutionGraph {
 
 	@Test
 	public void testSimpleGraph() throws IOException{
-		Context context = new Context();
-		Foreach task1 = TestHelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1")));
-		Foreach task2 = TestHelperUtils.createForeachDTR(context, "M2", new FileDataFunction("I2"), Arrays.asList(new FileDataFunction("O2")));
-		Foreach task3 = TestHelperUtils.createForeachDTR(context, "M3", new FileDataFunction("O1"), Arrays.asList(new FileDataFunction("O3"), new FileDataFunction("O4")));
-		Foreach task4 = TestHelperUtils.createForeachDTR(context, "M4", new FileDataFunction("O2"), Arrays.asList(new FileDataFunction("O5")));
-		Foreach task5 = TestHelperUtils.createForeachDTR(context, "M5", new FileDataFunction("O3"), Arrays.asList(new FileDataFunction("O6")));
-		Foreach task6 = TestHelperUtils.createForeachDTR(context, "M6", new FileDataFunction("O4"), Arrays.asList(new FileDataFunction("O7")));
-		Foreach task7 = TestHelperUtils.createForeachDTR(context, "M7", new FileDataFunction("O5"), Arrays.asList(new FileDataFunction("O8")));
-		Fold task8 = TestHelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O6")), Arrays.asList(new FileDataFunction("O9")));
-		Fold task9 = TestHelperUtils.createFoldDTR(context, "R2", Arrays.asList(new FileDataFunction("O7"), new FileDataFunction("O8")), Arrays.asList(new FileDataFunction("O9")));
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		Foreach task1 = HelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1")));
+		Foreach task2 = HelperUtils.createForeachDTR(context, "M2", new FileDataFunction("I2"), Arrays.asList(new FileDataFunction("O2")));
+		Foreach task3 = HelperUtils.createForeachDTR(context, "M3", new FileDataFunction("O1"), Arrays.asList(new FileDataFunction("O3"), new FileDataFunction("O4")));
+		Foreach task4 = HelperUtils.createForeachDTR(context, "M4", new FileDataFunction("O2"), Arrays.asList(new FileDataFunction("O5")));
+		Foreach task5 = HelperUtils.createForeachDTR(context, "M5", new FileDataFunction("O3"), Arrays.asList(new FileDataFunction("O6")));
+		Foreach task6 = HelperUtils.createForeachDTR(context, "M6", new FileDataFunction("O4"), Arrays.asList(new FileDataFunction("O7")));
+		Foreach task7 = HelperUtils.createForeachDTR(context, "M7", new FileDataFunction("O5"), Arrays.asList(new FileDataFunction("O8")));
+		Fold task8 = HelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O6")), Arrays.asList(new FileDataFunction("O9")));
+		Fold task9 = HelperUtils.createFoldDTR(context, "R2", Arrays.asList(new FileDataFunction("O7"), new FileDataFunction("O8")), Arrays.asList(new FileDataFunction("O9")));
 		ArrayList<DataTransformationRule> tasks = new ArrayList<DataTransformationRule>(Arrays.asList(new DataTransformationRule[] {task1, task2, task3, task4, task5, task6, task7, task8, task9}));
 		NoDepsExecutionGraph graph = new NoDepsExecutionGraph(tasks);
 		Assert.assertEquals(2, graph.getReadyForRunTasks().size());
@@ -37,16 +41,16 @@ public class TestNoDepsExecutionGraph {
 	
 	@Test
 	public void testSimpleGraphWithTargets() throws IOException{
-		Context context = new Context();
-		Foreach task1 = TestHelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1")));
-		Foreach task2 = TestHelperUtils.createForeachDTR(context, "M2", new FileDataFunction("I2"), Arrays.asList(new FileDataFunction("O2")));
-		Foreach task3 = TestHelperUtils.createForeachDTR(context, "M3", new FileDataFunction("I3"), Arrays.asList(new FileDataFunction("O3")));
-		Foreach task4 = TestHelperUtils.createForeachDTR(context, "M4", new FileDataFunction("O1"), Arrays.asList(new FileDataFunction("O4")));
-		Foreach task5 = TestHelperUtils.createForeachDTR(context, "M5", new FileDataFunction("O2"), Arrays.asList(new FileDataFunction("O5")));
-		Foreach task6 = TestHelperUtils.createForeachDTR(context, "M6", new FileDataFunction("O3"), Arrays.asList(new FileDataFunction("O6")));
-		Fold task7 = TestHelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O4")), Arrays.asList(new FileDataFunction("O7")));
-		Fold task8 = TestHelperUtils.createFoldDTR(context, "R2", Arrays.asList(new FileDataFunction("O5")), Arrays.asList(new FileDataFunction("O8")));
-		Fold task9 = TestHelperUtils.createFoldDTR(context, "R3", Arrays.asList(new FileDataFunction("O6")), Arrays.asList(new FileDataFunction("O9")));
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		Foreach task1 = HelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1")));
+		Foreach task2 = HelperUtils.createForeachDTR(context, "M2", new FileDataFunction("I2"), Arrays.asList(new FileDataFunction("O2")));
+		Foreach task3 = HelperUtils.createForeachDTR(context, "M3", new FileDataFunction("I3"), Arrays.asList(new FileDataFunction("O3")));
+		Foreach task4 = HelperUtils.createForeachDTR(context, "M4", new FileDataFunction("O1"), Arrays.asList(new FileDataFunction("O4")));
+		Foreach task5 = HelperUtils.createForeachDTR(context, "M5", new FileDataFunction("O2"), Arrays.asList(new FileDataFunction("O5")));
+		Foreach task6 = HelperUtils.createForeachDTR(context, "M6", new FileDataFunction("O3"), Arrays.asList(new FileDataFunction("O6")));
+		Fold task7 = HelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O4")), Arrays.asList(new FileDataFunction("O7")));
+		Fold task8 = HelperUtils.createFoldDTR(context, "R2", Arrays.asList(new FileDataFunction("O5")), Arrays.asList(new FileDataFunction("O8")));
+		Fold task9 = HelperUtils.createFoldDTR(context, "R3", Arrays.asList(new FileDataFunction("O6")), Arrays.asList(new FileDataFunction("O9")));
 		ArrayList<DataTransformationRule> tasks = new ArrayList<DataTransformationRule>(Arrays.asList(new DataTransformationRule[] {task1, task2, task3, task4, task5, task6, task7, task8, task9}));
 		NoDepsExecutionGraph graph = new NoDepsExecutionGraph(tasks);
 		//Assert that with no targets 3 tasks are ready
@@ -65,11 +69,11 @@ public class TestNoDepsExecutionGraph {
 	
 	@Test
 	public void testSimpleCyclicGraph() throws IOException{	
-		Context context = new Context();
-		Foreach task1 = TestHelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1")));
-		Foreach task2 = TestHelperUtils.createForeachDTR(context, "M2", new FileDataFunction("O1"), Arrays.asList(new FileDataFunction("O2")));
-		Fold task3 = TestHelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O2")), Arrays.asList(new FileDataFunction("I1")));
-		Fold task4 = TestHelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O2")), Arrays.asList(new FileDataFunction("I1", 1)));
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		Foreach task1 = HelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1")));
+		Foreach task2 = HelperUtils.createForeachDTR(context, "M2", new FileDataFunction("O1"), Arrays.asList(new FileDataFunction("O2")));
+		Fold task3 = HelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O2")), Arrays.asList(new FileDataFunction("I1")));
+		Fold task4 = HelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O2")), Arrays.asList(new FileDataFunction("I1", 1)));
 		NoDepsExecutionGraph graph1 = new NoDepsExecutionGraph(new ArrayList<DataTransformationRule>(Arrays.asList(new DataTransformationRule[] {task1, task2, task3})));
 		//assert that cycle has been detected
 		Assert.assertEquals(0, graph1.getReadyForRunTasks().size());
@@ -83,11 +87,11 @@ public class TestNoDepsExecutionGraph {
 		
 	@Test
 	public void testComplexCyclicGraph() throws IOException{	
-		Context context = new Context();
-		Foreach task1 = TestHelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I"), Arrays.asList(new FileDataFunction("O1")));
-		Foreach task2 = TestHelperUtils.createForeachDTR(context, "M2", new FileDataFunction("O2"), Arrays.asList(new FileDataFunction("O3"), new FileDataFunction("O")));
-		Foreach task3 = TestHelperUtils.createForeachDTR(context, "M3", new FileDataFunction("O3"), Arrays.asList(new FileDataFunction("O4")));
-		Fold task4 = TestHelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O1"), new FileDataFunction("O4")), Arrays.asList(new FileDataFunction("O2")));
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		Foreach task1 = HelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I"), Arrays.asList(new FileDataFunction("O1")));
+		Foreach task2 = HelperUtils.createForeachDTR(context, "M2", new FileDataFunction("O2"), Arrays.asList(new FileDataFunction("O3"), new FileDataFunction("O")));
+		Foreach task3 = HelperUtils.createForeachDTR(context, "M3", new FileDataFunction("O3"), Arrays.asList(new FileDataFunction("O4")));
+		Fold task4 = HelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O1"), new FileDataFunction("O4")), Arrays.asList(new FileDataFunction("O2")));
 		NoDepsExecutionGraph graph = new NoDepsExecutionGraph(new ArrayList<DataTransformationRule>(Arrays.asList(new DataTransformationRule[] {task1, task2, task3, task4})));
 		Assert.assertEquals(1, graph.getReadyForRunTasks().size());		
 		graph.removeTask("M1");
@@ -97,11 +101,11 @@ public class TestNoDepsExecutionGraph {
 	
 	@Test
 	public void testCrossDependentGraph() throws IOException{
-		Context context = new Context();
-		Foreach task1 = TestHelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1"), new FileDataFunction("O3")));
-		Foreach task2 = TestHelperUtils.createForeachDTR(context, "M2", new FileDataFunction("I2"), Arrays.asList(new FileDataFunction("O2"), new FileDataFunction("O4")));
-		Fold task3 = TestHelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O1"), new FileDataFunction("O4")), Arrays.asList(new FileDataFunction("O5"), new FileDataFunction("O7")));
-		Fold task4 = TestHelperUtils.createFoldDTR(context, "R2", Arrays.asList(new FileDataFunction("O2"), new FileDataFunction("O3"), new FileDataFunction("O7")), Arrays.asList(new FileDataFunction("O6")));
+		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		Foreach task1 = HelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1"), new FileDataFunction("O3")));
+		Foreach task2 = HelperUtils.createForeachDTR(context, "M2", new FileDataFunction("I2"), Arrays.asList(new FileDataFunction("O2"), new FileDataFunction("O4")));
+		Fold task3 = HelperUtils.createFoldDTR(context, "R1", Arrays.asList(new FileDataFunction("O1"), new FileDataFunction("O4")), Arrays.asList(new FileDataFunction("O5"), new FileDataFunction("O7")));
+		Fold task4 = HelperUtils.createFoldDTR(context, "R2", Arrays.asList(new FileDataFunction("O2"), new FileDataFunction("O3"), new FileDataFunction("O7")), Arrays.asList(new FileDataFunction("O6")));
 		NoDepsExecutionGraph graph = new NoDepsExecutionGraph(new ArrayList<DataTransformationRule>(Arrays.asList(new DataTransformationRule[] {task1, task2, task3, task4})));
 		Assert.assertEquals(2, graph.getReadyForRunTasks().size());
 		graph.removeTask("M1");		
