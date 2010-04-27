@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:noNamespaceSchemaLocation="../../../../src/java/com/codeminders/hamake/syntax/hamakefile-1.0.xsd"
- name="test">
+<project name="test">
 
     <property name="output"  value="build/test"/>
     <property name="lib"     value="build/lib"/>
