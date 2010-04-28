@@ -27,6 +27,6 @@ _exec_ task launches binaries and shell scripts locally on a machine, where Hama
 
 == How Hamake differs from Oozie and Azkaban? ==
 
- # Oozie and Azkaban are server-side systems that requires complex installation and long study. Hamake is a lightweigh tool that does not require installation and is has very simple syntax for workflow definition. 
+ # Oozie and Azkaban are server-side systems that requires complex installation and long study. Hamake is a client-side lightweight tool that does not require installation and has very simple syntax for workflow definition. 
  # Hamake is built based on dataflow programming principles - your Hadoop tasks are controlled by its data. 
  # Azkaban and Oozie allows more functionality at the cost of more complex configuration and learning curve
