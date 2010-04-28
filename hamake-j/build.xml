@@ -172,7 +172,7 @@
          failOnError="true"/>
 
     <copy todir="${dist.dir}">     
-      <fileset file="${dist.dir}/rpmroot/RPMS/*" />
+      <fileset file="${dist.dir}/rpmroot/RPMS/i386/*" />
     </copy>
 
   </target>
@@ -205,11 +205,11 @@
             <section>Applications/MapReduce</section>
         </info>
 
-        <!--permissions> 
-            <permission user="username" group="groupname" mode="755" recursive="true">
-                <path>bin/</path>
+        <permissions> 
+            <permission user="root" group="root" mode="755" recursive="false">
+                <path>local/hamake/bin/</path>
             </permission> 
-        </permissions-->
+        </permissions>
 
         <!--dependencies>
           <require package="hadoop">
