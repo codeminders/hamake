@@ -420,7 +420,7 @@ Example:
 </dependencies>
 }}}
 
-= Hamakefile Complite Example =
+= Hamakefile Complete Example =
 {{{
 <?xml version="1.0" encoding="UTF-8"?>
 
