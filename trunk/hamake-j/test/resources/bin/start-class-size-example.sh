@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 hadoop fs -rmr /user/$USERNAME/build
 hadoop fs -rmr /user/$USERNAME/dist
 hadoop fs -rmr /user/$USERNAME/test
