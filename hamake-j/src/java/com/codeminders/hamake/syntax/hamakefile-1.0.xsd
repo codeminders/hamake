@@ -48,35 +48,6 @@
       <xs:attribute name="disabled" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="dependencies">
-    <xs:complexType>
-      <xs:choice maxOccurs="unbounded">
-        <xs:element ref="file"/>
-        <xs:element ref="fileset"/>
-        <xs:element ref="include"/>
-        <xs:element ref="set"/>
-      </xs:choice>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="exec">
-    <xs:complexType>
-      <xs:choice maxOccurs="unbounded">
-        <xs:element ref="parameter"/>
-        <xs:element ref="jobconf"/>
-      </xs:choice>
-      <xs:attribute name="binary" use="required" type="xs:normalizedString"/>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="mapreduce">
-    <xs:complexType>
-      <xs:choice maxOccurs="unbounded">
-        <xs:element ref="parameter"/>
-        <xs:element ref="jobconf"/>
-      </xs:choice>
-      <xs:attribute name="jar" use="required" type="xs:normalizedString"/>
-      <xs:attribute name="main" use="required" type="xs:normalizedString"/>
-    </xs:complexType>
-  </xs:element>
   <xs:element name="fold">
     <xs:complexType>
       <xs:sequence>
@@ -103,6 +74,46 @@
       <xs:attribute name="disabled" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
+  <xs:element name="dependencies">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="file"/>
+        <xs:element ref="fileset"/>
+        <xs:element ref="include"/>
+        <xs:element ref="set"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="output">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="file"/>
+        <xs:element ref="fileset"/>
+        <xs:element ref="include"/>
+        <xs:element ref="set"/>
+      </xs:choice>
+      <xs:attribute name="expiration" type="expiration" form="unqualified"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="exec">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="parameter"/>
+        <xs:element ref="jobconf"/>
+      </xs:choice>
+      <xs:attribute name="binary" use="required" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="mapreduce">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="parameter"/>
+        <xs:element ref="jobconf"/>
+      </xs:choice>
+      <xs:attribute name="jar" use="required" type="xs:normalizedString"/>
+      <xs:attribute name="main" use="required" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="pig">
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
@@ -110,12 +121,6 @@
         <xs:element ref="jobconf"/>
       </xs:choice>
       <xs:attribute name="script" use="required" type="xs:normalizedString"/>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="jobconf">
-    <xs:complexType>
-      <xs:attribute name="name" use="required" type="xs:normalizedString"/>
-      <xs:attribute name="value" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="file">
@@ -134,15 +139,10 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="description" type="xs:string"/>
-  <xs:element name="output">
+  <xs:element name="jobconf">
     <xs:complexType>
-      <xs:choice maxOccurs="unbounded">
-        <xs:element ref="file"/>
-        <xs:element ref="fileset"/>
-        <xs:element ref="include"/>
-        <xs:element ref="set"/>
-      </xs:choice>
-      <xs:attribute name="expiration" type="expiration" form="unqualified"/>
+      <xs:attribute name="name" use="required" type="xs:normalizedString"/>
+      <xs:attribute name="value" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="parameter">
@@ -151,7 +151,7 @@
         <xs:element ref="reference"/>
         <xs:element ref="literal"/>
       </xs:choice>
-      <xs:attribute name="concat_function" type="xs:normalizedString"/>
+      <xs:attribute name="concat_function" type="cancatFunction"/>
       <xs:attribute name="processing_function" type="xs:normalizedString"/>
       <xs:attribute name="name" type="xs:normalizedString"/>
     </xs:complexType>
@@ -159,13 +159,11 @@
   <xs:element name="literal">
     <xs:complexType>
       <xs:attribute name="value" use="required" type="xs:normalizedString"/>
-      <xs:attribute name="name" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="reference">
     <xs:complexType>
       <xs:attribute name="idref" use="required" type="xs:IDREF"/>
-      <xs:attribute name="name" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="include">
@@ -190,6 +188,18 @@
       <xs:maxLength value="4"/>
       <xs:whiteSpace value="collapse"/>
       <xs:pattern value="[0-9]+[s|m|h|d|w]"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="cancatFunction">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="space"/>
+      <xs:enumeration value="comma"/>
+      <xs:enumeration value="append"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="processingFunction">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="identity"/>
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

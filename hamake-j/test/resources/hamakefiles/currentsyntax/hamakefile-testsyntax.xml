@@ -1,6 +1,4 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- name="test-syntax"
- default="foreach1">
+<project name="test-syntax" default="foreach1">
 
 	<!--  property tmpdir is set by unit test -->
 	<property name="testprop" value="deppath" />
