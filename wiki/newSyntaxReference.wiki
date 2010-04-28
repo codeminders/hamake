@@ -1,5 +1,3 @@
-This page describes proposed syntax of hamake-file 
-
 <wiki:toc max_depth="3" />
 
 = Introduction =
@@ -77,7 +75,7 @@ Nested elements:
 || *Element name* || *Number of times it can occur* ||
 || [#description description] || 0 or 1 ||
 || [#dependencies dependencies] || 0 or 1 ||
-|| [#input input] || 1 ||
+|| [#foreach_input input] || 1 ||
 || [#output output] || 1 ||
 || [#mapreduce mapreduce] || one of _mapreduce_, _pig_ or _exec_ is required ||
 || [#pig pig] || one of _mapreduce_, _pig_ or _exec_ is required ||
@@ -118,7 +116,7 @@ Nested elements:
 || *Element name* || *Number of times it can occur* ||
 || [#description description] || 0 or 1 ||
 || [#dependencies dependencies] || 0 or 1 ||
-|| [#input input] || 1 ||
+|| [#fold_input input] || 1 ||
 || [#output output] || 1 ||
 || [#mapreduce mapreduce] || one of _mapreduce_, _pig_ or _exec_ is required ||
 || [#pig pig] || one of _mapreduce_, _pig_ or _exec_ is required ||
@@ -371,10 +369,10 @@ Example:
 
 _`<literal>`_ is the sub-element of _parameter_ tag that can contain any string value, an _id_ of some data tag or one of following special variables:
 
-${foreach:path} - in case of foreach, full path to a file that is being currently processed
-${foreach:filename} - in case of foreach, name of a file that is being currently processed
-${foreach:folder} - in case of foreach, parent folder of a file that is being currently processed
-${foreach:basename} - in case of foreach, name of a file without extension that is being currently processed
+${foreach:path} - in case of foreach, full path to a file that is being currently processed<br>
+${foreach:filename} - in case of foreach, name of a file that is being currently processed<br>
+${foreach:folder} - in case of foreach, parent folder of a file that is being currently processed<br>
+${foreach:basename} - in case of foreach, name of a file without extension that is being currently processed<br>
 ${foreach:ext} - in case of foreach, extension of a file that is being currently processed
 
 || *Attribute* || *Description* || *Required* ||
