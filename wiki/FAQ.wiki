@@ -1,22 +1,32 @@
-#summary hamake FAQ
 #labels Phase-Support
+<wiki:toc max_depth="3" />
 
 = General =
-Q: How 'hamake' is different from [http://www.cascading.org/ Cascading]
+== What is the difference between Hamake and Cascading? ==
 
-A: In short: 'Cascading' is a framework, while 'hamake' is a tool. Some differences:
+In short: [http://www.cascading.org/ Cascading] is a framework, while 'hamake' is a tool. Some differences:
   * hamake does not require any custom programming. It helps to automate running your existing Hadoop tasks and PIG scripts
   * We found hamake especially suitable for incremental processing of datasets
   * You can use 'hamake' to automate tasks written in other languages, using _Hadoop streaming_
 
-Q: Why XML and not JSON?
+== Why XML and not JSON? ==
 
-Q: Is there a way to query a workflow's progress to get a percentage complete?
+XML is broadly used in workflow processes description (e.g. BPEL, XPDL) 
 
-Q: Why not ANT? 
+== Is there a way to query a workflow's progress to get a percentage complete? ==
 
-Q: Where executables are executed? Nodes, local machine, etc. 
+Currently no
 
+== Why not ANT? == 
 
-= Development =
-TBD
+[http://wiki.apache.org/ant/AntWeaknessesAndProblems Ant weaknesses and problems]
+
+== Where executables are executed? == 
+
+_exec_ task launches binaries and shell scripts locally on a machine, where Hamake is running. _mapred_ and _pig_ jobs are sent to !JobTracker that you've configured
+
+== How Hamake differs from Oozie and Azkaban? ==
+
+ # Oozie and Azkaban are server systems that requires complex installation and separate servers. 
+ # Hamake is built based on dataflow programming principles - your tasks are driven by data. 
+ # Azkaban allows more functionality at the cost of more complex configuration and learning curve
