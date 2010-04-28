@@ -73,7 +73,6 @@ Dataflow transformation rule which maps a group of files at one location(s) to a
 || name || the name of the DTR. || No ||
 || disabled || whether this task is disabled. Disabled tasks are ignored. || No ||
 
-
 Nested elements:
 || *Element name* || *Number of times it can occur* ||
 || [#description description] || 0 or 1 ||
@@ -105,97 +104,58 @@ Example:
 </foreach>
 }}}
 
-
-
-
-
-=== identity ===
-
-Defines identity output mapping function. This function will create file with the same in the folder specified as path attribute.
-
-|| *Attribute* || *Description* || *Required* ||
-|| path || Path of folder, where output files will go. || Yes ||
-|| generation || "generation" of files in fileset. The generation mechanism is described in more depth in Hamake manual. || No ||
-
-Example:
-{{{
-<identity path="${outdir}/jar-listings-filtered"/>
-}}}
-
-=== composition ===
-
-This element allows to define multiple mapping functiona of _foreach_ DTR. Within this tag you can specify one or more *`<identity>`* tags
-
-Example:
-{{{
-<composition>
-    <identity path="${outdir}/jar-listings-filtered"/>
-    <identity path="${outdir}/jar-listings-bad"/>
-</composition>
-}}}
-
 == fold ==
 
 Dataflow transformation rule that defines many-to-many mapping between input data and output data. `<fold>` considers all input file(s) to be a set, and if any of them is newer than any of destination, input dataset will be processed.
 In its simplest form, `fold` have one input and one output.
 
-
 || *Attribute* || *Description* || *Required* ||
 || name || the name of the DTR. || No ||
-|| disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'. || No ||
+|| disabled || whether this task is disabled. Disabled tasks are ignored. || No ||
 
 
-`<fold>` has following sub-elements: *`<input>`*, *`<output>`*, *`<dependencies>`*, *`<mapreduce>`* or *`<pig>`* or *`<exec>`* 
+Nested elements:
+|| *Element name* || *Number of times it can occur* ||
+|| [#description description] || 0 or 1 ||
+|| [#dependencies dependencies] || 0 or 1 ||
+|| [#input input] || 1 ||
+|| [#output output] || 1 ||
+|| [#mapreduce mapreduce] || one of _mapreduce_, _pig_ or _exec_ is required ||
+|| [#pig pig] || one of _mapreduce_, _pig_ or _exec_ is required ||
+|| [#exec exec] || one of _mapreduce_, _pig_ or _exec_ is required ||
 
 Example:
 {{{
-<fold name="pig_fold">
-	<dependencies>
-		<file path="${libdir}/somefile.txt"/>
-	</dependencies>
-	<input>
-		<file path="${outdir}/class-size-histogram"/>
-	</input>
-	<output>
-		<file path="${outdir}/class-size-median-bin"/>
-	</output>
-	<pig script="${scripts}/median.pig">
-		<parameter value="${input}"/>
-		<parameter value="${output}"/>
-	</pig>
+<fold name="median">
+   <input>
+      <file id="medianIn" path="${output}/class-size-histogram"/>
+   </input>
+   <output>
+      <file id="medianOut" path="${output}/class-size-median-bin"/>
+   </output>
+   <pig script="${scripts}/median.pig">
+      <parameter name="infile">
+         <reference idref="medianIn"/>
+      </parameter>
+      <parameter name="outfile">
+         <reference idref="medianOut"/>
+      </parameter>
+   </pig>
 </fold>
-}}}
-
-
-
-=== output ===
-
-This tag defines output dataset. 
-_fold_ DTR allows to specify here one or more files or folders. This tag has a single optional attribute - _expiration_. It specifies for now many seconds this output considered valid. In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
- * s - seconds
- * m - minutes
- * h - hours
- * d - days
- * w - weeks
-
-Example:
-{{{
-<output>
-    <file path="${outdir}/class-size-histogram"/>
-    <file path="${outdir}/logs/histogram.log"/>
-</output>
 }}}
 
 == DTR Data ==
 
-=== Foreach input ===
+In DTR definition you should specify data you want to be processed. Hamake will launch tasks and will build direct acyclic graph base on these data.
 
-This tag defines input dataset of _foreach_ DTR.
+=== foreach input ===
+
+This tag defines input set of files for _foreach_ DTR. Foreach will process each file from these set independently.
 
 Nested elements:
 || *Element name* || *Number of times it can occur* ||
-|| [#fileset fileset] || one of _fileset_ or _include_ is required ||
-|| [#include include] || one of _fileset_ or _include_ is required ||
+|| [#fileset fileset] || one of _fileset_ or _include_ is required. ||
+|| [#include include] || one of _fileset_ or _include_ is required. ||
 
 Example:
 {{{
@@ -204,10 +164,10 @@ Example:
 </input>
 }}}
 
-=== Fold input ===
+=== fold input ===
 
-This tag defines input dataset of _fold_ DTR. 
-_fold_ DTR allows you to specify here one or more folders, files or filesets.
+This tag defines input data set for _fold_ DTR. 
+_fold_ DTR allows you to specify here one or more of folders, files or filesets.
 
 Nested elements:
 || *Element name* || *Number of times it can occur* ||
@@ -225,10 +185,8 @@ Example:
 
 === output ===
 
-This tag defines output data of _fold_ or _foreach_ DTR.
-_foreach_ DTR allows to specify here mapping function(s) only. This function will be applied to each input file and produce mapped file on output location. At the moment, there are only two mapping functions: 
- * identity - produce file with same name in different location (folder)
- * composition - complex output to several locations (see tag composition description)
+This tag defines output data for _fold_ and _foreach_ DTR.
+In case of_foreach_ Hamake will generate output file for all files from input based on data you specified in output. In case of _fold_ Hamake will process your input data as a set in case one element (e.g. file or folder) from output data set isn't fresh.
 `<output>` has a single optional attribute - _expiration_. It specifies for now many seconds this output considered valid. In other words, this is maximum allowed time difference between inputs and outputs. The period is a number followed by optional letter. Following letters are understood:
  * s - seconds
  * m - minutes
@@ -236,20 +194,24 @@ _foreach_ DTR allows to specify here mapping function(s) only. This function wil
  * d - days
  * w - weeks
 
-This element has sub elements: *`<composition>`* or *`<identity>`*
+Nested elements:
+|| *Element name* || *Number of times it can occur* ||
+|| [#fileset fileset] || 0 or more ||
+|| [#file file] || 0 or more ||
+|| [#set set] || 0 or more ||
+|| [#include include] || 0 or more ||
 
 Example:
 {{{
-<output expiration="1m">
-    <identity path="${outdir}/jar-listings-filtered"/>
+<output>
+   <file id="medianOut" path="${output}/class-size-median-bin"/>
 </output>
 }}}
 
-= Hamake Path Handling =
+= The Path To The Data =
 
-To specify path in Hamake you can use two tags: `<file>` and `<fileset>`
-
-With `<file>` you can specify a file or a directory on FS. With `<fileset>` you can specify a group of files.
+To specify file, folder of set in Hamake you should use tags `<file>`, `<fileset>`, `<set>` and `<include>`. The first two functions are used to identify files or directories . `<include>` is used to refer `<file>`, `<fileset>` and `<set>` elements by their id.
+With `<set>` tag you can combine other elements in a set. _set_ element guarantees that paths whithin this element will be unique. 
 
 == fileset ==
 
@@ -268,17 +230,37 @@ A file or directory on file system. The actual file system depends on the path s
 || *Attribute* || *Description* || *Required* ||
 || id || the ID of the element. || No ||
 || path || path on file system || Yes ||
-|| mask ||  filename glob mask. || No ||
-|| variant || how path will be passed as a task argument. Can be _list_, _path_, _mask_ || no ||
 || generation || "generation" of files in fileset. The generation mechanism is described in more depth in Hamake manual. || No ||
 
-In `<file>` you can optionally control how Hamake will pass path as an argument to a task:
+== set ==
 
- * _list_ - unfold path and pass all files as a batch from the folder. In case you have specified file as _path_ attribute, only that file will be passed
- * _path_ - pass folder or file as it is
- * _mask_ - pass folder that is followed by slash that is followed by mask. In case there is no _mask_ attribute or you have specified file as _path_ attribute, path will be passed as it is
+This element allows you to combine elements `<file>`, `<fileset>`, `<set>` and `<include>`. It has a single attribute _id_.
 
-In case there is no _variant_ attribute, _path_ variant is default.
+Nested elements:
+|| *Element name* || *Number of times it can occur* ||
+|| [#fileset fileset] || 0 or more ||
+|| [#file file] || 0 or more ||
+|| [#set set] || 0 or more ||
+|| [#include include] || 0 or more ||
+
+Example:
+{{{
+<set id="set1">
+   <fileset path="${output}/jar-listings"/>
+   <file path="${output}/class-size-histogram"/>
+</set>
+}}}
+
+== include ==
+
+If you have multiple _file_, _set_ or _fileset_ elements that define the same data, you can declare all these elements once and refer them later with _include_ tag. This tag has a single attribure _idref_ where you specify id of an element, that has been declared above. 
+
+Example:
+{{{
+<fileset id="jarListingIn" path="${lib}" mask="*.jar"/>
+...
+<include idref="jarListingIn" />
+}}}
 
 = Tasks =
 
@@ -288,19 +270,24 @@ In Hamake there are three kind of tasks available: Hadoop map-reduce job, Pig sc
 
 Launches Hadoop Map Reduce job on the !JobTracker that is determined by environment of the running VM (Hamake). This tag has following attributes
 || *Attribute* || *Description* || *Required* ||
-|| name || the name of the task. Used for reporting and can be specified as build target || No ||
-|| jar || path to jar file that will be run || Yes ||
-|| disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'.  || No ||
+|| jar || path to a jar file that will be run || Yes ||
 || main || the full name of the main class || Yes ||
 
-_mapreduce_ can have following sub-elements: *`<parameter>`*, *`<description>`*
+Nested elements:
+|| *Element name* || *Number of times it can occur* ||
+|| [#parameter parameter] || 0 or more ||
+|| [#jobconf jobconf] || 0 or more ||
 
 Example: 
 
 {{{
-<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
-	<parameter value="${input}"/>
-	<parameter value="${output}"/>
+<mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
+   <parameter>
+      <literal value="${foreach:path}"/>
+   </parameter>
+   <parameter>
+      <reference idref="filterListing"/>
+   </parameter>
 </mapreduce>
 }}}
 
@@ -308,17 +295,22 @@ Example:
 
 Launches Hadoop Pig script on the !JobTracker that is determined by environment of the running VM (Hamake). _pig_ has following attributes
 || *Attribute* || *Description* || *Required* ||
-|| name || the name of the task. Used for reporting and can be specified as build target || No ||
 || script || path to script file that will be run || Yes ||
 
-_pig_ can have following sub-elements: *`<parameter>`*, *`<description>`*
+Nested elements:
+|| *Element name* || *Number of times it can occur* ||
+|| [#parameter parameter] || 0 or more ||
+|| [#jobconf jobconf] || 0 or more ||
 
-Example: 
-
+Example:
 {{{
 <pig script="${scripts}/median.pig">
-	<parameter value="${input}"/>
-	<parameter value="${output}"/>
+   <parameter name="infile">
+      <reference idref="medianIn"/>
+   </parameter>
+   <parameter name="outfile">
+      <reference idref="medianOut"/>
+   </parameter>
 </pig>
 }}}
 
@@ -326,54 +318,107 @@ Example:
 
 Executes script or program locally within the running VM (Hamake). It has following attributes
 || *Attribute* || *Description* || *Required* ||
-|| name || the name of the task. Used for reporting and can be specified as build target || No ||
 || binary || path to script file or program that will be run || Yes ||
-|| disabled || whether this task is disabled. Disabled tasks are ignored. Allowed values are 'yes','no','true','false'.  || No ||
 
-_exec_ can have following sub-elements: *`<parameter>`*, *`<description>`*
+Nested elements:
+|| *Element name* || *Number of times it can occur* ||
+|| [#parameter parameter] || 0 or more ||
+|| [#jobconf jobconf] || 0 or more ||
+
 Example: 
-
 {{{
-<exec name="createFile" binary="/usr/bin/touch">
-   <parameter value="/tmp/x0"/>
+<exec name="createFile" binary="cp">
+   <parameter>
+      <literal value="${foreach:path}"/>
+   </parameter>
+   <parameter>
+      <reference idref="${outputFile}"/>
+   </parameter>
 </exec>
 }}}
 
 = Task Parameters =
 
-Arguments are passed to Hadoop Map Reduce job, Pig script or program according to task parameters. Also in parameters you can define task input and output data. Please remember that the order of parameters in task body is important.
+Arguments are passed to Hadoop Map Reduce job, Pig script or program according to task parameters. Please remember that the order of parameters in task body is important.
+
+== parameter ==
+
+This tag defines one parameter of a task. Whithin this element you should specify one or more `<reference>` or `<literal>` tags. Before launching a task Hamake will process each of nested _reference_ and _literal_ tags with _processing_function_ and combine output with _concat_function_. Then it will pass output string as an argument to a task. As a concat function you can specify one of three values: _comma_ - all values will be combined in a comma-separated string; space - separate values by space symbol; append - all values will simply be appended to each other.
+
+For a Pig task you can optionally specify name of parameter with _name_ attribute.
+
+|| *Attribute* || *Description* || *Required* ||
+|| concat_function || function that will combine sub-elements or parameter in a string. Valid values are: _space_, _comma_, _append_. Default value is append || No ||
+|| processing_function || function that will process each sub-element of this parameter. Currently there is only one function available - _identity_, that will output value as it is. || No ||
+|| name || a name of this parameter that will be passed to Pig || No ||
+
+Nested elements:
+|| *Element name* || *Number of times it can occur* ||
+|| [#reference reference] || 0 or more ||
+|| [#literal literal] || 0 or more ||
+
+Example:
+{{{
+<parameter>
+   <reference idref="histogramIn"/>
+</parameter>
+<parameter>
+   <reference idref="histogramOut"/>
+</parameter>
+}}}
+
+=== literal ===
+
+_`<literal>`_ is the sub-element of _parameter_ tag that can contain any string value, an _id_ of some data tag or one of following special variables:
+
+${foreach:path} - in case of foreach, full path to a file that is being currently processed
+${foreach:filename} - in case of foreach, name of a file that is being currently processed
+${foreach:folder} - in case of foreach, parent folder of a file that is being currently processed
+${foreach:basename} - in case of foreach, name of a file without extension that is being currently processed
+${foreach:ext} - in case of foreach, extension of a file that is being currently processed
+
+|| *Attribute* || *Description* || *Required* ||
+|| value || value of the parameter || Yes ||
+
+Example:
+{{{
+<literal value="${somePath}/${foreach:basename}.${foreach:ext}"/>
+}}}
+
+=== reference ===
+
+_`<reference>`_ defines 
+
+This tag is used to refer to a data element.
+
+|| *Attribute* || *Description* || *Required* ||
+|| idref || id of data element (e.g. `<file>` or `<set>`) || Yes ||
 
 == jobconf ==
 
-With this element you can set Hadoop or Pig !JobConf parameter for your task. This element has following attributes:
+With this element you can set !JobConf parameter of a Hadoop task. This element has following attributes:
 
 || *Attribute* || *Description* || *Required* ||
 || name || name of the !JobConf parameter || Yes ||
 || value || value of the !JobConf parameter || Yes ||
 
-
-== parameter ==
-
-This tag has one attribute _value_ where you can specify any parameter you want as String value. Also you can pass here input and output of the task by specifying special built in ${input} and ${output} variables. In case of `<foreach>` a task will recieve a single file  in place of ${input} variable. In case of `<fold>` all enumerated files and folders from input or output will be passed as a whole. To pass only a single file or folder as a parameter use _file_ id (e.g. value="${myfile}")
-
-Example:
-{{{
-<parameter value="${input}" />
-<parameter value="${output}" />
-<parameter value="${libdir}/somefile.txt" />
-<parameter value="${histogramDir}" />
-}}}
-
 = Task Dependencies =
 
 == dependencies ==
 
-In case you want to specify some external data a dataflow transformation rule will depend on, you can use `<dependencies>` tag whithin `<foreach>` or `<fold>` elements. Tag has one sub-element *`<file>`*
+In case you want to specify some external data a dataflow transformation rule will depend on, you can use `<dependencies>` tag whithin `<foreach>` or `<fold>` elements.
+
+Nested elements:
+|| *Element name* || *Number of times it can occur* ||
+|| [#fileset fileset] || 0 or more ||
+|| [#file file] || 0 or more ||
+|| [#set set] || 0 or more ||
+|| [#include include] || 0 or more ||
 
 Example:
 {{{
 <dependencies>
-    <file id="${libdir}/somefile.txt" />
+    <file path="${libdir}/somefile.txt" />
 </dependencies>
 }}}
 
@@ -387,10 +432,11 @@ Example:
     <property name="lib"     value="build/lib"/>
     <property name="dist"    value="dist/examples"/>
     <property name="scripts" value="test/resources/scripts"/>
+    <fileset id="jarListingIn" path="${lib}" mask="*.jar"/>
 
     <foreach name="jar-listings">
         <input>
-            <fileset path="${lib}" mask="*.jar"/>
+            <include idref="jarListingIn" />
         </input>
         <output>
             <file id="jarListing" path="${output}/jar-listings/${foreach:filename}"/>
