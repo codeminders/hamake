@@ -138,6 +138,9 @@
     <copy todir="${dist.examples.dir}/scripts">     
       <fileset file="${test.resources.dir}/scripts/median.pig" />
     </copy>
+    <copy todir="${dist.examples.dir}/bin">     
+      <fileset file="${test.resources.dir}/bin/*" />
+    </copy>
 
   </target>
 
@@ -167,6 +170,11 @@
          topDir="${dist.dir}/rpmroot"
          cleanBuildDir="false"
          failOnError="true"/>
+
+    <copy todir="${dist.dir}">     
+      <fileset file="${dist.dir}/rpmroot/RPMS/*" />
+    </copy>
+
   </target>
 
   <target name="build-dpkg" depends="dist">
