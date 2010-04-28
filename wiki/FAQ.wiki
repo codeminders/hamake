@@ -19,7 +19,7 @@ Currently no
 
 == Why not ANT? == 
 
-[http://wiki.apache.org/ant/AntWeaknessesAndProblems Ant weaknesses and problems]
+[http://wiki.apache.org/ant/AntWeaknessesAndProblems Ant is not a workflow engine]
 
 == Where executables are executed? == 
 
