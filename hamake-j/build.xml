@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="hamake" default="all" xmlns:ivy="antlib:org.apache.ivy.ant">
 
-
   <property file="build.properties" />
 
   <property name="hadoop.version" value="0.20" />
 
+  <taskdef resource="antlib.xml" classpath="${basedir}/lib/jpkg/jpkg-combined.jar"/>
 
   <!-- Compiler options -->
   <property name="compiler.debug" value="on" />
@@ -142,7 +142,7 @@
   </target>
 
   <target name="build-rpm" depends="dist">
-    <delete dir="${dist.dir}/destroot" />
+    <delete dir="${dist.dir}/rpmroot" />
 
     <mkdir dir="${dist.dir}/rpmroot" />
     <mkdir dir="${dist.dir}/rpmroot/SPECS" />
@@ -169,6 +169,52 @@
          failOnError="true"/>
   </target>
 
+  <target name="build-dpkg" depends="dist">
+    <delete dir="${dist.dir}/debroot" />
+
+    <mkdir dir="${dist.dir}/debroot/usr/lib/hamake"/>
+    <mkdir dir="${dist.dir}/debroot/usr/local/hamake"/>
+
+    <copy file="${dist.dir}/hamake-j-${hamake.version}.jar" tofile="${dist.dir}/debroot/usr/lib/hamake/hamake-${hamake.version}.jar"/>
+    <copy todir="${dist.dir}/debroot/usr/local/hamake">
+      <fileset dir="${dist.dir}/examples">
+        <include name="**"/>
+      </fileset>
+    </copy>
+
+    <dpkg output="${dist.dir}" prefix="/usr/" distribution="stable">
+      <package destroot="${dist.dir}/debroot">
+        <info>
+            <name>hamake</name>
+            <version>1.0</version>
+            <arch>i386</arch>
+            <description>Hamake is a lightweight utility and workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs in a workflow and launch them based on dataflow principles - your tasks will be executed</description>
+            <maintainer>
+                <name>Bondar Alex</name>
+                <email>abondar@codeminders.com</email>
+            </maintainer>
+            <priority>optional</priority>
+            <section>Applications/MapReduce</section>
+        </info>
+
+        <!--permissions> 
+            <permission user="username" group="groupname" mode="755" recursive="true">
+                <path>bin/</path>
+            </permission> 
+        </permissions-->
+
+        <!--dependencies>
+          <require package="hadoop">
+              <equalOrGreaterThan>0.18</equalOrGreaterThan>
+          </require>
+          <require package="java"/>
+              <equalOrGreaterThan>1.6</equalOrGreaterThan>
+          </require>
+        </dependencies-->
+      </package>
+    </dpkg>
+  </target>
+
   <target name="build-examples" depends="compile">
     <mkdir dir="${dist.dir}/examples" />
     <jar destfile="${dist.dir}/examples/hamake-examples-${hamake.version}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" />
@@ -182,9 +228,9 @@
       </classpath>
 
       <batchtest haltonfailure="no" todir="${test.build.dir}/test_report" fork="yes">
-      	<fileset dir="${test.build.dir}/classes">
-      		<include name="**/*Test*.class"/>
-      	</fileset>
+        <fileset dir="${test.build.dir}/classes">
+          <include name="**/*Test*.class"/>
+        </fileset>
         <formatter type="xml" />
       </batchtest>
       <sysproperty key="examples.jar" value="${dist.examples.dir}/hamake-examples-${hamake.version}.jar" />
