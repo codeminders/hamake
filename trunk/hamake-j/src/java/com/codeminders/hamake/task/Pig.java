@@ -2,7 +2,7 @@ package com.codeminders.hamake.task;
 
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
-import com.codeminders.hamake.data.DataFunction;
+import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.Parameter;
 
 import org.apache.commons.io.IOUtils;
@@ -51,7 +51,12 @@ public class Pig extends Task {
             List<Parameter> parameters = getParameters();
             if (parameters != null) {
                 for (Parameter p : parameters) {
-                    args.add(p.get(context));
+                	if (p instanceof HamakeParameter) {
+                        args.add(((HamakeParameter)p).getName() + '=' + p.get(context));
+                    }
+                	else{
+                		args.add(p.get(context));
+                	}
                 }
             }
 

@@ -146,10 +146,4 @@ public class Foreach extends DataTransformationRule {
 
 	}
 
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this).append("inputs", getInputs()).append(
-				"deps", getDeps()).appendSuper(super.toString()).toString();
-	}
-
 }

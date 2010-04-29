@@ -174,7 +174,7 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		List<GraphNode> nextLevelNodes = new ArrayList<GraphNode>();
 		for (GraphNode node : nodes) {
 			for (DataTransformationRule task : tasks) {
-				if (task.dependsOn(node.getTask())) {
+				if (!task.getName().equals(node.getTask().getName()) && task.dependsOn(node.getTask())) {
 					if (!hash.containsKey(task.getName())) {
 						// add new node
 						GraphNode newNode = new GraphNode(task);

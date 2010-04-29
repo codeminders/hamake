@@ -50,12 +50,6 @@ public class Fold extends DataTransformationRule {
 	}
 
 	@Override
-	public String toString() {
-		return new ToStringBuilder(this).append("inputs", inputs).appendSuper(
-				super.toString()).toString();
-	}
-
-	@Override
 	public int execute(Semaphore semaphore) throws IOException {
 		long mits = -1;
 		long mots = -1;
@@ -108,5 +102,5 @@ public class Fold extends DataTransformationRule {
 		// all fresh
 		return 0;
 	}
-
+	
 }

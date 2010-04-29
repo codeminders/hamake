@@ -67,7 +67,7 @@ public abstract class DataFunction {
 		for(String thisPath : this.toString(context)){
 			for(String thatPath : that.toString(context)){
 				boolean matches = false;
-				matches = (matches(thisPath, thatPath) || matches(thatPath, thisPath))
+				matches = (matches(thisPath, thatPath))
 				&& getGeneration() >= that.getGeneration();
 				if(matches) return true;
 			}
