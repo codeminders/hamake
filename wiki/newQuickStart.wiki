@@ -18,29 +18,11 @@ To install Hamake simply copy hamake-j-1.0.jar to the directory of your choice a
 
 ==Running Hamake Example==
 Hamake runs Hadoop MR jobs, Pig scripts and local scripts based on hamake-file.
-As an example you can take class-size.xml hamake file from example folder of the Hamake distribution. To generate data for class-size.xml example, launch following script from the root of Hamake distribution:
+As an example you can take class-size.xml hamake file from example folder of the Hamake distribution. To generate data for class-size.xml example, launch following script:
 {{{
-#!/bin/sh
-hadoop fs -rmr /user/$USERNAME/build
-hadoop fs -rmr /user/$USERNAME/dist
-hadoop fs -rmr /user/$USERNAME/lib
-hadoop fs -rmr /user/$USERNAME/test
-
-hadoop fs -mkdir dist
-hadoop fs -mkdir build
-hadoop fs -mkdir lib
-hadoop fs -mkdir test/resources/scripts
-
-hadoop fs -put examples/*.jar dist
-hadoop fs -put lib/*.jar lib
-hadoop fs -put *.jar dist
-hadoop fs -put examples/scripts/*.pig test/resources/scripts
+bin/start-class-size-example.sh
 }}}
-that script will put content of the ''lib'' folder, hamake-examples-1.0.jar and Pig script on HDFS.
-Now you can launch hamake:
-{{{
-hadoop jar hamake-j-1.0.jar -f examples/hamakefiles/class-size.xml
-}}}
+that script puts content of the ''lib'' folder, hamake-examples-1.0.jar and Pig script on HDFS and launches hamake.
 In case of successful execution, you should see /user/$USERNAME/build/test/class-size-histogram/part-00000 and /user/$USERNAME/build/test/class-size-median-bin/part-00000 files on HDFS
 
 == Running Hamake Example on Amazon Elastic MR ==
