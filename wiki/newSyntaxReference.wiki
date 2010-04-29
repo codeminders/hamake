@@ -294,6 +294,7 @@ Example:
 Launches Hadoop Pig script on the !JobTracker that is determined by environment of the running VM (Hamake). _pig_ has following attributes
 || *Attribute* || *Description* || *Required* ||
 || script || path to script file that will be run || Yes ||
+|| jar || path to pig jar file in case you want to use your own build of Pig || No ||
 
 Nested elements:
 || *Element name* || *Number of times it can occur* ||
