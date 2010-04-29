@@ -141,9 +141,9 @@ public class FilesetDataFunction extends DataFunction {
 
 	@Override
 	protected String[] toString(Context context){
-		return new String[] {Utils.resolvePath(Utils.replaceVariables(context, this.path) + (StringUtils.isEmpty(mask) ? "" : mask), getWorkFolder()).toString()};
+		return new String[] {Utils.resolvePath(Utils.replaceVariables(context, this.path) + (mask.equals("*") ? "" : mask), getWorkFolder()).toString()};
 	}
-
+	
 	private Path toPath(Context context) throws IOException {
 		return Utils.resolvePath(Utils.replaceVariables(context, this.path),
 				getWorkFolder());

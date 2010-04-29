@@ -57,5 +57,5 @@ public class Exec extends Task {
     public String toString() {
         return new ToStringBuilder(this).append("binary", binary).appendSuper(super.toString()).toString();
     }
-
+    
 }

@@ -99,7 +99,7 @@ public class Main {
                 wdir = FileSystem.get(hadoopCfg).getWorkingDirectory().toString();
 
             LOG.info("Working dir:  " + wdir);
-
+            LOG.info("Reading hamake-file " + mname);
             if (localFs) {
                 is = new FileInputStream(mname);
             }
@@ -109,6 +109,7 @@ public class Main {
                 is = fs.open(makefilePath);
             }
             Context context = Context.initContext(hadoopCfg, wdir, Hamake.HAMAKE_VERSION, config.nodeps);
+            
             make = BaseSyntaxParser.parse(context, is, config.verbose);
             if(line.getArgs().length > 0){
             	for(String target : line.getArgs()){

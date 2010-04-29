@@ -7,6 +7,7 @@ import java.util.concurrent.Semaphore;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.mortbay.log.Log;
 
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.data.DataFunction;
@@ -53,9 +54,7 @@ public abstract class DataTransformationRule {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this).append("name", name).append("task",
-				task).append("outputs", getOutputs())
-				.append("deps", getDeps()).toString();
+		return getName();
 	}
 	
 	public int executeIfCan(Semaphore semaphore) throws IOException{
@@ -64,7 +63,10 @@ public abstract class DataTransformationRule {
 			for(DataFunction depDataFunc : getDeps()){
 				for(Path path : depDataFunc.getPath(getContext())){
 					FileSystem fs = depDataFunc.getFileSystem(getContext(), path);
-					if(!fs.exists(path))canStart = false;
+					if(!fs.exists(path)){
+						Log.warn("DTR " + getName() + " depends on " + path + ". DTR will not execute");
+						canStart = false;
+					}
 				}
 			}
 		}
@@ -73,5 +75,5 @@ public abstract class DataTransformationRule {
 
 	protected abstract int execute(Semaphore semaphore)
 			throws IOException;		
-
+	
 }

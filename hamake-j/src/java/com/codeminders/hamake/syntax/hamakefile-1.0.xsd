@@ -44,7 +44,7 @@
           <xs:element ref="pig"/>
         </xs:choice>
       </xs:sequence>
-      <xs:attribute name="name" type="xs:NCName"/>
+      <xs:attribute name="name" type="xs:ID"/>
       <xs:attribute name="disabled" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
@@ -70,7 +70,7 @@
           <xs:element ref="exec"/>
         </xs:choice>
       </xs:sequence>
-      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute name="name" use="required" type="xs:ID"/>
       <xs:attribute name="disabled" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
@@ -121,6 +121,7 @@
         <xs:element ref="jobconf"/>
       </xs:choice>
       <xs:attribute name="script" use="required" type="xs:normalizedString"/>
+      <xs:attribute name="jar" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="file">

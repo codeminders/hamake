@@ -36,7 +36,6 @@ public class PigJar extends Task {
         setParameters(params);
     }
 
-    @SuppressWarnings("unchecked")
     public int execute(Context context) {
         FileSystem fs;
         Collection<String> args = new ArrayList<String>();

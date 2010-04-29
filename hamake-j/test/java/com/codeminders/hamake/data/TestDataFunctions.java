@@ -110,7 +110,7 @@ public class TestDataFunctions {
 	public void testIntersects() throws IOException{
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		FileDataFunction fileFuncA = new FileDataFunction("A", 0, Long.MAX_VALUE, null, "/tmp/test/${A}");
-		FileDataFunction fileFuncB = new FileDataFunction("B", 0, Long.MAX_VALUE, null, "/${B}/test/${C}");
+		FileDataFunction fileFuncB = new FileDataFunction("B", 0, Long.MAX_VALUE, null, "/tmp/test/${C}");
 		Assert.assertTrue(fileFuncA.intersects(context, fileFuncB));
 		Assert.assertTrue(fileFuncB.intersects(context, fileFuncA));
 		File folder1 = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
