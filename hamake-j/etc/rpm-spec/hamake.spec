@@ -12,25 +12,25 @@ Hamake is a lightweight utility and workflow engine for Hadoop. Hamake helps to 
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{_libdir}
-mkdir -p $RPM_BUILD_ROOT%{_prefix}/local
 cp -r ../usr/lib/%{name} $RPM_BUILD_ROOT%{_libdir}
-cp -r ../usr/local/%{name} $RPM_BUILD_ROOT%{_prefix}/local
-#chmod ug+x $RPM_BUILD_ROOT%{_prefix}/local/%{name}/bin/*
 
 %clean
 rm -drf %{_libdir}/%{name}
-rm -drf %{_prefix}/local/%{name}
+
+%post
+sed -i 's/#export\sHAMAKE_HOME=/export HAMAKE_HOME=\/usr\/lib\/hamake/' %{_libdir}/%{name}/examples/bin/start-class-size-example.sh
 
 %files
 %defattr(-,root,root,-)
-%{_libdir}/%{name}/hamake-1.0.jar
-%{_prefix}/local/%{name}/hamake-examples-1.0.jar
-%{_prefix}/local/%{name}/hamakefiles/class-size.xml
-%{_prefix}/local/%{name}/hamakefiles/class-size-s3.xml
-%{_prefix}/local/%{name}/scripts/median.pig
-%{_prefix}/local/%{name}/bin/*
-%attr(-,hamake,hamake) %{_prefix}/local/%{name}
-%attr(0755,hamake,hamake) %{_prefix}/local/%{name}/bin/*
+%{_libdir}/%{name}/%{name}-%{version}.jar
+%{_libdir}/%{name}/examples/hamake-examples-%{version}.jar
+%{_libdir}/%{name}/examples/hamakefiles/class-size.xml
+%{_libdir}/%{name}/examples/hamakefiles/class-size-s3.xml
+%{_libdir}/%{name}/examples/scripts/median.pig
+%{_libdir}/%{name}/examples/bin/start-class-size-example.sh
+%{_libdir}/%{name}/README.txt
+%attr(-,hamake,hamake) %{_libdir}/%{name}
+%attr(0755,hamake,hamake) %{_libdir}/%{name}/examples/bin/*
 
 %changelog
 * Tue Apr 27 2010 Bondar Alex <abondar@codeminders.com> 1.0.0
