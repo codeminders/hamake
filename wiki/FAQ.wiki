@@ -4,7 +4,7 @@
 = General =
 == What is the difference between Hamake and Cascading? ==
 
-In short: [http://www.cascading.org/ Cascading] is a framework, while 'hamake' is a tool. Some differences:
+In short: [http://www.cascading.org/ Cascading] is an API, while 'hamake' is a tool. Some differences:
   * hamake does not require any custom programming. It helps to automate running your existing Hadoop tasks and PIG scripts
   * We found hamake especially suitable for incremental processing of datasets
   * You can use 'hamake' to automate tasks written in other languages, using _Hadoop streaming_
