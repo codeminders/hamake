@@ -1,0 +1,4 @@
+#!/bin/sh
+
+sed -i 's/#export\sHAMAKE_HOME=/export HAMAKE_HOME=\/usr\/lib\/hamake/' /usr/lib/hamake/examples/bin/start-class-size-example.sh
+chmod 755 /usr/lib/hamake/examples/bin/start-class-size-example.sh

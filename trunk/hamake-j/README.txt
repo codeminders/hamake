@@ -20,30 +20,15 @@ in your $PATH variable.
 Quick Start
 
 First you should create your hamakefile that desribes tasks, tasks input and output data. Syntax of hamakefile is
-described here: LINK_TO_THE_HAMAKEFILE_SYNTAX. As an example you can take class-size.xml file from example folder
-of the Hamake distribution. To generate data for class-size.xml example, launch following script from the root of Hamake
-distribution:
+described here: http://code.google.com/p/hamake/wiki/SyntaxReference. 
 
-#!/bin/sh
-hadoop fs -rmr /user/$USERNAME/build
-hadoop fs -rmr /user/$USERNAME/dist
-hadoop fs -rmr /user/$USERNAME/lib
-hadoop fs -rmr /user/$USERNAME/test
+As an example you can take class-size.xml file from example folder of the Hamake distribution. 
+To generate data for class-size.xml example, launch:
 
-hadoop fs -mkdir dist
-hadoop fs -mkdir build
-hadoop fs -mkdir lib
-hadoop fs -mkdir test/resources/scripts
+    examples/bin/start-class-size-example.sh
 
-hadoop fs -put examples/*.jar dist
-hadoop fs -put lib/*.jar lib
-hadoop fs -put *.jar dist
-hadoop fs -put examples/scripts/*.pig test/resources/scripts
-
-
-that script will put content of the lib folder, hamake-examples-1.0.jar and Pig script on HDFS. Now you can launch hamake:
-
-hadoop jar your_path_to_hamake/hamake-j-1.0.jar -f path_to_class_size_file/class-size.xml
+that script puts content of the 'lib' folder, hamake-examples-1.0.jar and Pig script on HDFS and launches hamake.
 
 In case of successfull execution, you should see /user/$USERNAME/build/test/class-size-histogram/part-00000 and
 /user/$USERNAME/build/test/class-size-median-bin/part-00000 files on HDFS
+
