@@ -29,7 +29,7 @@ import org.xml.sax.SAXParseException;
 
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.InvalidContextVariableException;
+import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.PigNotFoundException;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.data.DataFunction;
@@ -104,7 +104,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	@Override
 	protected Hamake parseSyntax(Document dom)
 			throws IOException, ParserConfigurationException, SAXException,
-			InvalidMakefileException, PigNotFoundException, InvalidContextVariableException {
+			InvalidMakefileException, PigNotFoundException, InvalidContextStateException {
 
 		Hamake ret = new Hamake(context);
 		parseProperties(dom);
@@ -116,7 +116,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 	
 	protected void parseProperties(Document dom)
-			throws InvalidMakefileException, InvalidContextVariableException {
+			throws InvalidMakefileException, InvalidContextStateException {
 		NodeList c = dom.getElementsByTagName("property");
 		for (int i = 0, sz = c.getLength(); i < sz; i++) {
 			Element e = (Element) c.item(i);
@@ -126,27 +126,27 @@ public class SyntaxParser extends BaseSyntaxParser {
 	
 	protected void parseRootDataFunctions(Document dom)
 			throws InvalidMakefileException, IOException,
-			InvalidContextVariableException {
+			InvalidContextStateException {
 		NodeList children = dom.getDocumentElement().getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
 			if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				Element child = (Element) children.item(i);
 				if (child.getNodeName().equals("file")) {
 					DataFunction func = parseFile(child, Long.MAX_VALUE);
-					if(!StringUtils.isEmpty(func.getId()))context.setHamake(func.getId(), func);
+					if(!StringUtils.isEmpty(func.getId()))context.setForbidden(func.getId(), func);
 				} else if (child.getNodeName().equals("fileset")) {
 					DataFunction func = parseFileset(child, Long.MAX_VALUE);
-					if(!StringUtils.isEmpty(func.getId()))context.setHamake(func.getId(), func);
+					if(!StringUtils.isEmpty(func.getId()))context.setForbidden(func.getId(), func);
 				} else if (child.getNodeName().equals("set")) {
 					DataFunction func = parseSet(child, Long.MAX_VALUE);
-					if(!StringUtils.isEmpty(func.getId()))context.setHamake(func.getId(), func);
+					if(!StringUtils.isEmpty(func.getId()))context.setForbidden(func.getId(), func);
 				}
 			}
 		}
 	}
 
 	protected void parseDTRs(Hamake hamake, Element config, boolean verbose) throws InvalidMakefileException, IOException,
-			PigNotFoundException, InvalidContextVariableException {
+			PigNotFoundException, InvalidContextStateException {
 		NodeList tx = config.getElementsByTagName("foreach");
 		for (int i = 0, sz = tx.getLength(); i < sz; i++) {
 			Element t = (Element) tx.item(i);
@@ -174,7 +174,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 
 	protected DataTransformationRule parseForeachDTR(Element root)
-			throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextVariableException {
+			throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextStateException {
 		String name = getOptionalAttribute(root, "name", "foreach" + Math.abs(random.nextInt() % 1000));
 
 		Element input = getOneSubElement(root, "input");
@@ -191,7 +191,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 		List<DataFunction> deps = null;
 		deps = parseDTRData(dependencies, Arrays.asList("fileset", "file", "set", "include"), 0, Integer.MAX_VALUE);
 
-		Task task = parseTask(root, (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER));
+		Task task = parseTask(root, (String)context.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER));
 
 		Foreach foreach = new Foreach(context, inputFunc, outputFuncs, deps);
 		foreach.setName(name);
@@ -199,7 +199,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 		return foreach;
 	}
 
-	protected DataTransformationRule parseFoldDTR(Element root) throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextVariableException {
+	protected DataTransformationRule parseFoldDTR(Element root) throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextStateException {
         String name = getOptionalAttribute(root, "name", "fold" + Math.abs(random.nextInt() % 1000));
 
         Element input = getOneSubElement(root, "input");
@@ -216,7 +216,7 @@ public class SyntaxParser extends BaseSyntaxParser {
         List<DataFunction> dependenciesFunc = null;
         dependenciesFunc = parseDTRData(dependencies, Arrays.asList("fileset", "file", "set", "include"), 0, Integer.MAX_VALUE);
 
-        Task task = parseTask(root, (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER));
+        Task task = parseTask(root, (String)context.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER));
 
         Fold res = new Fold(context, inputFuncs, outputFuncs, dependenciesFunc);
         res.setName(name);
@@ -224,7 +224,7 @@ public class SyntaxParser extends BaseSyntaxParser {
         return res;
     }
 	
-	protected List<DataFunction> parseDTRData(Element root, List<String> allowedSubElements, int minElementsAmount, int maxElementsAmount) throws InvalidMakefileException, IOException, InvalidContextVariableException {
+	protected List<DataFunction> parseDTRData(Element root, List<String> allowedSubElements, int minElementsAmount, int maxElementsAmount) throws InvalidMakefileException, IOException, InvalidContextStateException {
 		if(root == null) return Collections.emptyList();
 		List<DataFunction> functions = new ArrayList<DataFunction>();
 		String expiration = getOptionalAttribute(root, "expiration");
@@ -249,7 +249,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 		return functions;
 	}
 
-	private DataFunction parseDataFunction(Element element, String elementName,	long validityPeriod) throws InvalidMakefileException, IOException, InvalidContextVariableException {
+	private DataFunction parseDataFunction(Element element, String elementName,	long validityPeriod) throws InvalidMakefileException, IOException, InvalidContextStateException {
 		if(elementName.equals("fileset")){
 			return parseFileset(element, validityPeriod);
 		}
@@ -266,30 +266,30 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 
 	protected DataFunction parseFileset(Element root, long validityPeriod)
-			throws InvalidMakefileException, IOException, InvalidContextVariableException{
+			throws InvalidMakefileException, IOException, InvalidContextStateException{
 		String id = getOptionalAttribute(root, "id", UUID.randomUUID().toString());
 		String path = getRequiredAttribute(root, "path");
 		String mask = getOptionalAttribute(root, "mask", "*");
 		String generationValue = getOptionalAttribute(root, "generation", "0");
 		int generation = Integer.parseInt(generationValue);
-		FilesetDataFunction fileset = new FilesetDataFunction(id, generation, validityPeriod, (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER), path, mask);
+		FilesetDataFunction fileset = new FilesetDataFunction(id, generation, validityPeriod, (String)context.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER), path, mask);
 		if(!StringUtils.isEmpty(id)) context.set(id, fileset);
 		return fileset;
 	}
 
 	protected DataFunction parseFile(Element root, long validityPeriod)
-			throws InvalidMakefileException, IOException, InvalidContextVariableException {
+			throws InvalidMakefileException, IOException, InvalidContextStateException {
 
 		String id = getOptionalAttribute(root, "id", UUID.randomUUID().toString());
 		String path = getRequiredAttribute(root, "path");
 		String generationValue = getOptionalAttribute(root, "generation", "0");
 		int	generation = Integer.parseInt(generationValue);
-		FileDataFunction file = new FileDataFunction(id, generation, validityPeriod, (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER), path);
+		FileDataFunction file = new FileDataFunction(id, generation, validityPeriod, (String)context.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER), path);
 		if(!StringUtils.isEmpty(id)) context.set(id, file);
 		return file;
 	}
 
-	protected DataFunction parseSet(Element root, long validityPeriod) throws InvalidMakefileException, InvalidContextVariableException, IOException{
+	protected DataFunction parseSet(Element root, long validityPeriod) throws InvalidMakefileException, InvalidContextStateException, IOException{
 		String id = getOptionalAttribute(root, "id", UUID.randomUUID().toString());
 		SetDataFunction set = new SetDataFunction(id);
 		NodeList children = root.getChildNodes();		
@@ -318,7 +318,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	
 	protected DataFunction parseInclude(Element root, long validityPeriod) throws InvalidMakefileException{		
 		String reference = getRequiredAttribute(root, "idref");
-		Object obj = context.getHamake(reference);
+		Object obj = context.get(reference);
 		if(obj == null || !(obj instanceof DataFunction)){
 			throw new InvalidMakefileException("Unknown data function reference found: " + getPath(root));
 		}
@@ -348,7 +348,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	protected Task parseMapReduceTask(Element root)
 			throws InvalidMakefileException {
 		MapReduce res = new MapReduce();
-		res.setJar(Utils.resolvePath(Utils.replaceVariables(context, getRequiredAttribute(root, "jar")), (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER)).toString());
+		res.setJar(Utils.resolvePath(Utils.replaceVariables(context, getRequiredAttribute(root, "jar")), (String)context.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER)).toString());
 		res.setMain(getRequiredAttribute(root, "main"));
 		res.setParameters(parseParametersList(root));
 		return res;
@@ -365,7 +365,7 @@ public class SyntaxParser extends BaseSyntaxParser {
         if (jar == null && !isPigAvailable)
             throw new PigNotFoundException("Pig isn't found in classpath. Please, make sure Pig classes are available in classpath.");
 
-        Path scriptPath = Utils.resolvePath(Utils.replaceVariables(context, getRequiredAttribute(root, "script")), (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER));
+        Path scriptPath = Utils.resolvePath(Utils.replaceVariables(context, getRequiredAttribute(root, "script")), (String)context.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER));
         List<Parameter> params = parseParametersList(root);
 
         return (jar == null)?
@@ -376,7 +376,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	protected Task parseExecTask(Element root)
 			throws InvalidMakefileException, IOException {
 		Exec res = new Exec();
-		res.setBinary(Utils.resolvePath(Utils.replaceVariables(context, getRequiredAttribute(root, "binary")), (String)context.getHamake(Context.HAMAKE_PROPERTY_WORKING_FOLDER)));
+		res.setBinary(Utils.resolvePath(Utils.replaceVariables(context, getRequiredAttribute(root, "binary")), (String)context.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER)));
 		res.setParameters(parseParametersList(root));
 		return res;
 	}

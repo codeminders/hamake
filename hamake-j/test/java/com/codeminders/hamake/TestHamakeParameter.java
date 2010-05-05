@@ -16,7 +16,7 @@ import com.codeminders.hamake.params.Literal;
 public class TestHamakeParameter {
 	
 	@Test
-	public void testGet() throws IOException, InvalidContextVariableException{
+	public void testGet() throws IOException, InvalidContextStateException{
 		//simple case
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		context.set("input", "/input/in");

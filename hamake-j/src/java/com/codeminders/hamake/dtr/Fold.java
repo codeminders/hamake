@@ -1,6 +1,7 @@
 package com.codeminders.hamake.dtr;
 
 import com.codeminders.hamake.Context;
+import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.data.DataFunction;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -22,7 +23,7 @@ public class Fold extends DataTransformationRule {
 	private Context context;
 
 	public Fold(Context parentContext, List<? extends DataFunction> inputs,
-			List<? extends DataFunction> outputs, List<? extends DataFunction> deps) {
+			List<? extends DataFunction> outputs, List<? extends DataFunction> deps) throws InvalidContextStateException {
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.deps = deps;
@@ -70,7 +71,7 @@ public class Fold extends DataTransformationRule {
 			for (DataFunction func : inputs) {
 				long stamp = func.getMinTimeStamp(context);
 				if (stamp == 0) {
-					LOG.error("Some of input/dependency files not present!");
+					LOG.error("Some of input files are not present!");
 					return -10;
 				}
 				if (stamp > mits)
@@ -83,7 +84,7 @@ public class Fold extends DataTransformationRule {
 			for (DataFunction func : inputs) {
 				try {
 					if (func.getPath(context).isEmpty()) {
-						LOG.warn("WARN: The input folder is empty for task "
+						LOG.warn("The input folder is empty for task "
 								+ getName());
 					}
 				} catch (IOException e) {

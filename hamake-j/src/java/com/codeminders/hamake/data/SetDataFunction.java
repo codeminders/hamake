@@ -42,8 +42,8 @@ public class SetDataFunction extends DataFunction {
 			}
 		}
 		Configuration conf = context
-				.getHamake(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION) != null ? (Configuration) context
-				.getHamake(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION)
+				.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION) != null ? (Configuration) context
+				.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION)
 				: new Configuration();
 		return FileSystem.get(conf);
 	}

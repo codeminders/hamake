@@ -59,7 +59,7 @@ public abstract class DataTransformationRule {
 	
 	public int executeIfCan(Semaphore semaphore) throws IOException{
 		boolean canStart = true;
-		if((Boolean)getContext().getHamake(Context.HAMAKE_PROPERTY_WITH_DEPENDENCIES)){
+		if((Boolean)getContext().get(Context.HAMAKE_PROPERTY_WITH_DEPENDENCIES)){
 			for(DataFunction depDataFunc : getDeps()){
 				for(Path path : depDataFunc.getPath(getContext())){
 					FileSystem fs = depDataFunc.getFileSystem(getContext(), path);

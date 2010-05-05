@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.InvalidContextVariableException;
+import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.PigNotFoundException;
 import com.codeminders.hamake.HelperUtils;
 import com.codeminders.hamake.dtr.Fold;
@@ -46,7 +46,7 @@ public class TestSyntaxParser {
 	}
 	
 	@Test
-	public void testFull() throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InvalidContextVariableException{
+	public void testFull() throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InvalidContextStateException{
 		File localHamakeFile = new File(HelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testsyntax.xml");
 		File depPath = new File(tempDir, "deppath");
 		depPath.mkdirs();
@@ -67,8 +67,8 @@ public class TestSyntaxParser {
 		String tempDirPath = tempDir.getAbsolutePath().toString();
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		context.set("tmpdir", tempDirPath);
-		context.setForeach("path", tempDir.getAbsolutePath().toString() + "/referrers/1.log");
-		context.setForeach("basename", "1");
+		context.setForbidden(Context.FOREACH_VARS_PREFIX + "path", tempDir.getAbsolutePath().toString() + "/referrers/1.log");
+		context.setForbidden(Context.FOREACH_VARS_PREFIX + "basename", "1");
 		
 		Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(localHamakeFile), true);
 		//project
@@ -121,7 +121,7 @@ public class TestSyntaxParser {
 	}
 	
 	@Test
-	public void testMinimal() throws IOException, InvalidContextVariableException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException{
+	public void testMinimal() throws IOException, InvalidContextStateException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException{
 		File localHamakeFile = new File(HelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testsyntax-minimal.xml");
 		File fileset = new File(tempDir, "fileset");
 		fileset.mkdirs();

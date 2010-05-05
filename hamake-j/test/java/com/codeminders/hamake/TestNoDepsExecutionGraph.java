@@ -18,7 +18,7 @@ import com.codeminders.hamake.dtr.Foreach;
 public class TestNoDepsExecutionGraph {		
 
 	@Test
-	public void testSimpleGraph() throws IOException, InvalidContextVariableException{
+	public void testSimpleGraph() throws IOException, InvalidContextStateException{
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		Foreach task1 = HelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1")));
 		Foreach task2 = HelperUtils.createForeachDTR(context, "M2", new FileDataFunction("I2"), Arrays.asList(new FileDataFunction("O2")));
@@ -38,7 +38,7 @@ public class TestNoDepsExecutionGraph {
 	}
 	
 	@Test
-	public void testSimpleGraphWithTargets() throws IOException, InvalidContextVariableException{
+	public void testSimpleGraphWithTargets() throws IOException, InvalidContextStateException{
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		Foreach task1 = HelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1")));
 		Foreach task2 = HelperUtils.createForeachDTR(context, "M2", new FileDataFunction("I2"), Arrays.asList(new FileDataFunction("O2")));
@@ -66,7 +66,7 @@ public class TestNoDepsExecutionGraph {
 	}
 	
 	@Test
-	public void testSimpleCyclicGraph() throws IOException, InvalidContextVariableException{	
+	public void testSimpleCyclicGraph() throws IOException, InvalidContextStateException{	
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		Foreach task1 = HelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1")));
 		Foreach task2 = HelperUtils.createForeachDTR(context, "M2", new FileDataFunction("O1"), Arrays.asList(new FileDataFunction("O2")));
@@ -84,7 +84,7 @@ public class TestNoDepsExecutionGraph {
 	}	
 		
 	@Test
-	public void testComplexCyclicGraph() throws IOException, InvalidContextVariableException{	
+	public void testComplexCyclicGraph() throws IOException, InvalidContextStateException{	
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		Foreach task1 = HelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I"), Arrays.asList(new FileDataFunction("O1")));
 		Foreach task2 = HelperUtils.createForeachDTR(context, "M2", new FileDataFunction("O2"), Arrays.asList(new FileDataFunction("O3"), new FileDataFunction("O")));
@@ -98,7 +98,7 @@ public class TestNoDepsExecutionGraph {
 	}
 	
 	@Test
-	public void testCrossDependentGraph() throws IOException, InvalidContextVariableException{
+	public void testCrossDependentGraph() throws IOException, InvalidContextStateException{
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		Foreach task1 = HelperUtils.createForeachDTR(context, "M1", new FileDataFunction("I1"), Arrays.asList(new FileDataFunction("O1"), new FileDataFunction("O3")));
 		Foreach task2 = HelperUtils.createForeachDTR(context, "M2", new FileDataFunction("I2"), Arrays.asList(new FileDataFunction("O2"), new FileDataFunction("O4")));

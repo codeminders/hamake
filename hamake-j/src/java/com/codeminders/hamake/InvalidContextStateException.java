@@ -1,17 +1,17 @@
 package com.codeminders.hamake;
 
-public class InvalidContextVariableException extends Exception {
+public class InvalidContextStateException extends Exception {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 996353648749533735L;
 
-	public InvalidContextVariableException() {
+	public InvalidContextStateException() {
         super();
     }
 
-    public InvalidContextVariableException(String message) {
+    public InvalidContextStateException(String message) {
         super(message);
     }
 }

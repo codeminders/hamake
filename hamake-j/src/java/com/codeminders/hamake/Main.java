@@ -141,7 +141,7 @@ public class Main {
             if (config.test_mode)
                 ex.printStackTrace();
             System.exit(ExitCodes.INITERR.ordinal());
-        } catch(InvalidContextVariableException e){
+        } catch(InvalidContextStateException e){
         	System.err.println("Cannot execute Pig task: " + e.getMessage());
         	System.exit(ExitCodes.INITERR.ordinal());
         } finally {

@@ -18,7 +18,7 @@ import org.xml.sax.SAXException;
 
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.InvalidContextVariableException;
+import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.PigNotFoundException;
 import com.codeminders.hamake.Utils;
 
@@ -41,7 +41,7 @@ public abstract class BaseSyntaxParser {
 
 	public static Hamake parse(Context context, InputStream is, boolean verbose)
 			throws IOException, ParserConfigurationException, SAXException,
-			InvalidMakefileException, PigNotFoundException, InvalidContextVariableException{
+			InvalidMakefileException, PigNotFoundException, InvalidContextStateException{
 		BaseSyntaxParser syntaxParser = new SyntaxParser(context, verbose);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		bos.write(is);
@@ -55,7 +55,7 @@ public abstract class BaseSyntaxParser {
 	}	
 	
 	protected abstract Hamake parseSyntax(Document dom) throws IOException, ParserConfigurationException, SAXException,
-	InvalidMakefileException, PigNotFoundException, InvalidContextVariableException;
+	InvalidMakefileException, PigNotFoundException, InvalidContextStateException;
 	
 	protected abstract boolean validate(InputStream is) throws SAXException, IOException;
 	
