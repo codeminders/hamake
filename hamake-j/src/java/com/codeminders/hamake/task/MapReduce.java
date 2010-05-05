@@ -15,8 +15,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.RunJar;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MapReduce extends Task {
@@ -31,7 +33,8 @@ public class MapReduce extends Task {
         try {
             Path jarPath = new Path(getJar());             
             fs = jarPath.getFileSystem(new Configuration());
-            args.add(Utils.copyToTemporaryLocal(getJar(), fs).getAbsolutePath());
+            File jarFile = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(getJar(), fs), Arrays.asList(new String[] {"Main-Class"}));
+            args.add(jarFile.getAbsolutePath());
         } catch (IOException ex) {
         	LOG.error("Can't download JAR file: " + getJar(), ex);
             return -1000;

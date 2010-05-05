@@ -39,6 +39,10 @@
       name="commons-logging-api"
       rev="${commons-logging-api.version}"
       conf="common->master"/>
+    <dependency org="org.apache.commons"
+      name="commons-compress"
+      rev="${commons-compress.version}"
+      conf="common->default"/>
     <dependency org="junit"
       name="junit"
       rev="${junit.version}"

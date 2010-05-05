@@ -206,7 +206,7 @@ public class SyntaxParser extends BaseSyntaxParser {
         if(input == null){
 			throw new InvalidMakefileException(getPath(root) + " should have one input sub-element");
 		}
-        List<DataFunction> inputFuncs = parseDTRData(input, Arrays.asList("fileset", "file", "set", "include"), 1, Integer.MAX_VALUE);
+        List<DataFunction> inputFuncs = parseDTRData(input, Arrays.asList("fileset", "file", "set", "include"), 0, Integer.MAX_VALUE);
         Element output = getOneSubElement(root, "output");
         if(output == null){
 			throw new InvalidMakefileException(getPath(root) + " should have one output sub-element");

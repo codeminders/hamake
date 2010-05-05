@@ -19,6 +19,8 @@ public class Context {
 	public static final String HAMAKE_PROPERTY_HAMAKE_VERSION = "version";
 	public static final String HAMAKE_PROPERTY_WITH_DEPENDENCIES = "dependencies.enabled";
 	
+	public static final String PROPERTY_TEMP_FOLDER = "temp.folder";
+	
 	public static final String[] FORBIDDEN_PREFIXES = {SYSTEM_VARS_PREFIX, ENVIRONMENT_VARS_PREFIX, HAMAKE_VARS_PREFIX, FOREACH_VARS_PREFIX, FOLD_VARS_PREFIX};
 
 	Map<String, Object> nameValuePairs;
@@ -27,12 +29,13 @@ public class Context {
 		this(null);
 	}
 	
-	public static Context initContext(Configuration hadoopConf, String workDir, String hamakeVersion, boolean dependenciesEnabled){
+	public static Context initContext(Configuration hadoopConf, String workDir, String hamakeVersion, boolean dependenciesEnabled) throws InvalidContextVariableException{
 		Context context = new Context();
 		context.setHamake(HAMAKE_PROPERTY_HADOOP_CONFIGURATION, new Configuration());
 		context.setHamake(HAMAKE_PROPERTY_WORKING_FOLDER, workDir);
 		context.setHamake(HAMAKE_PROPERTY_HAMAKE_VERSION, hamakeVersion);
 		context.setHamake(HAMAKE_PROPERTY_WITH_DEPENDENCIES, dependenciesEnabled);
+		context.set(PROPERTY_TEMP_FOLDER, hadoopConf.get("hadoop.tmp.dir", "/tmp"));
 		return context;
 	}
 
