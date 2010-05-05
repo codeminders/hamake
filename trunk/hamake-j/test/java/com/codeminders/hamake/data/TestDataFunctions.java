@@ -69,7 +69,7 @@ public class TestDataFunctions {
 	}
 	
 	@Test
-	public void testFilesetDataFunction() throws IOException{
+	public void testFilesetDataFunction() throws IOException, InvalidContextVariableException{
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		File folder1 = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
 		HelperUtils.generateTemporaryFiles(folder1.getAbsolutePath(), 10, ".txt");
@@ -86,7 +86,7 @@ public class TestDataFunctions {
 	}
 	
 	@Test
-	public void testSetDataFunction() throws IOException{
+	public void testSetDataFunction() throws IOException, InvalidContextVariableException{
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		File set1 = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
 		HelperUtils.generateTemporaryFiles(set1.getAbsolutePath(), 10, ".txt");
@@ -107,7 +107,7 @@ public class TestDataFunctions {
 	}
 	
 	@Test
-	public void testIntersects() throws IOException{
+	public void testIntersects() throws IOException, InvalidContextVariableException{
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		FileDataFunction fileFuncA = new FileDataFunction("A", 0, Long.MAX_VALUE, null, "/tmp/test/${A}");
 		FileDataFunction fileFuncB = new FileDataFunction("B", 0, Long.MAX_VALUE, null, "/tmp/test/${C}");

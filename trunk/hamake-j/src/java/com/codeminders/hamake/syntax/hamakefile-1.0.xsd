@@ -55,7 +55,7 @@
         <xs:element minOccurs="0" ref="dependencies"/>
         <xs:element name="input">
           <xs:complexType>
-            <xs:choice maxOccurs="unbounded">
+            <xs:choice maxOccurs="unbounded" minOccurs="0">
               <xs:element ref="file"/>
               <xs:element ref="fileset"/>
               <xs:element ref="set"/>

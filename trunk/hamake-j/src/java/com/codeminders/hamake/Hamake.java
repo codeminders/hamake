@@ -1,8 +1,11 @@
 package com.codeminders.hamake;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.codeminders.hamake.dtr.DataTransformationRule;
+import com.codeminders.hamake.syntax.SyntaxParser;
 
 import java.io.IOException;
 import java.security.Permission;
@@ -10,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Hamake {
+	
+	public static final Log LOG = LogFactory.getLog(Hamake.class);
 	
 	public static final String HAMAKE_VERSION = "1.0";
 	
@@ -107,6 +112,7 @@ public class Hamake {
         @Override
         public void checkExit(int status) {
             super.checkExit(status);
+            LOG.warn("Some of your tasks have called System.exit() method. This is not recommended behaviour because it will prevent Hamake from launching other tasks.");
             throw new ExitException(status);
         }
     }
