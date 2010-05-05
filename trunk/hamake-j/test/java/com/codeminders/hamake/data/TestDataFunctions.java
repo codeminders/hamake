@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.InvalidContextVariableException;
+import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.HelperUtils;
 
 public class TestDataFunctions {
@@ -33,7 +33,7 @@ public class TestDataFunctions {
 	}
 	
 	@Test
-	public void testFileDataFunction() throws IOException, InvalidContextVariableException{
+	public void testFileDataFunction() throws IOException, InvalidContextStateException{
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		File file1 = HelperUtils.generateTemporaryFile(tempDir.getAbsolutePath());
 		File folder = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
@@ -69,7 +69,7 @@ public class TestDataFunctions {
 	}
 	
 	@Test
-	public void testFilesetDataFunction() throws IOException, InvalidContextVariableException{
+	public void testFilesetDataFunction() throws IOException, InvalidContextStateException{
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		File folder1 = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
 		HelperUtils.generateTemporaryFiles(folder1.getAbsolutePath(), 10, ".txt");
@@ -86,7 +86,7 @@ public class TestDataFunctions {
 	}
 	
 	@Test
-	public void testSetDataFunction() throws IOException, InvalidContextVariableException{
+	public void testSetDataFunction() throws IOException, InvalidContextStateException{
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		File set1 = HelperUtils.generateTemporaryDirectory(tempDir.getAbsolutePath());
 		HelperUtils.generateTemporaryFiles(set1.getAbsolutePath(), 10, ".txt");
@@ -107,7 +107,7 @@ public class TestDataFunctions {
 	}
 	
 	@Test
-	public void testIntersects() throws IOException, InvalidContextVariableException{
+	public void testIntersects() throws IOException, InvalidContextStateException{
 		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
 		FileDataFunction fileFuncA = new FileDataFunction("A", 0, Long.MAX_VALUE, null, "/tmp/test/${A}");
 		FileDataFunction fileFuncB = new FileDataFunction("B", 0, Long.MAX_VALUE, null, "/tmp/test/${C}");

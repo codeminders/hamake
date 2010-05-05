@@ -66,18 +66,18 @@ public class HelperUtils {
 		return files.toArray(new File[] {});
 	}
 	
-	public static Foreach createForeachDTR(Context context, String name, FileDataFunction input, List<? extends DataFunction> output){
+	public static Foreach createForeachDTR(Context context, String name, FileDataFunction input, List<? extends DataFunction> output) throws InvalidContextStateException{
 		Foreach foreach = new Foreach(context, input, output, null);
 		foreach.setName(name);
 		return foreach;
 	}
-	public static Foreach createForeachDTR(Context context, String name, FileDataFunction input, List<? extends DataFunction> output, List<? extends DataFunction> deps){
+	public static Foreach createForeachDTR(Context context, String name, FileDataFunction input, List<? extends DataFunction> output, List<? extends DataFunction> deps) throws InvalidContextStateException{
 		Foreach foreach = new Foreach(context, input, output, deps);
 		foreach.setName(name);
 		return foreach;
 	}
 	
-	public static Fold createFoldDTR(Context context, String name, List<? extends DataFunction> inputs, List<? extends DataFunction> outputs){
+	public static Fold createFoldDTR(Context context, String name, List<? extends DataFunction> inputs, List<? extends DataFunction> outputs) throws InvalidContextStateException{
 		Fold fold = new Fold(context, inputs, outputs, null);
 		fold.setName(name);
 		return fold;

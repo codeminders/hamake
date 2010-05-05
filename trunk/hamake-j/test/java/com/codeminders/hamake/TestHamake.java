@@ -37,7 +37,7 @@ public class TestHamake {
 	public void testLocalCpHamakefile() throws IOException,
 			ParserConfigurationException, SAXException,
 			InvalidMakefileException, InterruptedException,
-			PigNotFoundException, InvalidContextVariableException {
+			PigNotFoundException, InvalidContextStateException {
 
 		File inputDir = new File(tempDir, "input");
 		inputDir.mkdirs();
@@ -74,7 +74,7 @@ public class TestHamake {
 	public void test2BranchesLocalCpHamakefile() throws IOException,
 			ParserConfigurationException, SAXException,
 			InvalidMakefileException, InterruptedException,
-			PigNotFoundException, InvalidContextVariableException {
+			PigNotFoundException, InvalidContextStateException {
 
 		File inputDir = new File(tempDir, "input");
 		inputDir.mkdirs();
@@ -129,7 +129,7 @@ public class TestHamake {
 			InvalidMakefileException, InterruptedException, SecurityException,
 			NoSuchFieldException, IllegalArgumentException,
 			IllegalAccessException, PigNotFoundException,
-			InvalidContextVariableException {
+			InvalidContextStateException {
 		SecurityManager securityManager = System.getSecurityManager();
 		ExitSecurityManager manager = new ExitSecurityManager();
 		System.setSecurityManager(manager);

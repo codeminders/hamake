@@ -41,7 +41,7 @@ public class Pig extends Task {
 
     public int execute(Context context) {
         FileSystem fs;
-        Configuration conf = context.getHamake(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION) != null? (Configuration)context.getHamake(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION) : new Configuration();
+        Configuration conf = context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION) != null? (Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION) : new Configuration();
         Collection<String> args = new ArrayList<String>();
         BufferedReader in = null;
 

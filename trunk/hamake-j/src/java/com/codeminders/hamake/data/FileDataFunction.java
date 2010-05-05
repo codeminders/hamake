@@ -73,8 +73,8 @@ public class FileDataFunction extends DataFunction {
 		return toPath(context)
 				.getFileSystem(
 						context
-								.getHamake(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION) != null ? (Configuration) context
-								.getHamake(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION)
+								.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION) != null ? (Configuration) context
+								.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION)
 								: new Configuration());
 	}
 

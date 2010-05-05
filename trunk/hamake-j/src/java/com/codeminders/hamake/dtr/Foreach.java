@@ -3,6 +3,7 @@ package com.codeminders.hamake.dtr;
 import com.codeminders.hamake.CommandThread;
 import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
+import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.data.DataFunction;
 
 import org.apache.commons.io.FilenameUtils;
@@ -25,11 +26,11 @@ import java.util.concurrent.Semaphore;
  */
 public class Foreach extends DataTransformationRule {
 	
-	public static final String FULL_FILENAME_VAR = "path";
-	public static final String SHORT_FILENAME_VAR = "filename";
-	public static final String PARENT_FOLDER_VAR = "folder";
-	public static final String FILENAME_WO_EXTENTION_VAR = "basename";
-	public static final String EXTENTION_VAR = "ext";
+	public static final String FULL_FILENAME_VAR = Context.FOREACH_VARS_PREFIX + "path";
+	public static final String SHORT_FILENAME_VAR = Context.FOREACH_VARS_PREFIX + "filename";
+	public static final String PARENT_FOLDER_VAR = Context.FOREACH_VARS_PREFIX + "folder";
+	public static final String FILENAME_WO_EXTENTION_VAR = Context.FOREACH_VARS_PREFIX + "basename";
+	public static final String EXTENTION_VAR = Context.FOREACH_VARS_PREFIX + "ext";
 
 	public static final Log LOG = LogFactory.getLog(Foreach.class);
 
@@ -40,7 +41,7 @@ public class Foreach extends DataTransformationRule {
 
 
 	public Foreach(Context parentContext, DataFunction input, List<? extends DataFunction> output,
-			List<? extends DataFunction> dependencies) {
+			List<? extends DataFunction> dependencies) throws InvalidContextStateException {
 		this.output = output;
 		this.input = input;
 		this.deps = dependencies;
@@ -86,12 +87,19 @@ public class Foreach extends DataTransformationRule {
 						+ " does not exist. Ignoring");
 				continue;
 			}
-			Context context = new Context(this.context);
-			context.setForeach(FULL_FILENAME_VAR, ipath.toString());
-			context.setForeach(SHORT_FILENAME_VAR, FilenameUtils.getName(ipath.toString()));
-			context.setForeach(PARENT_FOLDER_VAR, ipath.getParent().toString());
-			context.setForeach(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
-			context.setForeach(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
+			Context context = null;
+			try{
+				context = new Context(this.context);
+			}
+			catch(InvalidContextStateException e){
+				LOG.error(e);
+				return -1;
+			}
+			context.setForbidden(FULL_FILENAME_VAR, ipath.toString());
+			context.setForbidden(SHORT_FILENAME_VAR, FilenameUtils.getName(ipath.toString()));
+			context.setForbidden(PARENT_FOLDER_VAR, ipath.getParent().toString());
+			context.setForbidden(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
+			context.setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
 			for (DataFunction outputFunc : output) {
 				if (outputFunc.getMinTimeStamp(context) >= input.getMinTimeStamp(context)) {
 					if (Config.getInstance().verbose){
