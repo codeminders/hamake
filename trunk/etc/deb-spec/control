@@ -1,5 +1,5 @@
 Package: hamake
-Version: 1.0
+Version: #@hamake.version@
 Section: Applications/MapReduce
 Homepage: http://code.google.com/p/hamake
 Priority: optional
