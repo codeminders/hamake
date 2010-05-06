@@ -1,3 +1,0 @@
-include *.txt *.xml *.py *.xsd
-recursive-include src *.py
-prune build

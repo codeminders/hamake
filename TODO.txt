@@ -1,3 +1,0 @@
-TODO list moved to Wiki page:
-
-http://code.google.com/p/hamake/wiki/TODO
