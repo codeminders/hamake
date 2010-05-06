@@ -12,17 +12,17 @@ Hamake is a lightweight workflow engine for Hadoop. Hamake helps to organize you
 
 ==Installation==
 
-To install Hamake simply copy hamake-j-1.0.jar to the directory of your choice and make sure that hadoop command is in your $PATH variable.
+To install Hamake simply copy hamake-x.x.jar to the directory of your choice and make sure that hadoop command is in your $PATH variable.
 
 =Quick Start=
 
 ==Running Hamake Example==
 Hamake runs Hadoop MR jobs, Pig scripts and local scripts based on hamake-file.
-As an example you can take class-size.xml hamake file from example folder of the Hamake distribution. To generate data for class-size.xml example, launch following script:
+As an example you can take class-size.xml hamake file from examples-x.x.tar.gz archive. To generate data for class-size.xml example, launch following script:
 {{{
 bin/start-class-size-example.sh
 }}}
-that script puts content of the ''lib'' folder, hamake-examples-1.0.jar and Pig script on HDFS and launches hamake.
+that script puts content of the ''lib'' folder, hamake-examples-x.x.jar and Pig script on HDFS and launches hamake.
 In case of successful execution, you should see /user/$USERNAME/build/test/class-size-histogram/part-00000 and /user/$USERNAME/build/test/class-size-median-bin/part-00000 files on HDFS
 
 == Running Hamake Example on Amazon Elastic MR ==
@@ -31,13 +31,13 @@ It is possible to run the Hamake on [http://aws.amazon.com/elasticmapreduce/ Ama
 In order to run Hamake example on Amazon EMR, follow the steps below:
   # Set up an environment on S3:
     # Copy {{{<hamake distribuion>/lib/*.jar to s3n://hamake/lib}}}
-    # Copy {{{<hamake distribuion>/hamake-j-1.0.jar to s3n://hamake/}}}
-    # Copy {{{<hamake distribuion>/examples/hamake-examples-1.0.jar to s3n://hamake/}}}
+    # Copy {{{<hamake distribuion>/hamake-x.x.jar to s3n://hamake/}}}
+    # Copy {{{<hamake distribuion>/examples/hamake-examples-x.x.jar to s3n://hamake/}}}
     # Copy {{{<hamake distribuion>/examples/hamakefiles/class-size-s3.xml to s3n://hamake/}}}
   # [http://developer.amazonwebservices.com/connect/entry.jspa?externalID=2264&categoryID=266 Download] and [http://docs.amazonwebservices.com/ElasticMapReduce/latest/DeveloperGuide/index.html?introduction.html install] Amazon EMR command-line tool
   # Start the Hamake on Amazon EMR:
 {{{
-elastic-mapreduce --create --jar s3n://hamake/hamake-j-1.0.jar --main-class com.codeminders.hamake.Main --args -t,-v,-f,s3n://hamake/class-size-s3.xml
+elastic-mapreduce --create --jar s3n://hamake/hamake-x.x.jar --main-class com.codeminders.hamake.Main --args -t,-v,-f,s3n://hamake/class-size-s3.xml
 }}}
 
 Hamake is executed as a single job within Amazon EMR job flow, it uses Amazon's Hadoop configuration and submits your MR jobs directly to EMR !JobTracker. 
@@ -141,13 +141,13 @@ This data transformation rule will launch org.apache.hadoop.examples.!WordCount 
 
 To run the example execute command:
 {{{
-hadoop jar hamake-j-1.0.jar -f my-first-hamakefile.xml
+hadoop jar hamake-x.x.jar -f my-first-hamakefile.xml
 }}}
 
 As an output you should see something like this:
 {{{
 10/05/05 17:28:55 INFO hamake.Main: Using Hadoop 0.xx.x
-10/05/05 17:28:55 INFO hamake.Main: Working dir:  file:/home/project/HaMake/src/hamake-j
+10/05/05 17:28:55 INFO hamake.Main: Working dir:  file:/home/project/HaMake/src/hamake
 10/05/05 17:28:55 INFO hamake.Main: Reading hamake-file my-first-hamakefile.xml
 10/05/05 17:28:59 INFO hamake.TaskRunner: Starting randomtextwriter
 ...
