@@ -1,4 +1,4 @@
-version 1.5.beta
+version 2.0 beta
 
 <wiki:toc max_depth="2" />
 
@@ -17,8 +17,8 @@ Hamake runs in Hadoop environment. Please make sure you have installed Hadoop on
 {{{
 export PATH=$PATH:$HADOOP_HOME/bin
 }}}
-In contrast to similar software Hamake does not require dedicated server or complex installation. To install Hamake just unpack Hamake distribution archive and copy hamake-1.5.beta.jar file from the folder where you have unpacked distribution archive to the directory of your choise. Next you should describe workflow definitions in a special-formatted hamake-file and launch the process with _hadoop_ command:   
-    Example: {{{hadoop jar hamake-1.5.beta.jar -f path_to_hamake-file}}}
+In contrast to similar software Hamake does not require dedicated server or complex installation. To install Hamake just unpack Hamake distribution archive and copy hamake-2.0b.jar file from the folder where you have unpacked distribution archive to the directory of your choise. Next you should describe workflow definitions in a special-formatted hamake-file and launch the process with _hadoop_ command:   
+    Example: {{{hadoop jar hamake-2.0b.jar -f path_to_hamake-file}}}
 
 =Using Hamake=
 
@@ -45,7 +45,7 @@ Graph is stored in the memory of the machine where Hamake is running, so the num
 
 You can control how many root tasks are selected by two ways:
  * You can list leaf tasks you would like to end with as Hamake command-line parameters
-   Example: {{{hadoop jar hamake-1.5.beta.jar jar-listings filter-listings}}}
+   Example: {{{hadoop jar hamake-2.0b.jar jar-listings filter-listings}}}
  * You can specify default leaf task you would like to end with in hamake-file. This attribute is taken into account only in case you have not specified leaf tasks to start with as Hamake command-line parameters.
    Example: {{{<project name="test" default="jar-listings">}}}
 
@@ -106,7 +106,7 @@ Currently you can define following types of tasks:
 
 ==Working directory==
 Hamake resolves all non-absolute paths defined in hamake-file relative to working directory. Working directory can be defined as the Hamake command-line argument with _-w_ option.
-   Example: {{{hadoop jar hamake-1.5.beta.jar -w /home/hadoop/scripts}}}
+   Example: {{{hadoop jar hamake-2.0b.jar -w /home/hadoop/scripts}}}
 
 If working directory has been omitted, it will be determined by Hamake as:
  * user home directory, if Hadoop default FS is local FS (`file://`)
@@ -121,14 +121,14 @@ Hamake takes into account schema part of the paths used in workflow script. Thus
 =Running Hamake=
 If you installed Hamake as described in _Installation_ you can run Hamake from the command-line in a following way:
 {{{
-hadoop jar path_to_hamake.jar/hamake-1.5.beta.jar path_to_hamake-file
+hadoop jar path_to_hamake.jar/hamake-2.0b.jar path_to_hamake-file
 }}}
 
 To run Hamake you should have Hadoop installed and bin folder of Hadoop should be added to system PATH environment variable.
 
 ==Command-line options summary==
 
-hadoop jar path_to_hamake.jar/hamake-1.5.beta.jar path_to_hamake-file `[options] [target [target2] [target3] ...]`
+hadoop jar path_to_hamake.jar/hamake-2.0b.jar path_to_hamake-file `[options] [target [target2] [target3] ...]`
 Options:
     -V, -version display version and exit.<BR>
     -v, -verbose verbose mode.<BR>
