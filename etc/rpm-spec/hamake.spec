@@ -1,6 +1,6 @@
 Name: hamake
 Summary: Hamake is a lightweight utility and workflow engine for Hadoop.
-Version: 1.0
+Version: #@hamake.version@
 Release: 0
 Group: Applications/MapReduce
 License: ASL 2.0

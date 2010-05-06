@@ -150,7 +150,7 @@
 
   </target>
 
-  <target name="build-rpm" depends="dist">
+  <target name="build.rpm" depends="dist">
     <delete dir="${rpmroot}" />
 
     <mkdir dir="${rpmroot}" />
@@ -170,17 +170,19 @@
         <include name="**"/>
       </fileset>
     </copy>
-
+  	<replace value="${hamake.version}" file="${rpmroot}/SPECS/hamake.spec" token="#@hamake.version@" />
+  	<replace value="${hamake.version}" file="${rpmroot}/usr/lib/hamake/examples/bin/start-class-size-example.sh" token="#@hamake.version@" />
     <rpm
          specFile="hamake.spec"
          topDir="${rpmroot}"
          cleanBuildDir="false"
-         failOnError="true"/>
+         failOnError="true"
+  		 command="--target ${os.arch} -bb"/>
 
-    <copy todir="${dist.dir}" file="${rpmroot}/RPMS/i386/hamake-1.0-0.i386.rpm"/>
+    <copy todir="${dist.dir}" file="${rpmroot}/RPMS/${os.arch}/hamake-${hamake.version}-0.${os.arch}.rpm"/>
   </target>
 
-  <target name="build-deb" depends="dist">
+  <target name="build.deb" depends="dist">
     <delete dir="${debroot}" />
 
     <mkdir dir="${debroot}/usr/lib/hamake"/>
@@ -193,7 +195,7 @@
         <include name="**"/>
       </fileset>
     </copy>
-
+  	
     <copy todir="${debroot}/DEBIAN">
       <fileset dir="${basedir}/etc/deb-spec">
         <include name="*"/>
@@ -201,11 +203,14 @@
     </copy>
 
     <chmod file="${debroot}/DEBIAN/postinst" perm="755"/>
+  	
+  	<replace value="${hamake.version}" file="${debroot}/DEBIAN/control" token="#@hamake.version@" />
+  	<replace value="${hamake.version}" file="${debroot}/usr/lib/hamake/examples/bin/start-class-size-example.sh" token="#@hamake.version@" />
 
     <exec executable="dpkg" failonerror="true">
         <arg value="-b"/>
         <arg value="${debroot}"/>
-        <arg value="${dist.dir}/hamake-1.0.deb"/>
+        <arg value="${dist.dir}/hamake-${hamake.version}.deb"/>
     </exec>
   </target>
 
