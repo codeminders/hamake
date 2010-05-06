@@ -4,7 +4,6 @@ import com.codeminders.hamake.Context;
 import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.data.DataFunction;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -20,14 +19,13 @@ public class Fold extends DataTransformationRule {
 	private List<? extends DataFunction> inputs = new ArrayList<DataFunction>();
 	private List<? extends DataFunction> outputs = new ArrayList<DataFunction>();
 	private List<? extends DataFunction> deps = new ArrayList<DataFunction>();
-	private Context context;
 
 	public Fold(Context parentContext, List<? extends DataFunction> inputs,
 			List<? extends DataFunction> outputs, List<? extends DataFunction> deps) throws InvalidContextStateException {
+		super(parentContext);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.deps = deps;
-		this.context = new Context(parentContext);
 	}
 
 	@Override
@@ -46,18 +44,13 @@ public class Fold extends DataTransformationRule {
 	}
 	
 	@Override
-	protected Context getContext() {
-		return context;
-	}
-
-	@Override
 	public int execute(Semaphore semaphore) throws IOException {
 		long mits = -1;
 		long mots = -1;
 
 		int numo = 0;
 		for (DataFunction func : outputs) {
-			long stamp = func.getMinTimeStamp(context);
+			long stamp = func.getMinTimeStamp(getContext());
 			if (stamp == 0) {
 				mots = -1;
 				break;
@@ -69,7 +62,7 @@ public class Fold extends DataTransformationRule {
 		}
 		if (numo > 0 && mots != -1) {
 			for (DataFunction func : inputs) {
-				long stamp = func.getMinTimeStamp(context);
+				long stamp = func.getMinTimeStamp(getContext());
 				if (stamp == 0) {
 					LOG.error("Some of input files are not present!");
 					return -10;
@@ -83,7 +76,7 @@ public class Fold extends DataTransformationRule {
 			// check that input folder is not empty
 			for (DataFunction func : inputs) {
 				try {
-					if (func.getPath(context).isEmpty()) {
+					if (func.getPath(getContext()).isEmpty()) {
 						LOG.warn("The input folder is empty for task "
 								+ getName());
 					}
@@ -92,9 +85,9 @@ public class Fold extends DataTransformationRule {
 				}
 			}
 			for (DataFunction output : outputs)
-				output.clear(context);
+				output.clear(getContext());
 
-			return getTask().execute(context);
+			return getTask().execute(getContext());
 		}
 		else{
 			LOG.info("Output of " + getName()

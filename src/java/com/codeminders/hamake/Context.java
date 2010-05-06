@@ -7,6 +7,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 
 public class Context {
+	
+	public Context parent;
 
 	public static final String SYSTEM_VARS_PREFIX = "sys:";
 	public static final String ENVIRONMENT_VARS_PREFIX = "env:";
@@ -19,34 +21,28 @@ public class Context {
 	public static final String HAMAKE_PROPERTY_HADOOP_CONFIGURATION = HAMAKE_VARS_PREFIX + "hadoop.configuration";
 	public static final String HAMAKE_PROPERTY_HAMAKE_VERSION = HAMAKE_VARS_PREFIX + "version";
 	public static final String HAMAKE_PROPERTY_WITH_DEPENDENCIES = HAMAKE_VARS_PREFIX + "dependencies.enabled";
+	public static final String HAMAKE_PROPERTY_VERBOSE = HAMAKE_VARS_PREFIX + "verbose";
+	public static final String HAMAKE_PROPERTY_DRY_RUN = HAMAKE_VARS_PREFIX + "dry.run";
 	
 	public static final String HADOOP_PROPERTY_TEMP_FOLDER = HADOOP_VARS_PREFIX + "temp.folder";
 	
 	public static final String[] FORBIDDEN_PREFIXES = {SYSTEM_VARS_PREFIX, ENVIRONMENT_VARS_PREFIX, HADOOP_VARS_PREFIX, HAMAKE_VARS_PREFIX, FOREACH_VARS_PREFIX, FOLD_VARS_PREFIX};
 
-	private Map<String, Object> nameValuePairs;
+	private Map<String, Object> nameValuePairs = new HashMap<String, Object>();
 
-	private Context() throws InvalidContextStateException {
-		super();
+	public Context(Configuration hadoopConf, String workDir, boolean dependenciesEnabled, boolean verbose, boolean dryRun){
+		setForbidden(HAMAKE_PROPERTY_HADOOP_CONFIGURATION, new Configuration());
+		setForbidden(HAMAKE_PROPERTY_WORKING_FOLDER, workDir);
+		setForbidden(HAMAKE_PROPERTY_HAMAKE_VERSION, Hamake.HAMAKE_VERSION);
+		setForbidden(HAMAKE_PROPERTY_WITH_DEPENDENCIES, dependenciesEnabled);
+		setForbidden(HAMAKE_PROPERTY_VERBOSE, verbose);
+		setForbidden(HAMAKE_PROPERTY_DRY_RUN, dryRun);
 	}
 	
-	public static Context initContext(Configuration hadoopConf, String workDir, String hamakeVersion, boolean dependenciesEnabled) throws InvalidContextStateException{
-		Context context = new Context();
-		context.nameValuePairs = new HashMap<String, Object>();
-		context.setForbidden(HAMAKE_PROPERTY_HADOOP_CONFIGURATION, new Configuration());
-		context.setForbidden(HAMAKE_PROPERTY_WORKING_FOLDER, workDir);
-		context.setForbidden(HAMAKE_PROPERTY_HAMAKE_VERSION, hamakeVersion);
-		context.setForbidden(HAMAKE_PROPERTY_WITH_DEPENDENCIES, dependenciesEnabled);
-		return context;
+	Context(Context parentContext){
+		this.parent = parentContext;
 	}
-
-	public Context(Context parentContext) throws InvalidContextStateException {
-		if(parentContext == null) throw new InvalidContextStateException("Parent context can not be null");
-		nameValuePairs = new HashMap<String, Object>();
-		for (Map.Entry<String, Object> entry : parentContext.getNameValuePairs().entrySet())
-			nameValuePairs.put(entry.getKey(), entry.getValue());
-	}
-
+	
 	protected Map<String, Object> getNameValuePairs() {
 		return nameValuePairs;
 	}
@@ -62,7 +58,7 @@ public class Context {
 			nameValuePairs.put(name, value);
 		}
 		else{
-			throw new InvalidContextStateException("error setting " + name + ". Could not modify context");
+			throw new InvalidContextStateException("error setting variable " + name + ". Context is immutable");
 		}
 	}
 
@@ -78,13 +74,23 @@ public class Context {
 			Configuration conf = (Configuration)get(HAMAKE_PROPERTY_HADOOP_CONFIGURATION);
 			return conf.get(StringUtils.split(name, ":")[1]);
 		}
-		else return nameValuePairs.get(name);
+		else if(nameValuePairs.containsKey(name))return nameValuePairs.get(name);
+		else if(parent != null)return parent.get(name);
+		else return null;
 	}
 	
 	public String getString(String name) {
 		Object obj = get(name);
 		if (obj != null && obj instanceof String) {
 			return (String)obj;
+		}
+		return null;
+	}
+	
+	public Boolean getBoolean(String name) {
+		Object obj = get(name);
+		if (obj != null && obj instanceof Boolean) {
+			return (Boolean)obj;
 		}
 		return null;
 	}

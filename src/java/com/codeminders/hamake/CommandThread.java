@@ -8,23 +8,20 @@ import com.codeminders.hamake.task.Task;
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
 
-public class CommandThread extends Thread {
+public class CommandThread extends ContextAware implements Runnable{
 	
 	public static final Log LOG = LogFactory.getLog(CommandThread.class);
 
     private Task task;
-    private Context exec_context;
-    private Semaphore job_semaphore;
+    private Semaphore jobSemaphore;
     private int rc;
 
     public CommandThread(Task task,
-                         Context exec_context,
-                         Semaphore job_semaphore) {
-        super(task.toString());
-        setDaemon(true);
+                         Context parentContext,
+                         Semaphore jobSemaphore) {
+    	super(parentContext);
         this.task = task;
-        this.exec_context = exec_context;
-        this.job_semaphore = job_semaphore;
+        this.jobSemaphore = jobSemaphore;
     }
 
     public int getReturnCode() {
@@ -34,7 +31,7 @@ public class CommandThread extends Thread {
     public void run() {
         try {
             try {
-                rc = task.execute(exec_context);
+                rc = task.execute(getContext());
             } catch (Exception ex) {
             	LOG.error("Execution of command is " + task + " failed", ex);
                 rc = -1;
@@ -46,7 +43,7 @@ public class CommandThread extends Thread {
                 	LOG.error("I/O error during clean up after " + task, ex);
                 }
         } finally {
-            job_semaphore.release();
+        	jobSemaphore.release();
         }
     }
 

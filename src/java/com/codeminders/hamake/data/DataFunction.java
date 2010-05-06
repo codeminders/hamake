@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.Path;
 
 import com.codeminders.hamake.Context;
 
-public abstract class DataFunction {
+public abstract class DataFunction{
 
 	private String id;
 	private int generation;

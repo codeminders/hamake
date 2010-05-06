@@ -46,7 +46,7 @@ public class TestHamake {
 		map1Dir.mkdirs();
 		File outputFile = new File(tempDir, "output.txt");
 		String tempDirPath = tempDir.getAbsolutePath().toString();
-		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		Context context = new Context(new Configuration(), null, false, false, false);
 		context.set("tmpdir", tempDirPath);
 		if (OS.isLinux()) {
 			context.set("cp", "cp");
@@ -60,7 +60,7 @@ public class TestHamake {
 		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
 				+ File.separator + "hamakefile-local-cp.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
-				localHamakeFile), true);
+				localHamakeFile));
 		make.setNumJobs(2);
 		make.run();
 		int map1OutSize = FileUtils.listFiles(map1Dir, TrueFileFilter.INSTANCE,
@@ -90,7 +90,7 @@ public class TestHamake {
 		File output1File = new File(tempDir, "output1.txt");
 		File output2File = new File(tempDir, "output2.txt");
 		String tempDirPath = tempDir.getAbsolutePath().toString();
-		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		Context context = new Context(new Configuration(), null, false, false, false);
 		context.set("tmpdir", tempDirPath);
 		if (OS.isLinux()) {
 			context.set("cp", "cp");
@@ -104,7 +104,7 @@ public class TestHamake {
 		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
 				+ File.separator + "hamakefile-local-2-branches-cp.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
-				localHamakeFile), true);
+				localHamakeFile));
 		make.setNumJobs(2);
 		make.run();
 		int map21OutSize = FileUtils.listFiles(map21Dir,
@@ -133,13 +133,13 @@ public class TestHamake {
 		SecurityManager securityManager = System.getSecurityManager();
 		ExitSecurityManager manager = new ExitSecurityManager();
 		System.setSecurityManager(manager);
-		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		Context context = new Context(new Configuration(), null, false, false, false);
 		context.set("examples.jar", HelperUtils.getExamplesJar()
 				.getAbsolutePath());
 		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
 				+ File.separator + "hamakefile-testexit.xml");
 		final Hamake make = BaseSyntaxParser.parse(context,
-				new FileInputStream(localHamakeFile), true);
+				new FileInputStream(localHamakeFile));
 		make.setNumJobs(1);
 		make.run();
 		Assert.assertFalse("Hamake has passed System.exit()", manager

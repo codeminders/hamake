@@ -26,11 +26,11 @@ public abstract class BaseSyntaxParser {
 	
 	protected static boolean isPigAvailable = Utils.isPigAvailable(); 
 
-	public static Hamake parse(Context context, String filename, boolean verbose)
+	public static Hamake parse(Context context, String filename)
 			throws Exception {
 		InputStream is = new FileInputStream(filename);
 		try {
-			return parse(context, is, verbose);
+			return parse(context, is);
 		} finally {
 			try {
 				is.close();
@@ -39,10 +39,10 @@ public abstract class BaseSyntaxParser {
 		}
 	}
 
-	public static Hamake parse(Context context, InputStream is, boolean verbose)
+	public static Hamake parse(Context context, InputStream is)
 			throws IOException, ParserConfigurationException, SAXException,
 			InvalidMakefileException, PigNotFoundException, InvalidContextStateException{
-		BaseSyntaxParser syntaxParser = new SyntaxParser(context, verbose);
+		BaseSyntaxParser syntaxParser = new SyntaxParser(context);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		bos.write(is);
 		if(syntaxParser.validate(new ByteArrayInputStream(bos.toByteArray()))){

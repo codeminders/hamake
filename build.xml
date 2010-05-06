@@ -3,8 +3,6 @@
 
   <property file="build.properties" />
 
-  <property name="hadoop.version" value="0.20" />
-
   <!-- Compiler options -->
   <property name="compiler.debug" value="on" />
   <property name="compiler.deprecation" value="off" />
@@ -120,9 +118,17 @@
         <patternset refid="library.patterns" />
       </fileset>
     </copy>
+  	<buildnumber file="build.num"/>
+  	<tstamp>
+  	    <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+  	</tstamp>
     <jar destfile="${dist.dir}/hamake-${hamake.version}.jar">
       <manifest>
         <attribute name="Main-Class" value="com.codeminders.hamake.Main" />
+      	<attribute name="Built-By" value="${user.name}"/>
+      	<attribute name="Implementation-Version" 
+      	                     value="${hamake.version}"/>
+      	<attribute name="Built-Date" value="${TODAY}"/> 
       </manifest>
       <fileset dir="${build.dir}/classes" includes="**/*.class, **/*.xsd" excludes="com/codeminders/hamake/examples/**" />
       <fileset dir="${build.dir}" includes="lib/*.jar" />
@@ -223,6 +229,7 @@
       </batchtest>
       <sysproperty key="examples.jar" value="${dist.examples.dir}/hamake-examples-${hamake.version}.jar" />
       <sysproperty key="hamakefiles.dir" value="${test.current.hamakefiles.dir}" />
+      <sysproperty key="hamake.version" value="${hamake.version}" />
 
     </junit>
 
@@ -248,9 +255,9 @@
       <arg value="-f" />
       <arg value="file://${test.current.hamakefiles.dir}/class-size.xml" />
       <arg value="-v" />
-      <arg value="-t" />
       <arg value="-w" />
       <arg value="file://${basedir}" />
+
     </exec>
 
     <exec executable="hadoop.bat" osfamily="windows">
@@ -260,7 +267,6 @@
       <arg value="-f" />
       <arg value="file:///${test.current.hamakefiles.dir}/class-size.xml" />
       <arg value="-v" />
-      <arg value="-t" />
       <arg value="-w" />
       <arg value="file:///${basedir}" />
     </exec>
@@ -280,7 +286,6 @@
       <arg value="-f" />
       <arg value="file://${test.current.hamakefiles.dir}/class-size.xml" />
       <arg value="-v" />
-      <arg value="-t" />
     </exec>
 
     <exec executable="hadoop.bat" osfamily="windows">
@@ -290,7 +295,6 @@
       <arg value="-f" />
       <arg value="file:///${test.current.hamakefiles.dir}/class-size.xml" />
       <arg value="-v" />
-      <arg value="-t" />
     </exec>
 
   </target>

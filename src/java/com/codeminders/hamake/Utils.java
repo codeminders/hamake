@@ -14,11 +14,9 @@ import org.apache.hadoop.conf.Configuration;
 import java.io.*;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.net.URI;
@@ -37,11 +35,11 @@ public class Utils {
 		return !StringUtils.isEmpty(ret) ? ret : defaultValue;
 	}
 
-	public static int execute(String command) {
-		if (Config.getInstance().verbose)
+	public static int execute(Context context, String command) {
+		if (context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
 			LOG.info("Executing " + command);
 		try {
-			if (Config.getInstance().dryrun)
+			if (context.getBoolean(Context.HAMAKE_PROPERTY_DRY_RUN))
 				return 0;
 			else {
 				String[] cmd = null;
@@ -64,7 +62,7 @@ public class Utils {
 		return -1000;
 	}
 
-	public static File copyToTemporaryLocal(String path, FileSystem fs)
+	public static File copyToTemporaryLocal(Context context, String path, FileSystem fs)
 			throws IOException {
 		File srcFile = new File(path);
 		Path srcPath = new Path(path);
@@ -72,7 +70,7 @@ public class Utils {
 		if (srcFile.exists()) {
 			FileUtils.copyFile(srcFile, dstFile);
 		} else if (fs.exists(srcPath)) {
-			if (Config.getInstance().verbose) {
+			if (context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE)) {
 				LOG.info("Downloading " + path + " to "
 						+ dstFile.getAbsolutePath());
 			}
