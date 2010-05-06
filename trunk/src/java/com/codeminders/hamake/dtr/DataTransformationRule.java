@@ -4,27 +4,29 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.mortbay.log.Log;
 
 import com.codeminders.hamake.Context;
+import com.codeminders.hamake.ContextAware;
 import com.codeminders.hamake.data.DataFunction;
 import com.codeminders.hamake.task.Task;
 
-public abstract class DataTransformationRule {
+public abstract class DataTransformationRule extends ContextAware{
 
 	private String name;
 	private Task task;
+	
+	public DataTransformationRule(Context parentContext){
+		super(parentContext);
+	}
 	
 	protected abstract List<? extends DataFunction> getInputs();
 	
 	protected abstract List<? extends DataFunction> getOutputs();
 	
 	protected abstract List<? extends DataFunction> getDeps();
-	
-	protected abstract Context getContext();
 	
 	public String getName() {
 		return name;

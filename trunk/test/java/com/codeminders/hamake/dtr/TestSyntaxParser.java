@@ -65,12 +65,12 @@ public class TestSyntaxParser {
 		File revOutDir = new File(tempDir, "revout");
 		HelperUtils.generateTemporaryFiles(revOutDir.getAbsolutePath(), 4, ".file");
 		String tempDirPath = tempDir.getAbsolutePath().toString();
-		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		Context context = new Context(new Configuration(), null, false, false, false);
 		context.set("tmpdir", tempDirPath);
 		context.setForbidden(Context.FOREACH_VARS_PREFIX + "path", tempDir.getAbsolutePath().toString() + "/referrers/1.log");
 		context.setForbidden(Context.FOREACH_VARS_PREFIX + "basename", "1");
 		
-		Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(localHamakeFile), true);
+		Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(localHamakeFile));
 		//project
 		Assert.assertEquals("test-syntax", make.getProjectName());
 		Assert.assertEquals("foreach1", make.getDefaultTarget());
@@ -132,10 +132,10 @@ public class TestSyntaxParser {
 		
 		File file = new File(tempDir, "file");
 		file.mkdirs();
-		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		Context context = new Context(new Configuration(), null, false, false, false);
 		context.set("tmpdir", tempDir.getAbsolutePath().toString());
 		
-		Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(localHamakeFile), true);
+		Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(localHamakeFile));
 		Assert.assertNotNull(make.getProjectName());
 		Assert.assertTrue(StringUtils.isEmpty(make.getDefaultTarget()));
 		//1st foreach

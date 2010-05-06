@@ -1,6 +1,5 @@
 package com.codeminders.hamake.task;
 
-import com.codeminders.hamake.Config;
 import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.ExitException;
@@ -33,7 +32,7 @@ public class MapReduce extends Task {
         try {
             Path jarPath = new Path(getJar());             
             fs = jarPath.getFileSystem(new Configuration());
-            File jarFile = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(getJar(), fs), Arrays.asList(new String[] {"Main-Class"}));
+            File jarFile = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(context, getJar(), fs), Arrays.asList(new String[] {"Main-Class"}));
             args.add(jarFile.getAbsolutePath());
         } catch (IOException ex) {
         	LOG.error("Can't download JAR file: " + getJar(), ex);
@@ -54,9 +53,9 @@ public class MapReduce extends Task {
         try {
             String s_args[] = new String[args.size()];
             args.toArray(s_args);
-            if (Config.getInstance().verbose)
+            if (context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
             	LOG.info("Executing Hadoop task " + StringUtils.join(s_args, ' '));
-            if (Config.getInstance().dryrun)
+            if (context.getBoolean(Context.HAMAKE_PROPERTY_DRY_RUN))
                 return 0;
             RunJar.main(s_args);            
         } catch (ExitException e){

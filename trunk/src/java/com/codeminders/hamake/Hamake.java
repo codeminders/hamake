@@ -5,20 +5,35 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.codeminders.hamake.dtr.DataTransformationRule;
-import com.codeminders.hamake.syntax.SyntaxParser;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.Manifest;
 
-public class Hamake {
+public class Hamake extends ContextAware{
+	
+	public static String HAMAKE_VERSION;
+	
+	static{
+		try {
+			InputStream manifestIS = Hamake.class.getResourceAsStream("../../../META-INF/MANIFEST.MF");
+			if(manifestIS != null){
+				Manifest manifest = new Manifest(manifestIS);
+				HAMAKE_VERSION = manifest.getMainAttributes().getValue("Implementation-Version");
+			}
+		} catch (IOException e) {
+			HAMAKE_VERSION = System.getProperty("hamake.version");
+		}
+		HAMAKE_VERSION = (HAMAKE_VERSION == null) ? System.getProperty("hamake.version") : HAMAKE_VERSION;
+	}
 	
 	public static final Log LOG = LogFactory.getLog(Hamake.class);
 	
-	public static final String HAMAKE_VERSION = "1.0";
-	
-    enum ExitCode {
+	enum ExitCode {
         OK,
         BADOPT,
         INITERR,
@@ -26,7 +41,6 @@ public class Hamake {
     }
     protected int numJobs;
     protected String projectName;
-    protected Context context;
     public String getProjectName() {
 		return projectName;
 	}
@@ -39,10 +53,10 @@ public class Hamake {
 	protected List<DataTransformationRule> tasks;
 	protected String defaultTarget;
 
-    public Hamake(Context context) {
+    public Hamake(Context rootContext) throws InvalidContextStateException {
+    	super(rootContext);
         this.tasks = new ArrayList<DataTransformationRule>();
         this.targets = new ArrayList<String>();
-        this.context = context;
     }
 
     public void setNumJobs(int numJobs) {

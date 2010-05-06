@@ -18,7 +18,7 @@ public class TestHamakeParameter {
 	@Test
 	public void testGet() throws IOException, InvalidContextStateException{
 		//simple case
-		Context context = Context.initContext(new Configuration(), null, Hamake.HAMAKE_VERSION, false);
+		Context context = new Context(new Configuration(), null, false, false, false);
 		context.set("input", "/input/in");
 		context.set("output", "/output/out");
 		Literal input = new Literal("${input}");

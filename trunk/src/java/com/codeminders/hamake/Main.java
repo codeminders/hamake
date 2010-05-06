@@ -39,7 +39,6 @@ public class Main {
         options.addOption("v", "verbose", false, "verbose mode");
         options.addOption("n", "dry-run", false, "dry run mode");
         options.addOption("d", "nodeps", false, "no deps mode");
-        options.addOption("t", "test", false, "test mode");
         options.addOption("j", "jobs", true, "number of job threads to spawn");
         options.addOption("f", "file", true, "makefile location, hamakefile.xml on local filesystem if not specified");
         options.addOption("w", "workdir", true, "path to data, default is user home dir");
@@ -57,21 +56,21 @@ public class Main {
             System.exit(ExitCodes.INITERR.ordinal());
         }
 
-        Config config = Config.getInstance();
+        boolean verbose = false;
+        boolean dryRun = false;
+        boolean withDeps = true;
 
         if (line.hasOption('V')) {
-            System.out.println("HAMake/J version " + config.version);
+            System.out.println("HAMake version " + Hamake.HAMAKE_VERSION);
             System.exit(0);
         }
 
         if (line.hasOption('v'))
-            config.verbose = true;
+        	verbose = true;
         if (line.hasOption('n'))
-            config.dryrun = true;
+        	dryRun = true;
         if (line.hasOption('d'))
-            config.nodeps = true;
-        if (line.hasOption('t'))
-            config.test_mode = true;
+        	withDeps = true;
 
         int njobs = -1;
         String mname = DEFAULT_MAKEFILE_NAME;
@@ -108,9 +107,8 @@ public class Main {
                 FileSystem fs = makefilePath.getFileSystem(hadoopCfg);
                 is = fs.open(makefilePath);
             }
-            Context context = Context.initContext(hadoopCfg, wdir, Hamake.HAMAKE_VERSION, config.nodeps);
-            
-            make = BaseSyntaxParser.parse(context, is, config.verbose);
+            Context context = new Context(hadoopCfg, wdir, withDeps, verbose, dryRun);
+            make = BaseSyntaxParser.parse(context, is);
             if(line.getArgs().length > 0){
             	for(String target : line.getArgs()){
             		make.addTarget(target);
@@ -118,28 +116,18 @@ public class Main {
             }
         } catch (IOException ex) {
             System.err.println("Cannot load makefile " + mname + ": " + ex.getMessage());
-            if (config.test_mode)
-                ex.printStackTrace();
             System.exit(ExitCodes.INITERR.ordinal());
         } catch (ParserConfigurationException ex) {
             System.err.println("Cannot initialize XML parser: " + ex.getMessage());
-            if (config.test_mode)
-                ex.printStackTrace();
             System.exit(ExitCodes.INITERR.ordinal());
         } catch (SAXException ex) {
             System.err.println("Invalid makefile content: " + ex.getMessage());
-            if (config.test_mode)
-                ex.printStackTrace();
             System.exit(ExitCodes.INITERR.ordinal());
         } catch (InvalidMakefileException ex) {
             System.err.println("Error in makefile: " + ex.getMessage());
-            if (config.test_mode)
-                ex.printStackTrace();
             System.exit(ExitCodes.INITERR.ordinal());
         } catch (PigNotFoundException ex) {
             System.err.println("Cannot execute Pig task: " + ex.getMessage());
-            if (config.test_mode)
-                ex.printStackTrace();
             System.exit(ExitCodes.INITERR.ordinal());
         } catch(InvalidContextStateException e){
         	System.err.println("Cannot execute Pig task: " + e.getMessage());
@@ -155,8 +143,6 @@ public class Main {
             status = make.run().ordinal();
         } catch (Exception ex) {
         	LOG.error(ex);
-            if (config.test_mode)
-                ex.printStackTrace();
             status = ExitCodes.FAILED.ordinal();
         }        
         System.exit(status);

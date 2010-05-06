@@ -7,7 +7,6 @@ import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.data.DataFunction;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -16,7 +15,6 @@ import org.apache.hadoop.fs.Path;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -25,6 +23,25 @@ import java.util.concurrent.Semaphore;
  * 
  */
 public class Foreach extends DataTransformationRule {
+	
+	private class ExecQueueItem{
+		private CommandThread command;
+		private Thread thread;
+		
+		public ExecQueueItem(CommandThread command, Thread thread){
+			this.thread = thread;
+			this.command = command;
+		}
+
+		public CommandThread getCommand() {
+			return command;
+		}
+
+		public Thread getThread() {
+			return thread;
+		}
+		
+	}
 	
 	public static final String FULL_FILENAME_VAR = Context.FOREACH_VARS_PREFIX + "path";
 	public static final String SHORT_FILENAME_VAR = Context.FOREACH_VARS_PREFIX + "filename";
@@ -37,15 +54,14 @@ public class Foreach extends DataTransformationRule {
 	private DataFunction input;
 	private List<? extends DataFunction> output;
 	private List<? extends DataFunction> deps;
-	private Context context;
 
 
 	public Foreach(Context parentContext, DataFunction input, List<? extends DataFunction> output,
 			List<? extends DataFunction> dependencies) throws InvalidContextStateException {
+		super(parentContext);
 		this.output = output;
 		this.input = input;
 		this.deps = dependencies;
-		this.context = new Context(parentContext);
 	}
 
 	@Override
@@ -64,16 +80,11 @@ public class Foreach extends DataTransformationRule {
 	}
 	
 	@Override
-	protected Context getContext() {
-		return context;
-	}
-
-	@Override
 	public int execute(Semaphore semaphore)
 			throws IOException {
 		
-		List<Path> inputlist = input.getPath(context);
-		List<Context> pathPairs = new ArrayList<Context>();
+		List<Path> inputlist = input.getPath(getContext());
+		List<ExecQueueItem> queue = new ArrayList<ExecQueueItem>();
 		if (inputlist == null || inputlist.isEmpty()){
 			LOG.error("Input folder of DTR " + getName()
 					+ " is empty");
@@ -81,72 +92,61 @@ public class Foreach extends DataTransformationRule {
 		}
 		
 		for(Path ipath : inputlist){
-			FileSystem inputfs = input.getFileSystem(context, ipath);
+			FileSystem inputfs = input.getFileSystem(getContext(), ipath);
 			if(!inputfs.exists(ipath)){
 				LOG.error(ipath.toString() + " from input of DTR " + getName()
 						+ " does not exist. Ignoring");
 				continue;
 			}
-			Context context = null;
-			try{
-				context = new Context(this.context);
-			}
-			catch(InvalidContextStateException e){
-				LOG.error(e);
-				return -1;
-			}
-			context.setForbidden(FULL_FILENAME_VAR, ipath.toString());
-			context.setForbidden(SHORT_FILENAME_VAR, FilenameUtils.getName(ipath.toString()));
-			context.setForbidden(PARENT_FOLDER_VAR, ipath.getParent().toString());
-			context.setForbidden(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
-			context.setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
+			CommandThread command = new CommandThread(getTask(), getContext(), semaphore);
+			command.getContext().setForbidden(FULL_FILENAME_VAR, ipath.toString());
+			command.getContext().setForbidden(SHORT_FILENAME_VAR, FilenameUtils.getName(ipath.toString()));
+			command.getContext().setForbidden(PARENT_FOLDER_VAR, ipath.getParent().toString());
+			command.getContext().setForbidden(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
+			command.getContext().setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
 			for (DataFunction outputFunc : output) {
-				if (outputFunc.getMinTimeStamp(context) >= input.getMinTimeStamp(context)) {
+				if (outputFunc.getMinTimeStamp(command.getContext()) >= input.getMinTimeStamp(command.getContext())) {
 					if (Config.getInstance().verbose){
-						LOG.info("Output " + outputFunc.getPath(context)
+						LOG.info("Output " + outputFunc.getPath(command.getContext())
 								+ " is already present and fresh");
 						return 0;
 					}
 				} 
 				else{
-					outputFunc.clear(context);
+					outputFunc.clear(command.getContext());
 				}
 			}
-			pathPairs.add(context);
+			queue.add(new ExecQueueItem(command, new Thread(command, getTask().toString())));
 		}
-		if(pathPairs.size() > 0) return execQueue(pathPairs, semaphore);
+		if(queue.size() > 0) return execQueue(queue, semaphore);
 		else return 0;
 	}
 
-	protected int execQueue(List<Context> contexes,
-			Semaphore job_semaphore) {
-		Collection<CommandThread> threads = new ArrayList<CommandThread>();
-		for (Context context : contexes) {
+	protected int execQueue(List<ExecQueueItem> queue, Semaphore jobSemaphore) {
+		for (ExecQueueItem item : queue) {
 			try {
-				job_semaphore.acquire();
+				jobSemaphore.acquire();
 			} catch (InterruptedException ex) {
 				LOG.error(ex);
 				return -1000;
 			}
 			try {
-				CommandThread t = new CommandThread(getTask(), context,
-						job_semaphore);
-				threads.add(t);
-				t.start();
+				item.getThread().setDaemon(true);
+				item.getThread().start();
 			} catch (Exception ex) {
 				LOG.error(ex);
-				job_semaphore.release();
+				jobSemaphore.release();
 			}
 		}
 		int rc = 0;
-		for (CommandThread t : threads) {
+		for (ExecQueueItem item : queue) {
 			try {
-				t.join();
+				item.getThread().join();
 			} catch (InterruptedException ex) {
 				LOG.error(ex);
 				return -1000;
 			}
-			int t_rc = t.getReturnCode();
+			int t_rc = item.getCommand().getReturnCode();
 			if (t_rc != 0)
 				rc = t_rc;
 		}

@@ -14,7 +14,7 @@
         <output>
             <file id="jarListing" path="${output}/jar-listings/${foreach:filename}"/>
         </output>
-        <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListing">
+        <mapreduce jar="${dist}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.JarListing">
           <parameter>
               <literal value="${foreach:path}"/>
           </parameter>
@@ -31,7 +31,7 @@
         <output>
             <file id="filterListing" path="${output}/jar-listings-filtered/${foreach:filename}"/>
         </output>
-        <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.JarListingFilter">
+        <mapreduce jar="${dist}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.JarListingFilter">
           <parameter>
             <literal value="${foreach:path}"/>
           </parameter>
@@ -48,7 +48,7 @@
         <output>
             <file id="histogramOut" path="${output}/class-size-histogram"/>
         </output>
-        <mapreduce jar="${dist}/hamake-examples-1.0.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
+        <mapreduce jar="${dist}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
           <parameter>
             <reference idref="histogramIn"/>
           </parameter>

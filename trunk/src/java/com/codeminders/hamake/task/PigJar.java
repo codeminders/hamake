@@ -42,7 +42,7 @@ public class PigJar extends Task {
         try {
             Path jarPath = new Path(getJar());
             fs = jarPath.getFileSystem(new Configuration());
-            args.add(Utils.copyToTemporaryLocal(getJar(), fs).getAbsolutePath());
+            args.add(Utils.copyToTemporaryLocal(context, getJar(), fs).getAbsolutePath());
         } catch (IOException ex) {
             LOG.error("Can't download JAR file: " + getJar(), ex);
             return -1000;
