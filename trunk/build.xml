@@ -147,7 +147,8 @@
     <copy todir="${dist.examples.dir}/bin">     
       <fileset file="${test.resources.dir}/bin/*" />
     </copy>
-
+  	<replace value="${hamake.version}" file="${dist.examples.dir}/bin/start-class-size-example.sh" token="#@hamake.version@" />
+  	
   </target>
 
   <target name="build.rpm" depends="dist">
