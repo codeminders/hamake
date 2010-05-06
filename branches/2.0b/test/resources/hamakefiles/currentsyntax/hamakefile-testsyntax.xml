@@ -1,0 +1,77 @@
+<project name="test-syntax" default="foreach1">
+
+	<!--  property tmpdir is set by unit test -->
+	<property name="testprop" value="deppath" />
+	<property name="one" value="1" />
+	<property name="two" value="2" />
+	<property name="unixCat" value="cat" />
+	
+	<file id="somedir" path="${tmpdir}/somedir"/>
+	<file id="somefile" path="${tmpdir}/somedir/somefile"/>
+	<fileset id="referrers" path="${tmpdir}/referrers" mask="*.log" />
+
+	<foreach name="foreach1">
+		<description>first foreach</description>
+		<dependencies>
+			<file path="${tmpdir}/${testprop}"/>
+		</dependencies>
+		<input>
+			<include idref="referrers"/>
+		</input>
+		<output expiration="2d">
+			<set>
+				<file id="relatedOne" path="${tmpdir}/related/${one}/${foreach:basename}.txt" generation="1"/>
+				<file id="relatedTwo" path="${tmpdir}/related/${two}/${foreach:filename}" generation="2"/>
+			</set>
+		</output>
+		<mapreduce jar="${tmpdir}/datamining.jar" main="us.imageshack.datamining.Access2Referrers">
+			<parameter concat_function="comma">
+				<literal value="${foreach:path}" />
+				<reference idref="relatedOne" />
+			</parameter>
+		</mapreduce>
+	</foreach>
+	<foreach name="foreach2">
+		<description>second foreach</description>
+		<input>
+			<fileset path="${tmpdir}/referrers" generation="2" />
+		</input>
+		<output expiration="2m">
+			<file id="imageDomains1" path="${tmpdir}/related/image_domains1" />
+			<file path="${tmpdir}/related/image_domains2" />
+		</output>
+		<exec binary="${unixCat}">
+			<parameter>
+				<literal value="${foreach:path}" />
+			</parameter>
+			<parameter>
+				<literal value=">" />
+			</parameter>
+			<parameter>
+				<reference idref="imageDomains1" />
+			</parameter>
+		</exec>
+	</foreach>
+	<fold name="reduce">
+		<description>reducer</description>
+		<input>
+			<set>
+				<include idref="somefile" />
+				<fileset id="infileset" path="${tmpdir}/rev" mask="*.file"/>
+			</set>
+		</input>
+		<output expiration="15h">
+			<include idref="somedir" />
+			<fileset id="outRelated" path="${tmpdir}/revout/" mask="*.file"/>
+		</output>
+		<pig script="${tmpdir}/median.pig">
+			<parameter>
+				<literal value="${somefile}" />
+			</parameter>
+			<jobconf name="jcname" value="jcvalue" />
+			<parameter>
+				<reference idref="outRelated" />
+			</parameter>
+		</pig>
+	</fold>
+</project>

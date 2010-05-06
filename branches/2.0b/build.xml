@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="hamake" default="all" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+  <property file="build.properties" />
+
+  <!-- Compiler options -->
+  <property name="compiler.debug" value="on" />
+  <property name="compiler.deprecation" value="off" />
+  <property name="compiler.generate.no.warnings" value="off" />
+  <property name="compiler.max.memory" value="128m" />
+  <property name="src.dir" value="${basedir}/src/java" />
+  <property name="lib.dir" value="${basedir}/lib" />
+  <property name="build.dir" value="${basedir}/build" />
+  <property name="rpmroot" value="${build.dir}/rpmroot"/>
+  <property name="debroot" value="${build.dir}/debroot"/>
+  <property name="dist.dir" value="${basedir}/dist" />
+  <property name="dist.examples.dir" value="${dist.dir}/examples" />
+  <property name="test.dir" value="${basedir}/test" />
+  <property name="test.build.dir" value="${build.dir}/test" />
+  <property name="test.src.dir" value="${test.dir}/java" />
+  <property name="test.resources.dir" value="${test.dir}/resources" />
+  <property name="test.current.hamakefiles.dir" value="${test.resources.dir}/hamakefiles/currentsyntax" />
+
+  <!--Apache Ivy(http://ant.apache.org/ivy/history/latest-milestone/install.html) -->
+  <loadproperties srcfile="${basedir}/ivy/libraries.properties" />
+  <property name="build.ivy.lib.dir" value="${build.dir}/lib" />
+  <property name="ivy.artifact.retrieve.pattern" value="[artifact]-[revision].[ext]" />
+  <property name="ivy.install.version" value="2.1.0" />
+  <condition property="ivy.home" value="${env.IVY_HOME}">
+    <isset property="env.IVY_HOME" />
+  </condition>
+  <property name="ivy.home" value="${user.home}/.ant" />
+  <property name="ivy.jar.dir" value="${ivy.home}/lib" />
+  <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+
+  <patternset id="ignored.files">
+    <exclude name="**/CVS/**" />
+    <exclude name="**/SCCS/**" />
+    <exclude name="**/RCS/**" />
+    <exclude name="**/rcs/**" />
+    <exclude name="**/.DS_Store/**" />
+    <exclude name="**/.svn/**" />
+    <exclude name="**/.pyc/**" />
+    <exclude name="**/.pyo/**" />
+    <exclude name="**/*.pyc/**" />
+    <exclude name="**/*.pyo/**" />
+    <exclude name="**/.git/**" />
+  </patternset>
+
+  <patternset id="library.patterns">
+    <include name="*.jar" />
+    <include name="hadoop-${hadoop.version}/*.jar" />
+  </patternset>
+
+
+  <!-- Project Libraries -->
+  
+  <path id="pig.classpath">
+    <fileset file="${lib.dir}/hadoop-${hadoop.version}/pig-*-core.jar" />
+  </path>
+
+  <path id="library.commons.classpath">
+    <fileset dir="${lib.dir}">
+      <patternset refid="library.patterns" />
+    </fileset>
+    <path refid="ivy-classpath" />
+  </path>
+
+  <path id="test.classpath">
+    <path refid="library.commons.classpath" />
+    <pathelement location="${build.dir}/classes" />
+  </path>
+
+  <path id="test.runtime.classpath">
+    <path refid="test.classpath" />
+    <pathelement location="${test.build.dir}/classes" />
+  </path>
+
+  <target name="init" description="Build initialization">
+  </target>
+
+  <target name="clean">
+    <delete dir="${build.dir}" />
+    <delete dir="${dist.dir}" />
+    <delete dir="${test.build.dir}" />
+  </target>
+
+  <target name="compile" depends="ivy-retrieve-common">
+    <mkdir dir="${build.dir}/classes" />
+    <javac classpathref="library.commons.classpath" destdir="${build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
+      <src path="${src.dir}" />
+    </javac>
+    <copy todir="${build.dir}/classes">
+      <fileset dir="${src.dir}" includes="**/*.xsd"/>
+    </copy>
+  </target>
+
+  <target name="compile-test" depends="compile">
+    <mkdir dir="${test.build.dir}/classes" />
+    <javac classpathref="test.classpath" destdir="${test.build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
+      <src path="${test.src.dir}" />
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile, build-examples">
+    <mkdir dir="${dist.dir}" />
+    <mkdir dir="${dist.dir}/lib" />
+    <mkdir dir="${dist.examples.dir}" />
+    <copy todir="${dist.dir}/lib">
+      <fileset dir="lib" includes="*.jar" excludes="hadoop*.jar" />
+      <fileset dir="${build.dir}/lib" includes="*.jar" excludes="hadoop*.jar" />
+    </copy>
+    <copy todir="${dist.dir}">
+      <fileset file="${basedir}/README.txt" />
+    </copy>
+    <copy todir="${dist.dir}/lib">
+      <fileset dir="${lib.dir}">
+        <patternset refid="library.patterns" />
+      </fileset>
+    </copy>
+  	<buildnumber file="build.num"/>
+  	<tstamp>
+  	    <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+  	</tstamp>
+    <jar destfile="${dist.dir}/hamake-${hamake.version}.jar">
+      <manifest>
+        <attribute name="Main-Class" value="com.codeminders.hamake.Main" />
+      	<attribute name="Built-By" value="${user.name}"/>
+      	<attribute name="Implementation-Version" 
+      	                     value="${hamake.version}"/>
+      	<attribute name="Built-Date" value="${TODAY}"/> 
+      </manifest>
+      <fileset dir="${build.dir}/classes" includes="**/*.class, **/*.xsd" excludes="com/codeminders/hamake/examples/**" />
+      <fileset dir="${build.dir}" includes="lib/*.jar" />
+      <fileset dir="${build.dir}" includes="lib/*.jar" />
+    </jar>
+    <mkdir dir="${dist.examples.dir}/hamakefiles" />
+    <copy todir="${dist.examples.dir}/hamakefiles">
+      <fileset dir="${test.current.hamakefiles.dir}">
+        <patternset includes="class-size*.xml" />
+      </fileset>      
+    </copy>
+    <mkdir dir="${dist.examples.dir}/scripts" />
+    <copy todir="${dist.examples.dir}/scripts">     
+      <fileset file="${test.resources.dir}/scripts/median.pig" />
+    </copy>
+    <copy todir="${dist.examples.dir}/bin">     
+      <fileset file="${test.resources.dir}/bin/*" />
+    </copy>
+  	<replace value="${hamake.version}" file="${dist.examples.dir}/bin/start-class-size-example.sh" token="#@hamake.version@" />
+  	
+  </target>
+
+  <target name="build.rpm" depends="dist">
+    <delete dir="${rpmroot}" />
+
+    <mkdir dir="${rpmroot}" />
+    <mkdir dir="${rpmroot}/SPECS" />
+    <mkdir dir="${rpmroot}/BUILD" />
+    <mkdir dir="${rpmroot}/RPMS/" />
+    <mkdir dir="${rpmroot}/usr/lib/hamake"/>
+
+    <copy todir="${rpmroot}/SPECS">
+      <fileset dir="${basedir}/etc/rpm-spec" includes="*.spec"/>
+    </copy>
+
+    <copy file="${dist.dir}/hamake-${hamake.version}.jar" tofile="${rpmroot}/usr/lib/hamake/hamake-${hamake.version}.jar"/>
+    <copy file="${dist.dir}/README.txt" todir="${rpmroot}/usr/lib/hamake/"/>
+    <copy todir="${rpmroot}/usr/lib/hamake/examples">
+      <fileset dir="${dist.dir}/examples">
+        <include name="**"/>
+      </fileset>
+    </copy>
+  	<replace value="${hamake.version}" file="${rpmroot}/SPECS/hamake.spec" token="#@hamake.version@" />
+  	<replace value="${hamake.version}" file="${rpmroot}/usr/lib/hamake/examples/bin/start-class-size-example.sh" token="#@hamake.version@" />
+    <rpm
+         specFile="hamake.spec"
+         topDir="${rpmroot}"
+         cleanBuildDir="false"
+         failOnError="true"
+  		 command="--target ${os.arch} -bb"/>
+
+    <copy todir="${dist.dir}" file="${rpmroot}/RPMS/${os.arch}/hamake-${hamake.version}-0.${os.arch}.rpm"/>
+  </target>
+
+  <target name="build.deb" depends="dist">
+    <delete dir="${debroot}" />
+
+    <mkdir dir="${debroot}/usr/lib/hamake"/>
+    <mkdir dir="${debroot}/DEBIAN"/>
+
+    <copy file="${dist.dir}/hamake-${hamake.version}.jar" tofile="${debroot}/usr/lib/hamake/hamake-${hamake.version}.jar"/>
+    <copy file="${dist.dir}/README.txt" todir="${debroot}/usr/lib/hamake/"/>
+    <copy todir="${debroot}/usr/lib/hamake/examples">
+      <fileset dir="${dist.dir}/examples">
+        <include name="**"/>
+      </fileset>
+    </copy>
+  	
+    <copy todir="${debroot}/DEBIAN">
+      <fileset dir="${basedir}/etc/deb-spec">
+        <include name="*"/>
+      </fileset>
+    </copy>
+
+    <chmod file="${debroot}/DEBIAN/postinst" perm="755"/>
+  	
+  	<replace value="${hamake.version}" file="${debroot}/DEBIAN/control" token="#@hamake.version@" />
+  	<replace value="${hamake.version}" file="${debroot}/usr/lib/hamake/examples/bin/start-class-size-example.sh" token="#@hamake.version@" />
+
+    <exec executable="dpkg" failonerror="true">
+        <arg value="-b"/>
+        <arg value="${debroot}"/>
+        <arg value="${dist.dir}/hamake-${hamake.version}.deb"/>
+    </exec>
+  </target>
+
+  <target name="build-examples" depends="compile">
+    <mkdir dir="${dist.dir}/examples" />
+    <jar destfile="${dist.dir}/examples/hamake-examples-${hamake.version}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" />
+  </target>
+
+  <target name="test" description="runs hamake JUnit tests" depends="compile-test, dist">
+    <mkdir dir="${test.build.dir}/test_report" />
+    <junit showoutput="yes" haltonfailure="yes" fork="yes" dir="${test.resources.dir}" maxmemory="256M" printsummary="withOutAndErr">
+      <classpath>
+        <path refid="test.runtime.classpath" />
+      </classpath>
+
+      <batchtest haltonfailure="no" todir="${test.build.dir}/test_report" fork="yes">
+        <fileset dir="${test.build.dir}/classes">
+          <include name="**/*Test*.class"/>
+        </fileset>
+        <formatter type="xml" />
+      </batchtest>
+      <sysproperty key="examples.jar" value="${dist.examples.dir}/hamake-examples-${hamake.version}.jar" />
+      <sysproperty key="hamakefiles.dir" value="${test.current.hamakefiles.dir}" />
+      <sysproperty key="hamake.version" value="${hamake.version}" />
+
+    </junit>
+
+    <junitreport todir="${test.build.dir}/test_report">
+      <fileset dir="${test.build.dir}/test_report">
+        <include name="*.xml" />
+      </fileset>
+      <report todir="${test.build.dir}/test_report" format="frames" />
+    </junitreport>
+
+  </target>
+
+  <target name="examples.local" depends="dist">
+    <pathconvert targetos="unix" property="classpath.unix" refid="pig.classpath"/>
+    <pathconvert targetos="windows" property="classpath.windows" refid="pig.classpath"/>
+
+    <!--<delete dir="${test.build.dir}"/>-->
+    <mkdir dir="${test.build.dir}" />
+    <exec executable="hadoop" osfamily="unix">
+      <env key="HADOOP_CLASSPATH" path="${classpath.unix}"/>
+      <arg value="jar" />
+      <arg value="${dist.dir}/hamake-${hamake.version}.jar" />
+      <arg value="-f" />
+      <arg value="file://${test.current.hamakefiles.dir}/class-size.xml" />
+      <arg value="-v" />
+      <arg value="-w" />
+      <arg value="file://${basedir}" />
+
+    </exec>
+
+    <exec executable="hadoop.bat" osfamily="windows">
+      <env key="HADOOP_CLASSPATH" path="${classpath.windows}"/>
+      <arg value="jar" />
+      <arg value="${dist.dir}/hamake-${hamake.version}.jar" />
+      <arg value="-f" />
+      <arg value="file:///${test.current.hamakefiles.dir}/class-size.xml" />
+      <arg value="-v" />
+      <arg value="-w" />
+      <arg value="file:///${basedir}" />
+    </exec>
+
+  </target>
+
+  <target name="examples.distributed" depends="dist">
+    <pathconvert targetos="unix" property="classpath.unix" refid="pig.classpath"/>
+    <pathconvert targetos="windows" property="classpath.windows" refid="pig.classpath"/>
+
+    <!--<delete dir="${test.build.dir}"/>-->
+    <mkdir dir="${test.build.dir}" />
+    <exec executable="hadoop" osfamily="unix">
+      <env key="HADOOP_CLASSPATH" path="${classpath.unix}"/>
+      <arg value="jar" />
+      <arg value="${dist.dir}/hamake-${hamake.version}.jar" />
+      <arg value="-f" />
+      <arg value="file://${test.current.hamakefiles.dir}/class-size.xml" />
+      <arg value="-v" />
+    </exec>
+
+    <exec executable="hadoop.bat" osfamily="windows">
+      <env key="HADOOP_CLASSPATH" path="${classpath.windows}"/>
+      <arg value="jar" />
+      <arg value="${dist.dir}/hamake-${hamake.version}.jar" />
+      <arg value="-f" />
+      <arg value="file:///${test.current.hamakefiles.dir}/class-size.xml" />
+      <arg value="-v" />
+    </exec>
+
+  </target>
+
+  <target name="all" depends="dist" description="build all" />
+
+  <!-- Ivy -->
+  <target name="ivy-probe-antlib">
+    <condition property="ivy.found">
+      <typefound uri="antlib:org.apache.ivy.ant" name="cleancache" />
+    </condition>
+  </target>
+
+
+  <target name="download-ivy" unless="offline">
+
+    <mkdir dir="${ivy.jar.dir}" />
+    <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true" />
+  </target>
+
+  <target name="ivy-init" depends="download-ivy">
+    <path id="ivy.lib.path">
+      <fileset dir="${ivy.jar.dir}" includes="*.jar" />
+
+    </path>
+    <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path" />
+  </target>
+
+  <target name="ivy-resolve-common" depends="ivy-init">
+    <ivy:resolve conf="common" />
+  </target>
+
+  <target name="ivy-retrieve-common" depends="ivy-resolve-common" description="Retrieve Ivy-managed artifacts for the compile/test configurations">
+    <ivy:retrieve pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
+    <ivy:cachepath pathid="ivy-classpath" conf="common" />
+  </target>
+
+</project>

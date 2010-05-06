@@ -1,0 +1,112 @@
+<project name="local-cp">
+
+	<!-- properties:
+			tmpdir, cp, ls 
+			are set by unit test
+	-->
+
+	<foreach name="map11">
+		<input>
+			<fileset path="${tmpdir}/input" />
+		</input>
+		<output>
+			<file id="map11Out" path="${tmpdir}/map11/${foreach:filename}" />
+		</output>
+		<exec binary="${cp}">
+			<parameter>
+				<literal value="${foreach:path}" />
+			</parameter>
+			<parameter>
+				<reference idref="map11Out" />
+			</parameter>
+		</exec>
+	</foreach>
+	<foreach name="map12">
+		<input>
+			<fileset path="${tmpdir}/input" />
+		</input>
+		<output>
+			<file id="map12Out" path="${tmpdir}/map12/${foreach:filename}" />
+		</output>
+		<exec binary="${cp}">
+			<parameter>
+				<literal value="${foreach:path}" />
+			</parameter>
+			<parameter>
+				<reference idref="map12Out" />
+			</parameter>
+		</exec>
+	</foreach>
+	<foreach name="map21">
+		<input>
+			<fileset path="${tmpdir}/map11" />
+		</input>
+		<output>
+			<file id="map21Out" path="${tmpdir}/map21/${foreach:filename}" />
+		</output>
+		<exec binary="${cp}">
+			<parameter>
+				<literal value="${foreach:path}" />
+			</parameter>
+			<parameter>
+				<reference idref="map21Out" />
+			</parameter>
+		</exec>
+	</foreach>
+	<foreach name="map22">
+		<input>
+			<fileset path="${tmpdir}/map12" />
+		</input>
+		<output>
+			<file id="map22Out" path="${tmpdir}/map22/${foreach:filename}" />
+		</output>
+		<exec binary="${cp}">
+			<parameter>
+				<literal value="${foreach:path}" />
+			</parameter>
+			<parameter>
+				<reference idref="map22Out" />
+			</parameter>
+		</exec>
+	</foreach>
+	<fold name="reduce1">
+		<input>
+			<file id="reduce1In" path="${tmpdir}/map21" />
+		</input>
+		<output>
+			<file id="output1" path="${tmpdir}/output1.txt" />
+		</output>
+		<exec binary="${ls}">
+			<parameter>
+				<reference idref="reduce1In" />
+			</parameter>
+			<parameter>
+				<literal value=">" />
+			</parameter>
+			<parameter>
+				<reference idref="output1" />
+			</parameter>
+		</exec>
+	</fold>
+	<fold name="reduce2">
+		<description>first reduce</description>
+		<input>
+			<file id="reduce2In" path="${tmpdir}/map22" />
+		</input>
+		<output>
+			<file id="output2" path="${tmpdir}/output2.txt" />
+		</output>
+		<exec binary="${ls}">
+			<parameter>
+				<reference idref="reduce2In" />
+			</parameter>
+			<parameter>
+				<literal value=">" />
+			</parameter>
+			<parameter>
+				<reference idref="output2" />
+			</parameter>
+		</exec>
+	</fold>
+
+</project>

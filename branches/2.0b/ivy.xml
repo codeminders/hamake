@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<ivy-module version="1.0">
+  <info organisation="com.codeminders" module="${ant.project.name}">
+    <description>
+        Hamake tool
+    </description>
+  </info>
+  <configurations defaultconfmapping="default">
+    <!--these match the Maven configurations-->
+    <conf name="default" extends="master,runtime"/>
+    <conf name="master" description="contains the artifact but no dependencies"/>
+    <conf name="runtime" description="runtime but not the artifact" />
+    <conf name="common" visibility="private" 
+      description="artifacts needed to compile/test the application"/>
+  </configurations>
+
+  <publications>
+    <!--get the artifact from our module name-->
+    <artifact conf="master"/>
+  </publications>
+  <dependencies>
+    <dependency org="commons-cli"
+      name="commons-cli"
+      rev="${commons-cli.version}"
+      conf="common->master"/>
+    <dependency org="commons-io"
+      name="commons-io"
+      rev="${commons-io.version}"
+      conf="common->default"/>
+    <dependency org="commons-lang"
+      name="commons-lang"
+      rev="${commons-lang.version}"
+      conf="common->master"/>
+    <dependency org="commons-logging"
+      name="commons-logging"
+      rev="${commons-logging.version}"
+      conf="common->default"/>
+    <dependency org="commons-logging"
+      name="commons-logging-api"
+      rev="${commons-logging-api.version}"
+      conf="common->master"/>
+    <dependency org="org.apache.commons"
+      name="commons-compress"
+      rev="${commons-compress.version}"
+      conf="common->default"/>
+    <dependency org="junit"
+      name="junit"
+      rev="${junit.version}"
+      conf="common->master"/>           
+  </dependencies>
+</ivy-module>

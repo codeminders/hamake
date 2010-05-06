@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="project">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="property" minOccurs="0"/>
+        <xs:choice maxOccurs="unbounded" minOccurs="0">
+          <xs:element maxOccurs="unbounded" ref="file"/>
+          <xs:element maxOccurs="unbounded" ref="fileset"/>
+          <xs:element maxOccurs="unbounded" ref="set"/>
+        </xs:choice>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element ref="foreach"/>
+          <xs:element ref="fold"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="default" type="xs:NCName"/>
+      <xs:attribute name="name" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="property">
+    <xs:complexType>
+      <xs:attribute name="name" use="required" type="xs:normalizedString"/>
+      <xs:attribute name="value" use="required" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="foreach">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="description" minOccurs="0"/>
+        <xs:element minOccurs="0" ref="dependencies"/>
+        <xs:element name="input">
+          <xs:complexType>
+            <xs:choice>
+              <xs:element ref="fileset"/>
+              <xs:element ref="include"/>
+            </xs:choice>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="output"/>
+        <xs:choice>
+          <xs:element ref="exec"/>
+          <xs:element ref="mapreduce"/>
+          <xs:element ref="pig"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:ID"/>
+      <xs:attribute name="disabled" type="xs:boolean"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="fold">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="description" minOccurs="0"/>
+        <xs:element minOccurs="0" ref="dependencies"/>
+        <xs:element name="input">
+          <xs:complexType>
+            <xs:choice maxOccurs="unbounded" minOccurs="0">
+              <xs:element ref="file"/>
+              <xs:element ref="fileset"/>
+              <xs:element ref="set"/>
+              <xs:element ref="include"/>
+            </xs:choice>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="output"/>
+        <xs:choice>
+          <xs:element ref="mapreduce"/>
+          <xs:element ref="pig"/>
+          <xs:element ref="exec"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:ID"/>
+      <xs:attribute name="disabled" type="xs:boolean"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="dependencies">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="file"/>
+        <xs:element ref="fileset"/>
+        <xs:element ref="include"/>
+        <xs:element ref="set"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="output">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="file"/>
+        <xs:element ref="fileset"/>
+        <xs:element ref="include"/>
+        <xs:element ref="set"/>
+      </xs:choice>
+      <xs:attribute name="expiration" type="expiration" form="unqualified"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="exec">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="parameter"/>
+        <xs:element ref="jobconf"/>
+      </xs:choice>
+      <xs:attribute name="binary" use="required" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="mapreduce">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="parameter"/>
+        <xs:element ref="jobconf"/>
+      </xs:choice>
+      <xs:attribute name="jar" use="required" type="xs:normalizedString"/>
+      <xs:attribute name="main" use="required" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="pig">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="parameter"/>
+        <xs:element ref="jobconf"/>
+      </xs:choice>
+      <xs:attribute name="script" use="required" type="xs:normalizedString"/>
+      <xs:attribute name="jar" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="file">
+    <xs:complexType>
+      <xs:attribute name="generation" type="xs:positiveInteger"/>
+      <xs:attribute name="id" type="xs:ID"/>
+      <xs:attribute name="path" use="required" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="fileset">
+    <xs:complexType>
+      <xs:attribute name="generation" type="xs:positiveInteger"/>
+      <xs:attribute name="id" type="xs:ID"/>
+      <xs:attribute name="mask" type="xs:normalizedString"/>
+      <xs:attribute name="path" use="required" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="description" type="xs:string"/>
+  <xs:element name="jobconf">
+    <xs:complexType>
+      <xs:attribute name="name" use="required" type="xs:normalizedString"/>
+      <xs:attribute name="value" use="required" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="parameter">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="reference"/>
+        <xs:element ref="literal"/>
+      </xs:choice>
+      <xs:attribute name="concat_function" type="cancatFunction"/>
+      <xs:attribute name="processing_function" type="xs:normalizedString"/>
+      <xs:attribute name="name" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="literal">
+    <xs:complexType>
+      <xs:attribute name="value" use="required" type="xs:normalizedString"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="reference">
+    <xs:complexType>
+      <xs:attribute name="idref" use="required" type="xs:IDREF"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="include">
+    <xs:complexType>
+      <xs:attribute name="idref" use="required" type="xs:IDREF"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="set">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element maxOccurs="unbounded" ref="file"/>
+        <xs:element maxOccurs="unbounded" ref="fileset"/>
+        <xs:element maxOccurs="unbounded" ref="include"/>
+        <xs:element maxOccurs="unbounded" ref="set"/>
+      </xs:choice>
+      <xs:attribute name="id" type="xs:ID"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="expiration">
+    <xs:restriction base="xs:token">
+      <xs:minLength value="1"/>
+      <xs:maxLength value="4"/>
+      <xs:whiteSpace value="collapse"/>
+      <xs:pattern value="[0-9]+[s|m|h|d|w]"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="cancatFunction">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="space"/>
+      <xs:enumeration value="comma"/>
+      <xs:enumeration value="append"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="processingFunction">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="identity"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

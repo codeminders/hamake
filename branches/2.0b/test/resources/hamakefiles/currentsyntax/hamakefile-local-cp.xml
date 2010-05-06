@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	
+<project name="local-cp">
+
+	<!-- properties:
+		tmpdir, cp, ls 
+		are set by unit test
+	-->
+
+	<fold name="reduce">
+		<description>first reduce</description>
+		<input>
+			<file id="reduceIn" path="${tmpdir}/map1/" />
+		</input>
+		<output>
+			<file id="output" path="${tmpdir}/output.txt" />
+		</output>
+		<exec binary="${ls}">
+			<parameter>
+				<reference idref="reduceIn" />
+			</parameter>
+			<parameter>
+				<literal value=">" />
+			</parameter>
+			<parameter>
+				<reference idref="output" />
+			</parameter>
+		</exec>
+	</fold>
+	<foreach name="map">
+		<description>first map</description>
+		<input>
+			<fileset path="${tmpdir}/input" />
+		</input>
+		<output>
+			<file id="mapOut" path="${tmpdir}/map1/${foreach:filename}" />
+		</output>
+		<exec binary="${cp}">
+			<parameter>
+				<literal value="${foreach:path}" />
+			</parameter>
+			<parameter>
+				<reference idref="mapOut" />
+			</parameter>
+		</exec>
+	</foreach>
+
+</project>
