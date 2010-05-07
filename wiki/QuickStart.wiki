@@ -144,3 +144,8 @@ As an output you should see something like this:
 10/05/05 17:29:10 WARN hamake.Hamake: Some of your tasks have called System.exit() method. This is not recommended behaviour because it will prevent Hamake from launching other tasks.
 10/05/05 17:29:10 INFO hamake.TaskRunner: Execution of wordcount is completed
 }}}
+
+= Further Reading =
+  # HamakeFileSyntaxReference	
+  # [FAQ]
+  # HamakeManual
