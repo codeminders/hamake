@@ -4,7 +4,7 @@
 
 ==Running Hamake Example==
 Hamake runs Hadoop MR jobs, Pig scripts and local scripts based on hamake-file.
-As an example you can take class-size.xml hamake file from examples-x.x.tar.gz archive. To generate data for class-size.xml example, launch following script:
+As an example you can take class-size.xml hamake file from examples-x.x.tar.gz archive. To be able to launch example you should first put Pig jar to the lib folder of Hadoop. To generate data for class-size.xml example, launch following script:
 {{{
 bin/start-class-size-example.sh
 }}}
