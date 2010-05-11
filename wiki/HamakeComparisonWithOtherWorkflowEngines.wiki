@@ -1,4 +1,4 @@
-This page gives a detailed comparison between Hamake and similar workflow engines for Hadoop ([http://github.com/tucu00/oozie1 Oozie], [http://sna-projects.com/azkaban/ Azkaban], [http://www.cascading.org/ Cascading])
+The table below attempts to compare between Hamake and similar workflow engines for Hadoop ([http://github.com/tucu00/oozie1 Oozie], [http://sna-projects.com/azkaban/ Azkaban], [http://www.cascading.org/ Cascading]) based on some key features. Although all of these systems could be used to solve similar problems, they differ significantly in design, philosophy, target user profile, usage scenarios, etc.  So our feature-wise comparison is in no way conclusive. Please use it as a guideline, but read respective systems documentation to understand better which one is more suitable for your problem.
 
 || *Feature* || *Hamake* || *Oozie* || *Azkaban* || *Cascading* ||
 || workflow discription language || XML || XML (xPDL based) || text file with key/value pairs || Java API ||
