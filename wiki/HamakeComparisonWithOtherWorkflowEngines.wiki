@@ -9,3 +9,4 @@ This page gives a detailed comparison between Hamake and similar workflow engine
 || can be run as a daemon || no || yes || yes || no ||
 || allows to run Pig scripts || yes || yes || yes || yes ||
 || event notification || no || no || no || yes ||
+|| requires installation || no || yes || yes || no ||
