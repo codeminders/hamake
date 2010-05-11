@@ -1,0 +1,10 @@
+This page gives a detailed comparison between Hamake and similar workflow engines for Hadoop ([http://github.com/tucu00/oozie1 Oozie], [http://sna-projects.com/azkaban/ Azkaban], [http://www.cascading.org/ Cascading])
+
+|| *Feature* || *Hamake* || *Oozie* || *Azkaban* || *Cascading* ||
+|| workflow discription language || XML || XML (xPDL based) || text file with key/value pairs || Java API ||
+|| dependencies mechanism || data-driven || explicit || explicit || explicit ||
+|| requires Servlet/JSP container || No || Yes || Yes || No ||
+|| allows to track a workflow progress || No || Yes || Yes || No ||
+|| has job scheduler || no || yes || yes || yes ||
+|| can be run as a daemon || no || yes || yes || no ||
+|| allows to run Pig scripts || yes || yes || no || no ||
