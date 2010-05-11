@@ -1,7 +1,7 @@
 package com.codeminders.hamake.dtr;
 
-import com.codeminders.hamake.Context;
 import com.codeminders.hamake.InvalidContextStateException;
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.data.DataFunction;
 
 import org.apache.commons.logging.Log;

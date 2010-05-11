@@ -1,9 +1,8 @@
 package com.codeminders.hamake.dtr;
 
 import com.codeminders.hamake.CommandThread;
-import com.codeminders.hamake.Config;
-import com.codeminders.hamake.Context;
 import com.codeminders.hamake.InvalidContextStateException;
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.data.DataFunction;
 
 import org.apache.commons.io.FilenameUtils;
@@ -106,11 +105,7 @@ public class Foreach extends DataTransformationRule {
 			command.getContext().setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
 			for (DataFunction outputFunc : output) {
 				if (outputFunc.getMinTimeStamp(command.getContext()) >= input.getMinTimeStamp(command.getContext())) {
-					if (Config.getInstance().verbose){
-						LOG.info("Output " + outputFunc.getPath(command.getContext())
-								+ " is already present and fresh");
 						return 0;
-					}
 				} 
 				else{
 					outputFunc.clear(command.getContext());

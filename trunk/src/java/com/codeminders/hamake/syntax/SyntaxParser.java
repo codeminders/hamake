@@ -1,5 +1,6 @@
 package com.codeminders.hamake.syntax;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -15,9 +16,12 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,11 +31,11 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.PigNotFoundException;
 import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.data.DataFunction;
 import com.codeminders.hamake.data.FileDataFunction;
 import com.codeminders.hamake.data.FilesetDataFunction;
@@ -51,6 +55,7 @@ import com.codeminders.hamake.params.ParameterItem;
 import com.codeminders.hamake.params.ProcessingFunction;
 import com.codeminders.hamake.params.Reference;
 import com.codeminders.hamake.params.SpaceConcatFunction;
+import com.codeminders.hamake.params.SystemProperty;
 import com.codeminders.hamake.task.*;
 
 public class SyntaxParser extends BaseSyntaxParser {
@@ -356,19 +361,33 @@ public class SyntaxParser extends BaseSyntaxParser {
 			throws InvalidMakefileException, IOException, PigNotFoundException {
 
         String jar = getOptionalAttribute(root, "jar");
-
-        if (jar == null && Utils.isAmazonEMRPigAvailable())
-            jar = Utils.AmazonEMRPigJarURI.toString();
-
-        if (jar == null && !isPigAvailable)
-            throw new PigNotFoundException("Pig isn't found in classpath. Please, make sure Pig classes are available in classpath.");
-
         Path scriptPath = Utils.resolvePath(Utils.replaceVariables(rootContext, getRequiredAttribute(root, "script")), (String)rootContext.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER));
         List<Parameter> params = parseParametersList(root);
-
-        return (jar == null)?
-               new Pig(scriptPath, params):
-               new PigJar(jar, scriptPath, params);		
+        
+        if (jar == null && Utils.isAmazonEMRPigAvailable()){
+            jar = Utils.AmazonEMRPigJarURI.toString();
+            LOG.info("Found Amazon Pig distribution.");
+        }
+        if(jar != null){
+	        try {
+	            Path jarPath = new Path(jar);
+	            FileSystem fs = jarPath.getFileSystem(new Configuration());
+	            return new PigJar(Utils.copyToTemporaryLocal(jar, fs), scriptPath, params);
+	        } catch (IOException ex) {
+	        	throw new PigNotFoundException("Can't download JAR file: " + jar, ex);
+	        }
+        }
+        else if(isPigAvailable){
+        	LOG.info("Using Pig that is from classpath.");
+        	return new Pig(scriptPath, params);
+        }
+        else if((jar = Utils.getCloudEraPigJar()) != null){
+        	LOG.info("Found Cloudera Pig distribution. Preparing it...");
+        	params.add(new SystemProperty("javax.xml.parsers.DocumentBuilderFactory", "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl"));
+        	return new PigJar(Utils.combineJars(new File(jar), new File(FilenameUtils.getFullPath(jar) + File.separator + "lib")), scriptPath, params);
+        }
+        else throw new PigNotFoundException("Pig isn't found in classpath. Please, make sure Pig jar is in the classpath or Cloudera pig distribution is installed.");
+               	
 	}
 
 	protected Task parseExecTask(Element root)

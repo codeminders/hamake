@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
 

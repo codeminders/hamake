@@ -1,9 +1,10 @@
 package com.codeminders.hamake.task;
 
-import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.ExitException;
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.params.Parameter;
+import com.codeminders.hamake.params.SystemProperty;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -32,7 +33,7 @@ public class MapReduce extends Task {
         try {
             Path jarPath = new Path(getJar());             
             fs = jarPath.getFileSystem(new Configuration());
-            File jarFile = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(context, getJar(), fs), Arrays.asList(new String[] {"Main-Class"}));
+            File jarFile = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(getJar(), fs), Arrays.asList(new String[] {"Main-Class"}));
             args.add(jarFile.getAbsolutePath());
         } catch (IOException ex) {
         	LOG.error("Can't download JAR file: " + getJar(), ex);
@@ -43,7 +44,12 @@ public class MapReduce extends Task {
         if (params != null) {
             for (Parameter p : params) {
                     try {
-                        args.add(p.get(context));
+                    	if(p instanceof SystemProperty){
+                        	System.setProperty(((SystemProperty)p).getName(), ((SystemProperty)p).getValue());
+                        }
+                    	else{
+                    		args.add(p.get(context));
+                    	}
                     } catch (IOException ex) {
                     	LOG.error("Failed to extract parameter values from parameter", ex);
                         return -1000;

@@ -11,7 +11,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.codeminders.hamake.Context;
+import com.codeminders.hamake.context.Context;
 
 public class SetDataFunction extends DataFunction {
 

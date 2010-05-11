@@ -1,10 +1,13 @@
-package com.codeminders.hamake;
+package com.codeminders.hamake.context;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+
+import com.codeminders.hamake.Hamake;
+import com.codeminders.hamake.InvalidContextStateException;
 
 public class Context {
 	

@@ -3,6 +3,8 @@ package com.codeminders.hamake;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.codeminders.hamake.context.Context;
+import com.codeminders.hamake.context.ContextAware;
 import com.codeminders.hamake.task.Task;
 
 import java.io.IOException;

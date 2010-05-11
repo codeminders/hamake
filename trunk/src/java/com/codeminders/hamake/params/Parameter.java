@@ -2,7 +2,7 @@ package com.codeminders.hamake.params;
 
 import java.io.IOException;
 
-import com.codeminders.hamake.Context;
+import com.codeminders.hamake.context.Context;
 
 public interface Parameter {
 	

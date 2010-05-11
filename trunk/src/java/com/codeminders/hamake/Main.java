@@ -11,6 +11,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.VersionInfo;
 import org.xml.sax.SAXException;
 
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
 

@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.data.DataFunction;
 import com.codeminders.hamake.data.FileDataFunction;
 import com.codeminders.hamake.dtr.Fold;
