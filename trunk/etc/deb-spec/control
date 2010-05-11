@@ -4,6 +4,6 @@ Section: Applications/MapReduce
 Homepage: http://code.google.com/p/hamake
 Priority: optional
 Architecture: all
-Depends: bash (>= 2.05a-11), sed (>= 3.02-8), coreutils (>= 5.0-5)
+Depends: bash (>= 2.05a-11), sed (>= 3.02-8), coreutils (>= 5.0-5), hadoop-pig (>= 0.5.0), hadoop
 Maintainer: Alex Bondar <abondar@codeminders.com>
 Description: Hamake is a lightweight utility and workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs in a workflow and launch them based on dataflow principles - your tasks will be executed

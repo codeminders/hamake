@@ -1,11 +1,11 @@
 Name: hamake
 Summary: Hamake is a lightweight utility and workflow engine for Hadoop.
 Version: #@hamake.version@
-Release: 0
+Release: #@release.number@
 Group: Applications/MapReduce
 License: ASL 2.0
-#Requires: hadoop >= 0.18
-#Requires:  java >= 1.6.0
+Requires: hadoop
+Requires: hadoop-pig >= 0.5.0
 URL: http://code.google.com/p/hamake
 %description
 Hamake is a lightweight utility and workflow engine for Hadoop. Hamake helps to organize your Hadoop Map Reduce jobs, Pig script and local programs in a workflow and launch them based on dataflow principles - your tasks will be executed$
@@ -22,8 +22,8 @@ sed -i 's/#export\sHAMAKE_HOME=/export HAMAKE_HOME=\/usr\/lib\/hamake/' %{_libdi
 
 %files
 %defattr(-,root,root,-)
-%{_libdir}/%{name}/%{name}-%{version}.jar
-%{_libdir}/%{name}/examples/hamake-examples-%{version}.jar
+%{_libdir}/%{name}/%{name}-%{version}-%{release}.jar
+%{_libdir}/%{name}/examples/hamake-examples-%{version}-%{release}.jar
 %{_libdir}/%{name}/examples/hamakefiles/class-size.xml
 %{_libdir}/%{name}/examples/hamakefiles/class-size-s3.xml
 %{_libdir}/%{name}/examples/scripts/median.pig
