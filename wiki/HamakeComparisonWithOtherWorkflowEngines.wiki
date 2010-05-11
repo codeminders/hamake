@@ -5,12 +5,12 @@ This page gives a detailed comparison between Hamake and similar workflow engine
 || dependencies mechanism || data-driven || explicit || explicit || explicit ||
 || requires Servlet/JSP container || No || Yes || Yes || No ||
 || allows to track a workflow progress || console/log messages || web page || web page || Java API ||
-|| ability to schedule a Hadoop job execution || no || yes || yes || yes ||
+|| ability to schedule a Hadoop job execution at given time || no || yes || yes || yes ||
 || execution model || command line utility || daemon || daemon || API ||
 || allows to run Pig Latin scripts || yes || yes || yes || yes ||
 || event notification || no || no || no || yes ||
 || requires installation || no || yes || yes || no ||
-|| supported Hadoop version || 0.18+ || 0.20+ || 0.20+ || 0.18+ ||
+|| supported Hadoop version || 0.18+ || 0.20+ || currently unknown || 0.18+ ||
 || retries || no || no || yes || yes ||
 || ability to run arbitrary commands || yes || no || yes || yes ||
-|| can be run on Elastic Map Reduce || yes || no || currently unknown || yes || 
+|| can be run on  Amazon EMR || yes || no || currently unknown || yes || 
