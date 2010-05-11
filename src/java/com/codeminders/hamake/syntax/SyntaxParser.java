@@ -86,7 +86,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	
 	private Random random = new Random();
 	private Context rootContext;
-	private static final String SCHEMA_NAME = "hamakefile-" + Hamake.HAMAKE_VERSION + ".xsd";
+	private static final String SCHEMA_NAME = "hamakefile.xsd";
 	
 	
 	protected SyntaxParser(Context rootContext){
