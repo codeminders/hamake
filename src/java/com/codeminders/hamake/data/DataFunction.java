@@ -7,7 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.codeminders.hamake.Context;
+import com.codeminders.hamake.context.Context;
 
 public abstract class DataFunction{
 

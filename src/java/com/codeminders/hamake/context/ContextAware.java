@@ -1,4 +1,5 @@
-package com.codeminders.hamake;
+package com.codeminders.hamake.context;
+
 
 public abstract class ContextAware {
 	private Context context;

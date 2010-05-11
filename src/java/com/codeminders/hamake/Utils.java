@@ -5,13 +5,20 @@ import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
 import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.*;
+import org.apache.hadoop.util.RunJar;
 import org.apache.hadoop.conf.Configuration;
 
+import com.codeminders.hamake.context.Context;
+
 import java.io.*;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Attributes;
@@ -27,6 +34,7 @@ public class Utils {
 			.compile("\\$\\{([^\\}]+)\\}");
 	public static final URI AmazonEMRPigJarURI = URI
 			.create("s3://elasticmapreduce/libs/pig/0.3/pig-0.3-amzn.jar");
+	public static final String CloudEraPigDirPath = "/usr/lib/pig";
 
 	public static final Log LOG = LogFactory.getLog(Utils.class);
 
@@ -62,7 +70,7 @@ public class Utils {
 		return -1000;
 	}
 
-	public static File copyToTemporaryLocal(Context context, String path, FileSystem fs)
+	public static File copyToTemporaryLocal(String path, FileSystem fs)
 			throws IOException {
 		File srcFile = new File(path);
 		Path srcPath = new Path(path);
@@ -70,10 +78,8 @@ public class Utils {
 		if (srcFile.exists()) {
 			FileUtils.copyFile(srcFile, dstFile);
 		} else if (fs.exists(srcPath)) {
-			if (context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE)) {
-				LOG.info("Downloading " + path + " to "
+			LOG.info("Downloading " + path + " to "
 						+ dstFile.getAbsolutePath());
-			}
 			fs.copyToLocalFile(srcPath, new Path(dstFile.getAbsolutePath()));
 			dstFile.deleteOnExit();
 		} else
@@ -186,7 +192,6 @@ public class Utils {
 		} catch (NoClassDefFoundError e) {
 			return false;
 		}
-
 		return true;
 	}
 
@@ -200,10 +205,81 @@ public class Utils {
 			if (stat != null && !stat.isDir())
 				return true;
 		} catch (Exception e) {
-
+			return false;
 		}
 
 		return false;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static File combineJars(File mainJar, File includeJarsLib) throws IOException{
+		if(!mainJar.exists()) throw new IOException("Jar file " + mainJar + " does not exist");
+		if(!includeJarsLib.exists() && !includeJarsLib.isDirectory()) throw new IOException("Folder " + includeJarsLib + " does not exist");
+		File jarDir = File.createTempFile("pig", "-unpacked");
+		jarDir.deleteOnExit();
+		File jarFile = File.createTempFile("pig", ".jar");
+		jarFile.deleteOnExit();
+		//unpack
+		if(jarDir.exists())FileUtils.deleteQuietly(jarDir);
+		if(!jarDir.mkdirs()){
+			throw new IOException("can not create folder " + jarDir.getAbsolutePath());
+		}
+		RunJar.unJar(mainJar, jarDir);
+		File libdir = new File(jarDir.getAbsolutePath(), "lib");
+		libdir.mkdir();
+		Collection<File> includeJars = FileUtils.listFiles(includeJarsLib, FileFilterUtils.suffixFileFilter(".jar"), FileFilterUtils.trueFileFilter());
+		for(File includeJar : includeJars){
+			FileUtils.copyFileToDirectory(includeJar, libdir);
+		}
+		//pack
+		JarArchiveOutputStream jarOutputStream = null;
+		try{
+			jarOutputStream = new JarArchiveOutputStream(
+					new FileOutputStream(jarFile));
+			for(File f : (Collection<File>)FileUtils.listFiles(jarDir, FileFilterUtils.trueFileFilter(), FileFilterUtils.trueFileFilter())){
+				String entryName = f.getAbsolutePath().substring(jarDir.getAbsolutePath().length() + 1, f.getAbsolutePath().length());
+				jarOutputStream.putArchiveEntry(new JarArchiveEntry(entryName));
+				if (!f.isDirectory()) {
+					InputStream in = null;
+					try {
+						byte[] buffer = new byte[8192];
+						in = new FileInputStream(f);
+						int i;
+						while ((i = in.read(buffer)) != -1) {
+							jarOutputStream.write(buffer, 0, i);
+						}
+						in.close();
+						jarOutputStream.closeArchiveEntry();
+					} finally {
+						if (in != null)
+							in.close();
+					}
+				}
+			}
+		}
+		finally{
+			if(jarOutputStream != null)jarOutputStream.close();
+		}
+		return jarFile;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static String getCloudEraPigJar() {
+		try {
+			File cloudEraPigDir = new File(CloudEraPigDirPath);
+			if(cloudEraPigDir.exists() && cloudEraPigDir.isDirectory()){
+				Collection<File> files = (Collection<File>)FileUtils.listFiles(cloudEraPigDir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+				for(File f : files){
+					if(f.getName().startsWith("pig") && f.getName().endsWith(".jar")){
+						return f.getAbsolutePath();
+					}
+				}
+			}
+		} catch (Exception e) {
+			return null;
+		}
+
+		return null;
 	}
 
 	public static String replaceVariables(Context context, String value) {

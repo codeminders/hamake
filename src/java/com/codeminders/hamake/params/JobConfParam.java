@@ -2,7 +2,7 @@ package com.codeminders.hamake.params;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import com.codeminders.hamake.Context;
+import com.codeminders.hamake.context.Context;
 
 import java.io.IOException;
 

@@ -1,9 +1,9 @@
 package com.codeminders.hamake.task;
 
-import com.codeminders.hamake.Config;
-import com.codeminders.hamake.Context;
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.Parameter;
+import com.codeminders.hamake.params.SystemProperty;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -54,6 +54,9 @@ public class Pig extends Task {
                 	if (p instanceof HamakeParameter) {
                         args.add(((HamakeParameter)p).getName() + '=' + p.get(context));
                     }
+                	else if(p instanceof SystemProperty){
+                    	System.setProperty(((SystemProperty)p).getName(), ((SystemProperty)p).getValue());
+                    }
                 	else{
                 		args.add(p.get(context));
                 	}
@@ -69,8 +72,8 @@ public class Pig extends Task {
             in = new BufferedReader(new InputStreamReader(fs.open(p)));
             // run parameter substitution preprocessor first
             File substFile = File.createTempFile("subst", ".pig");
-            BufferedReader pin = preprocessPigScript(in, args, substFile, Config.getInstance().dryrun);
-            if (Config.getInstance().dryrun) {
+            BufferedReader pin = preprocessPigScript(in, args, substFile, context.getBoolean(Context.HAMAKE_PROPERTY_DRY_RUN));
+            if (context.getBoolean(Context.HAMAKE_PROPERTY_DRY_RUN)) {
             	LOG.info("Substituted pig script is at " + substFile);
                 return 0;
             }

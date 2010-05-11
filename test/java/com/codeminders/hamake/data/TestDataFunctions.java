@@ -13,9 +13,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.codeminders.hamake.Context;
 import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.HelperUtils;
+import com.codeminders.hamake.context.Context;
 
 public class TestDataFunctions {
 	

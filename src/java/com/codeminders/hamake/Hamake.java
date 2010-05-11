@@ -11,6 +11,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.codeminders.hamake.context.Context;
+import com.codeminders.hamake.context.ContextAware;
 import com.codeminders.hamake.dtr.DataTransformationRule;
 
 public class Hamake extends ContextAware{

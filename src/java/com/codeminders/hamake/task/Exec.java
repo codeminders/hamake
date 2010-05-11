@@ -1,9 +1,9 @@
 package com.codeminders.hamake.task;
 
-import com.codeminders.hamake.Config;
-import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.params.Parameter;
+import com.codeminders.hamake.params.SystemProperty;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -32,7 +32,12 @@ public class Exec extends Task {
         if (parameters != null) {
             for (Parameter p : parameters) {
                 try {
-                    args.add(p.get(context));
+                	if(p instanceof SystemProperty){
+                    	System.setProperty(((SystemProperty)p).getName(), ((SystemProperty)p).getValue());
+                    }
+                	else{
+                		args.add(p.get(context));
+                	}
                 } catch (IOException ex) {
                 	LOG.error("Failed to extract parameter values", ex);
                     return -1000;
@@ -40,7 +45,7 @@ public class Exec extends Task {
             }
         }
         String command = StringUtils.join(args, ' ');
-        if (Config.getInstance().dryrun)
+        if (context.getBoolean(Context.HAMAKE_PROPERTY_DRY_RUN))
             return 0;
         return Utils.execute(context, command);
     }

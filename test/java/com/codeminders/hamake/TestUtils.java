@@ -35,4 +35,16 @@ public class TestUtils {
 		Assert.assertNull(jar.getManifest().getMainAttributes().getValue("Main-Class"));
 		Assert.assertFalse(tempFile.exists());
 	}
+	
+	@Test
+	public void testCombineJars() throws IOException{
+		File dir = new File("testUtilsLib");
+		File mainJar = File.createTempFile("main", ".jar", tempDir);
+		FileUtils.copyFile(new File("testUtils.jar"), mainJar);
+		File combinedJar = Utils.combineJars(mainJar, dir);
+		JarFile jar = new JarFile(combinedJar);
+		Assert.assertNotNull(jar.getJarEntry("lib/testUtils1.jar"));
+		Assert.assertNotNull(jar.getJarEntry("lib/testUtils2.jar"));
+		Assert.assertEquals("org/apache/hadoop/examples/ExampleDriver", jar.getManifest().getMainAttributes().getValue("Main-Class"));
+	}
 }

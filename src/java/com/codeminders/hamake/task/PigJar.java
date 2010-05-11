@@ -4,32 +4,32 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.RunJar;
 
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.IOException;
+import java.io.File;
 
 import com.codeminders.hamake.*;
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.params.Parameter;
 import com.codeminders.hamake.params.HamakeParameter;
+import com.codeminders.hamake.params.SystemProperty;
 
 public class PigJar extends Task {
 
     public static final Log LOG = LogFactory.getLog(PigJar.class);
 
     private Path script;
-    private String jar;
+    private File jar;
 
     public PigJar() {
         super();
     }
 
-    public PigJar(String jar, Path scriptPath, List<Parameter> params) {
+    public PigJar(File jar, Path scriptPath, List<Parameter> params) {
         LOG.info("running PIG from jar " + jar);
         setJar(jar);
         setScript(scriptPath);
@@ -37,20 +37,12 @@ public class PigJar extends Task {
     }
 
     public int execute(Context context) {
-        FileSystem fs;
         Collection<String> args = new ArrayList<String>();
-        try {
-            Path jarPath = new Path(getJar());
-            fs = jarPath.getFileSystem(new Configuration());
-            args.add(Utils.copyToTemporaryLocal(context, getJar(), fs).getAbsolutePath());
-        } catch (IOException ex) {
-            LOG.error("Can't download JAR file: " + getJar(), ex);
-            return -1000;
-        }
+        args.add(getJar().getAbsolutePath());
 
         args.add("-f");
-        args.add(script.toString());
-
+        if(!script.toString().startsWith("file:")) args.add(script.toString());
+        else args.add(script.toUri().getPath().toString());
         try {
             List<Parameter> parameters = getParameters();
             if (parameters != null) {
@@ -59,14 +51,17 @@ public class PigJar extends Task {
                         args.add("-p");
                         args.add(((HamakeParameter)p).getName() + '=' + p.get(context));
                     }
+                    else if(p instanceof SystemProperty){
+                    	System.setProperty(((SystemProperty)p).getName(), ((SystemProperty)p).getValue());
+                    }
                 }
             }
 
             String s_args[] = new String[args.size()];
             args.toArray(s_args);
-            if (Config.getInstance().verbose)
+            if (context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
                 LOG.info("Executing PIG task " + StringUtils.join(s_args, ' '));
-            if (Config.getInstance().dryrun)
+            if (context.getBoolean(Context.HAMAKE_PROPERTY_DRY_RUN))
                 return 0;
             RunJar.main(s_args);
         } catch (ExitException e){
@@ -78,11 +73,11 @@ public class PigJar extends Task {
         return 0;
     }
 
-    public String getJar() {
+    public File getJar() {
         return jar;
     }
 
-    public void setJar(String jar) {
+    public void setJar(File jar) {
         this.jar = jar;
     }
 

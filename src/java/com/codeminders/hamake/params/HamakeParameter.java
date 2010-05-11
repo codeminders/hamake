@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.codeminders.hamake.Context;
+import com.codeminders.hamake.context.Context;
 
 public class HamakeParameter implements Parameter{
 	

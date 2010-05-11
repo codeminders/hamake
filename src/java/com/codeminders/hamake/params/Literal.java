@@ -1,7 +1,7 @@
 package com.codeminders.hamake.params;
 
-import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.context.Context;
 
 public class Literal extends ParameterItem{
 	private String value;

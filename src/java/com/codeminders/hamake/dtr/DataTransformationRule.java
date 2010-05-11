@@ -8,8 +8,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.mortbay.log.Log;
 
-import com.codeminders.hamake.Context;
-import com.codeminders.hamake.ContextAware;
+import com.codeminders.hamake.context.Context;
+import com.codeminders.hamake.context.ContextAware;
 import com.codeminders.hamake.data.DataFunction;
 import com.codeminders.hamake.task.Task;
 

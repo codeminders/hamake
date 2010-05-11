@@ -1,6 +1,6 @@
 package com.codeminders.hamake.task;
 
-import com.codeminders.hamake.Context;
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.params.Parameter;
 
 import org.apache.commons.lang.builder.ToStringBuilder;

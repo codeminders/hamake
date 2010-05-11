@@ -17,11 +17,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.PigNotFoundException;
 import com.codeminders.hamake.HelperUtils;
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.dtr.Fold;
 import com.codeminders.hamake.dtr.Foreach;
 import com.codeminders.hamake.params.HamakeParameter;

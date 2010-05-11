@@ -104,19 +104,9 @@
 
   <target name="dist" depends="compile, build-examples">
     <mkdir dir="${dist.dir}" />
-    <mkdir dir="${dist.dir}/lib" />
     <mkdir dir="${dist.examples.dir}" />
-    <copy todir="${dist.dir}/lib">
-      <fileset dir="lib" includes="*.jar" excludes="hadoop*.jar" />
-      <fileset dir="${build.dir}/lib" includes="*.jar" excludes="hadoop*.jar" />
-    </copy>
     <copy todir="${dist.dir}">
       <fileset file="${basedir}/README.txt" />
-    </copy>
-    <copy todir="${dist.dir}/lib">
-      <fileset dir="${lib.dir}">
-        <patternset refid="library.patterns" />
-      </fileset>
     </copy>
   	<buildnumber file="build.num"/>
   	<tstamp>
@@ -144,6 +134,10 @@
     <copy todir="${dist.examples.dir}/scripts">     
       <fileset file="${test.resources.dir}/scripts/median.pig" />
     </copy>
+  	<mkdir dir="${dist.examples.dir}/data" />
+	<copy todir="${dist.examples.dir}/data">     
+		<fileset dir="${build.dir}/lib" includes="*.jar" />
+  	</copy>
     <copy todir="${dist.examples.dir}/bin">     
       <fileset file="${test.resources.dir}/bin/*" />
     </copy>

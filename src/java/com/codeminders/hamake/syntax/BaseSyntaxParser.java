@@ -16,11 +16,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.codeminders.hamake.Context;
 import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.PigNotFoundException;
 import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.context.Context;
 
 public abstract class BaseSyntaxParser {
 	

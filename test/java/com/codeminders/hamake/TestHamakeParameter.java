@@ -8,6 +8,7 @@ import junit.framework.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.params.AppendConcatFunction;
 import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.IdentityProcessingFunction;

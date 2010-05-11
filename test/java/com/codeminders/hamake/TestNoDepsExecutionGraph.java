@@ -10,6 +10,7 @@ import junit.framework.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.data.FileDataFunction;
 import com.codeminders.hamake.dtr.DataTransformationRule;
 import com.codeminders.hamake.dtr.Fold;

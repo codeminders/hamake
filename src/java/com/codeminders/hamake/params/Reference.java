@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
 
-import com.codeminders.hamake.Context;
+import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.data.DataFunction;
 
 public class Reference extends ParameterItem{
