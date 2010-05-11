@@ -8,3 +8,4 @@ This page gives a detailed comparison between Hamake and similar workflow engine
 || has job scheduler || no || yes || yes || yes ||
 || can be run as a daemon || no || yes || yes || no ||
 || allows to run Pig scripts || yes || yes || yes || yes ||
+|| event notification || no || no || no || yes ||
