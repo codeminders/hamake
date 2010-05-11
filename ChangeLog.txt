@@ -1,3 +1,6 @@
+2010-07-05 Vadim Zaliva  <lord@crocodile.org>
+	* 2.0b1 release. Complete rewrite in Java, new XML file syntax, Amazon EMR support and more!
+
 2009-11-30  Vadim Zaliva  <lord@deco.local>
 
 	* src/hamake/hconfig.py (version): version 1.4
