@@ -27,7 +27,6 @@ public class ClassSizeHistogram extends Configured implements Tool
 {
     private static final int BIN_SIZE = 1024; // exclusive
     
-    @SuppressWarnings("unchecked")
     public static void main(String[] args)
         throws Exception
     {

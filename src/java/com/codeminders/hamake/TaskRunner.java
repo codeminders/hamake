@@ -27,7 +27,8 @@ public class TaskRunner {
 	private Lock lock;
 	private Condition condition;
 
-	public TaskRunner(List<DataTransformationRule> tasks, int numJobs, List<String> targets) throws IOException {
+	@SuppressWarnings("serial")
+    public TaskRunner(List<DataTransformationRule> tasks, int numJobs, List<String> targets) throws IOException {
 		graph = new NoDepsExecutionGraph(tasks);
 		this.tasks = new HashMap<String, DataTransformationRule>();
 		for (DataTransformationRule t : tasks)

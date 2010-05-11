@@ -42,7 +42,6 @@ public class JarListing extends Configured implements Tool
      * @throws java.lang.Exception
      *           When there is communication problems with the job tracker.
      */
-    @SuppressWarnings("unchecked")
     public static void main(String[] args)
         throws Exception
     {

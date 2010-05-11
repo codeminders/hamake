@@ -1,18 +1,17 @@
 package com.codeminders.hamake;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.Permission;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.jar.Manifest;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.codeminders.hamake.dtr.DataTransformationRule;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.security.Permission;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.jar.Manifest;
 
 public class Hamake extends ContextAware{
 	

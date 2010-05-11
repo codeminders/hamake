@@ -21,7 +21,6 @@ import java.io.IOException;
  */
 public class JarListingFilter extends Configured implements Tool
 {
-    @SuppressWarnings("unchecked")
     public static void main(String[] args)
         throws Exception
     {
