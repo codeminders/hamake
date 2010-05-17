@@ -18,14 +18,14 @@ The table below attempts to compare between Hamake and similar workflow engines 
 
 From [FAQ]:
 
-== What is the difference between Hamake and Cascading? ==
+=== What is the difference between Hamake and Cascading? ===
 
 In short: [http://www.cascading.org/ Cascading] is an API, while 'hamake' is an utility. Some differences:
   * hamake does not require any custom programming. It helps to automate running your existing Hadoop tasks and PIG scripts
   * We found hamake especially suitable for incremental processing of datasets
   * You can use 'hamake' to automate tasks written in other languages, for example using _Hadoop streaming_
 
-== How Hamake differs from Oozie and Azkaban? ==
+=== How Hamake differs from Oozie and Azkaban? ===
 
 Oozie and Azkaban are server-side systems that have to be installed and run as a service. Hamake is a lightweight client-side utility that does not require installation and has very simple syntax for workflow definition.  Most importantly, Hamake is built based on dataflow programming principles - your Hadoop tasks execution sequence is controlled by the data. 
  
