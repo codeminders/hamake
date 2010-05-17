@@ -16,7 +16,7 @@ The table below attempts to compare between Hamake and similar workflow engines 
 || ability to run arbitrary commands || yes || no || yes || yes ||
 || can be run on  Amazon EMR || yes || no || currently unknown || yes || 
 
-From FAQ:
+From [FAQ]:
 
 == What is the difference between Hamake and Cascading? ==
 
