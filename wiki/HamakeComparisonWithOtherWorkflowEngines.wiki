@@ -15,3 +15,7 @@ The table below attempts to compare between Hamake and similar workflow engines 
 || retries || no || no || yes || yes ||
 || ability to run arbitrary commands || yes || no || yes || yes ||
 || can be run on  Amazon EMR || yes || no || currently unknown || yes || 
+
+Notes:
+
+Oozie and Azkaban are server-side systems that have to be installed and run as a service. Hamake is a lightweight client-side utility that does not require installation and has very simple syntax for workflow definition. Most importantly, Hamake is built based on dataflow programming principles - your Hadoop tasks execution sequence is controlled by the data.
