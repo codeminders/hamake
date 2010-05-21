@@ -106,10 +106,15 @@
   </xs:element>
   <xs:element name="mapreduce">
     <xs:complexType>
-      <xs:choice maxOccurs="unbounded">
-        <xs:element ref="parameter"/>
-        <xs:element ref="jobconf"/>
-      </xs:choice>
+      <xs:sequence>
+        <xs:choice minOccurs="0">
+          <xs:element ref="classpath"/>
+        </xs:choice>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element ref="parameter"/>
+          <xs:element ref="jobconf"/>
+        </xs:choice>
+      </xs:sequence>
       <xs:attribute name="jar" use="required" type="xs:normalizedString"/>
       <xs:attribute name="main" use="required" type="xs:normalizedString"/>
     </xs:complexType>
@@ -203,4 +208,14 @@
       <xs:enumeration value="identity"/>
     </xs:restriction>
   </xs:simpleType>
+  <xs:element name="classpath">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="file"/>
+        <xs:element ref="fileset"/>
+        <xs:element ref="set"/>
+        <xs:element ref="include"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>

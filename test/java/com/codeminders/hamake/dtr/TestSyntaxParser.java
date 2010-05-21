@@ -90,6 +90,7 @@ public class TestSyntaxParser {
 		Assert.assertEquals("us.imageshack.datamining.Access2Referrers", mr.getMain());
 		Assert.assertEquals(1, mr.getParameters().size());
 		Assert.assertEquals(tempDirPath + "/referrers/1.log," + tempDirPath + "/related/1/1.txt", mr.getParameters().get(0).get(context));
+		Assert.assertEquals("[somepath]", mr.getClasspath().get(0).getPath(context).toString());
 		//2nd foreach
 		Foreach mdtr2 = (Foreach)make.getTasks().get(1);
 		Assert.assertEquals("foreach2", mdtr2.getName());

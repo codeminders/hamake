@@ -215,15 +215,15 @@ public class Utils {
 	public static File combineJars(File mainJar, File includeJarsLib) throws IOException{
 		if(!mainJar.exists()) throw new IOException("Jar file " + mainJar + " does not exist");
 		if(!includeJarsLib.exists() && !includeJarsLib.isDirectory()) throw new IOException("Folder " + includeJarsLib + " does not exist");
-		File jarDir = File.createTempFile("pig", "-unpacked");
-		jarDir.deleteOnExit();
-		File jarFile = File.createTempFile("pig", ".jar");
+		File jarFile = File.createTempFile(FilenameUtils.getBaseName(mainJar.getName()), ".jar");
 		jarFile.deleteOnExit();
-		//unpack
+		File jarDir = File.createTempFile(mainJar.getName(), "-unpacked");
 		if(jarDir.exists())FileUtils.deleteQuietly(jarDir);
 		if(!jarDir.mkdirs()){
 			throw new IOException("can not create folder " + jarDir.getAbsolutePath());
 		}
+		jarDir.deleteOnExit();
+		//unpack
 		RunJar.unJar(mainJar, jarDir);
 		File libdir = new File(jarDir.getAbsolutePath(), "lib");
 		libdir.mkdir();
@@ -294,6 +294,8 @@ public class Utils {
 			if (!StringUtils.isEmpty(context.getString(variable))) {
 				outputValue.append(context.getString(variable));
 			} else {
+				if(context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
+					LOG.warn("Variable or property " + context.getString(variable) + " is not found. Replacing it with *");	
 				outputValue.append("*");
 			}
 			curPos = end;

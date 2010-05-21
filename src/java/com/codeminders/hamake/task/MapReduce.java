@@ -3,9 +3,12 @@ package com.codeminders.hamake.task;
 import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.ExitException;
 import com.codeminders.hamake.context.Context;
+import com.codeminders.hamake.data.DataFunction;
 import com.codeminders.hamake.params.Parameter;
 import com.codeminders.hamake.params.SystemProperty;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -26,6 +29,7 @@ public class MapReduce extends Task {
 	public static final Log LOG = LogFactory.getLog(MapReduce.class);
     private String jar;
     private String main;
+    private List<DataFunction> classpath;
 
 	public int execute(Context context) {
         FileSystem fs;
@@ -34,6 +38,21 @@ public class MapReduce extends Task {
             Path jarPath = new Path(getJar());             
             fs = jarPath.getFileSystem(new Configuration());
             File jarFile = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(getJar(), fs), Arrays.asList(new String[] {"Main-Class"}));
+            if(!classpath.isEmpty()){
+            	File tempDir = File.createTempFile(FilenameUtils.getBaseName(jar), "_classpath");
+        		if(tempDir.exists())FileUtils.deleteQuietly(tempDir);
+        		if(!tempDir.mkdirs()){
+        			throw new IOException("can not create folder " + tempDir.getAbsolutePath());
+        		}
+            	for(DataFunction func : classpath){
+            		for(Path cp : func.getPath(context)){
+            			File copied = Utils.copyToTemporaryLocal(cp.toUri().getPath().toString(), fs);
+            			FileUtils.moveFileToDirectory(copied, tempDir, true);
+            		}
+            	}
+            	jarFile = Utils.combineJars(jarFile, tempDir);
+            	FileUtils.deleteQuietly(tempDir);
+            }
             args.add(jarFile.getAbsolutePath());
         } catch (IOException ex) {
         	LOG.error("Can't download JAR file: " + getJar(), ex);
@@ -88,8 +107,16 @@ public class MapReduce extends Task {
     public void setMain(String main) {
         this.main = main;
     }
+    
+    public List<DataFunction> getClasspath() {
+		return classpath;
+	}
 
-    @Override
+	public void setClasspath(List<DataFunction> classpath) {
+		this.classpath = classpath;
+	}
+
+	@Override
     public String toString() {
         return new ToStringBuilder(this).append("jar", jar).
                 append("main", main).appendSuper(super.toString()).toString();
