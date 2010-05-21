@@ -34,7 +34,7 @@ public class Hamake extends ContextAware{
 	
 	public static final Log LOG = LogFactory.getLog(Hamake.class);
 	
-	enum ExitCode {
+	public enum ExitCode {
         OK,
         BADOPT,
         INITERR,

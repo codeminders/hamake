@@ -1,4 +1,4 @@
-<project name="test-classpath">
+<project name="test-system.exit">
 
 	<!-- property
 		examples.jar 
@@ -13,7 +13,10 @@
 		<output>
 			<file path="does_not_matter1"/>
 		</output>
-		<mapreduce jar="${examples.jar}" main="com.codeminders.hamake.examples.DummyJobThatCallsSystemExit">
+		<mapreduce jar="${examples.jar}" main="com.codeminders.hamake.examples.DummyTestMapReduce">
+			<classpath>
+				<fileset path="${test.classpath}" mask="*.jar" />
+			</classpath>
 			<parameter>
 				<literal value="does_not_matter" />
 			</parameter>

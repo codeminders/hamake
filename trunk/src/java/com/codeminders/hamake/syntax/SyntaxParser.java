@@ -329,7 +329,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 
 	protected Task parseTask(Element root, String wdir)
-			throws InvalidMakefileException, IOException, PigNotFoundException {
+			throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextStateException {
 		Element task = getOneSubElement(root, "mapreduce", "pig", "exec");
 		if (task == null)
 			throw new InvalidMakefileException(
@@ -349,12 +349,22 @@ public class SyntaxParser extends BaseSyntaxParser {
 	}
 
 	protected Task parseMapReduceTask(Element root)
-			throws InvalidMakefileException {
+			throws InvalidMakefileException, IOException, InvalidContextStateException {
 		MapReduce res = new MapReduce();
 		res.setJar(Utils.resolvePath(Utils.replaceVariables(rootContext, getRequiredAttribute(root, "jar")), (String)rootContext.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER)).toString());
 		res.setMain(getRequiredAttribute(root, "main"));
 		res.setParameters(parseParametersList(root));
+		res.setClasspath(parseClassPath(root));
 		return res;
+	}
+	
+	protected List<DataFunction> parseClassPath(Element root) throws InvalidMakefileException, IOException, InvalidContextStateException{
+		List<DataFunction> classpath = new ArrayList<DataFunction>();
+		Element cpRoot = getOneSubElement(root, "classpath");
+        if(cpRoot != null){
+        	classpath = parseDTRData(cpRoot, Arrays.asList("fileset", "file", "set", "include"), 1, Integer.MAX_VALUE);
+		}
+		return classpath;
 	}
 
 	protected Task parsePigTask(Element root)
