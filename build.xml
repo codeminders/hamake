@@ -230,7 +230,7 @@
       </batchtest>
       <sysproperty key="examples.jar" value="${dist.examples.dir}/hamake-examples-${hamake.version}-${release.number}.jar" />
       <sysproperty key="hamakefiles.dir" value="${test.current.hamakefiles.dir}" />
-      <sysproperty key="hamake.version" value="${hamake.version}" />
+      <sysproperty key="hamake.version" value="${hamake.version}-${release.number}" />
 
     </junit>
 
@@ -252,11 +252,13 @@
     <exec executable="hadoop" osfamily="unix">
       <env key="HADOOP_CLASSPATH" path="${classpath.unix}"/>
       <arg value="jar" />
-      <arg value="${dist.dir}/hamake-${hamake.version}.jar" />
+      <arg value="${dist.dir}/hamake-${hamake.version}-${release.number}.jar" />
       <arg value="-f" />
       <arg value="file://${test.current.hamakefiles.dir}/class-size.xml" />
+      <arg value="-j" />
+      <arg value="1" />
       <arg value="-v" />
-      <arg value="-w" />${release.number}
+      <arg value="-w" />
       <arg value="file://${basedir}" />
 
     </exec>
@@ -264,9 +266,11 @@
     <exec executable="hadoop.bat" osfamily="windows">
       <env key="HADOOP_CLASSPATH" path="${classpath.windows}"/>
       <arg value="jar" />
-      <arg value="${dist.dir}/hamake-${hamake.version}.jar" />
+      <arg value="${dist.dir}/hamake-${hamake.version}-${release.number}.jar" />
       <arg value="-f" />
       <arg value="file:///${test.current.hamakefiles.dir}/class-size.xml" />
+      <arg value="-j" />
+      <arg value="1" />
       <arg value="-v" />
       <arg value="-w" />
       <arg value="file:///${basedir}" />
@@ -283,7 +287,7 @@
     <exec executable="hadoop" osfamily="unix">
       <env key="HADOOP_CLASSPATH" path="${classpath.unix}"/>
       <arg value="jar" />
-      <arg value="${dist.dir}/hamake-${hamake.version}.jar" />
+      <arg value="${dist.dir}/hamake-${hamake.version}-${release.number}.jar" />
       <arg value="-f" />
       <arg value="file://${test.current.hamakefiles.dir}/class-size.xml" />
       <arg value="-v" />
@@ -292,7 +296,7 @@
     <exec executable="hadoop.bat" osfamily="windows">
       <env key="HADOOP_CLASSPATH" path="${classpath.windows}"/>
       <arg value="jar" />
-      <arg value="${dist.dir}/hamake-${hamake.version}.jar" />
+      <arg value="${dist.dir}/hamake-${hamake.version}-${release.number}.jar" />
       <arg value="-f" />
       <arg value="file:///${test.current.hamakefiles.dir}/class-size.xml" />
       <arg value="-v" />

@@ -295,8 +295,7 @@ public class Utils {
 				outputValue.append(context.getString(variable));
 			} else {
 				if(context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
-					LOG.warn("Variable or property " + context.getString(variable) + " is not found. Replacing it with *");	
-				outputValue.append("*");
+					LOG.warn("Variable or property " + context.getString(variable) + " is not found.");	
 			}
 			curPos = end;
 		}
