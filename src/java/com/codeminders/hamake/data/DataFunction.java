@@ -30,7 +30,7 @@ public abstract class DataFunction{
 	
 	public abstract FileSystem getFileSystem(Context context, Path path) throws IOException;
 	
-	public abstract long getMinTimeStamp(Context context) throws IOException;
+	public abstract long getMaxTimeStamp(Context context) throws IOException;
 	
 	protected abstract String[] toString(Context context) throws IOException;
 	

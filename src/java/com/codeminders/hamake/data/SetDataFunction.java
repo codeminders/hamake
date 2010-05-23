@@ -79,12 +79,12 @@ public class SetDataFunction extends DataFunction {
 	}
 
 	@Override
-	public long getMinTimeStamp(Context context) throws IOException {
-		long modificationTime = Long.MAX_VALUE;
+	public long getMaxTimeStamp(Context context) throws IOException {
+		long modificationTime = 0;
 		for (DataFunction func : dataFunctions) {
 
-			long funcTS = func.getMinTimeStamp(context);
-			if (funcTS < modificationTime) {
+			long funcTS = func.getMaxTimeStamp(context);
+			if (funcTS > modificationTime) {
 				modificationTime = funcTS;
 			}
 		}

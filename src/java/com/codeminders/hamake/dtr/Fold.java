@@ -50,7 +50,7 @@ public class Fold extends DataTransformationRule {
 
 		int numo = 0;
 		for (DataFunction func : outputs) {
-			long stamp = func.getMinTimeStamp(getContext());
+			long stamp = func.getMaxTimeStamp(getContext());
 			if (stamp == 0) {
 				mots = -1;
 				break;
@@ -62,7 +62,7 @@ public class Fold extends DataTransformationRule {
 		}
 		if (numo > 0 && mots != -1) {
 			for (DataFunction func : inputs) {
-				long stamp = func.getMinTimeStamp(getContext());
+				long stamp = func.getMaxTimeStamp(getContext());
 				if (stamp == 0) {
 					LOG.error("Some of input files are not present!");
 					return -10;
