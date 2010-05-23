@@ -119,40 +119,32 @@ public class TestDataFunctions {
 		
 		Assert.assertFalse(fileFuncC.intersects(context, fileFuncD));
 		Assert.assertFalse(fileFuncD.intersects(context, fileFuncC));
+		FileDataFunction fileFuncE = new FileDataFunction("/A");
+		FileDataFunction fileFuncF = new FileDataFunction("/A/B");
+		Assert.assertTrue(fileFuncF.intersects(context, fileFuncE));
+		Assert.assertTrue(fileFuncE.intersects(context, fileFuncF));
+		
+		FileDataFunction fileFuncG = new FileDataFunction("/");
+		FileDataFunction fileFuncH = new FileDataFunction("/");
+		Assert.assertTrue(fileFuncH.intersects(context, fileFuncG));
+		FileDataFunction fileFuncWG = new FileDataFunction("c:\\");
+		FileDataFunction fileFuncWH = new FileDataFunction("c:\\");
+		Assert.assertTrue(fileFuncWG.intersects(context, fileFuncWH));
+		
+		FileDataFunction fileFuncI = new FileDataFunction("/A/B/C");
+		FileDataFunction fileFuncJ = new FileDataFunction("/A");
+		Assert.assertFalse(fileFuncI.intersects(context, fileFuncJ));
+		Assert.assertFalse(fileFuncJ.intersects(context, fileFuncI));
+		
+		FileDataFunction fileFuncK = new FileDataFunction("/A/B");
+		FileDataFunction fileFuncL = new FileDataFunction("/A/G");
+		Assert.assertFalse(fileFuncK.intersects(context, fileFuncL));
+		Assert.assertFalse(fileFuncL.intersects(context, fileFuncK));
+		
+		FilesetDataFunction fileFuncM = new FilesetDataFunction(null, 0, Long.MAX_VALUE, null, "/A", "*.jpg");
+		FileDataFunction fileFuncN = new FileDataFunction("/A/file.jpg");
+		Assert.assertTrue(fileFuncN.intersects(context, fileFuncM));
+		Assert.assertTrue(fileFuncM.intersects(context, fileFuncN));
 	}
 	
-	@Test
-	public void testMatch() throws IOException{
-		String pathA = "/home/${folder}/user/${file}/somepath/file.txt";
-		String pathB = "/home/*user*/*some*/file.txt";
-		Assert.assertTrue(DataFunction.matches(pathA, pathB));
-		pathA = "/home/${folder}/user/${file}/somepath/file.txt";
-		pathB = "/home/*some*/*user*/file.txt";
-		Assert.assertFalse(DataFunction.matches(pathA, pathB));
-		pathA = "onetwothree";
-		pathB = "*two*three*";
-		Assert.assertTrue(DataFunction.matches(pathA, pathB));
-		pathA = "/home/file.txt";
-		pathB = "/home*.txt";
-		Assert.assertTrue(DataFunction.matches(pathA, pathB));
-		pathA = "/home/file.txt";
-		pathB = "/home*.jpg";
-		Assert.assertFalse(DataFunction.matches(pathA, pathB));
-		pathA = "/tmp/1/file.txt";
-		pathB = "*/tmp/a.txt";
-		Assert.assertFalse(DataFunction.matches(pathA, pathB));
-		pathA = "/tmp/1/a.txt";
-		pathB = "/tmp*/a.txt";
-		Assert.assertTrue(DataFunction.matches(pathA, pathB));
-		pathA = "/home/user/path/file.jpg";
-		pathB = "/home/**/*.jpg";
-		Assert.assertTrue(DataFunction.matches(pathA, pathB));
-		pathA = "/home/user/path/file.jpg";
-		pathB = "/home/**/*.txt";
-		Assert.assertFalse(DataFunction.matches(pathA, pathB));
-		pathA = "/tmp/map1";
-		pathB = "/tmp/map1/*";
-		Assert.assertTrue(DataFunction.matches(pathA, pathB));
-	}
-
 }

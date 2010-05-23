@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -103,10 +104,31 @@ public class FileDataFunction extends DataFunction {
 	}
 	
 	@Override
+	public boolean intersects(Context context, DataFunction that) throws IOException {
+		if(that instanceof FileDataFunction){
+			Path thisPath = getPath(context).get(0);
+			Path thatPath = that.getPath(context).get(0);
+			Path thisParent = (thisPath.getParent() == null)? thisPath : thisPath.getParent();
+			Path thatParent = (thatPath.getParent() == null)? thatPath : thatPath.getParent();
+			if(thisParent.equals(thatParent)){
+				return thisPath.getName().equals(thatPath.getName()) && getGeneration() >= that.getGeneration();
+			}
+			if(thisPath.toUri().toString().length() > thatPath.toUri().toString().length()){
+				return thisParent.toString().equals(thatPath.toString())
+				&& getGeneration() >= that.getGeneration();
+			}
+			else{
+				return thatParent.toString().equals(thisPath.toString())
+				&& getGeneration() >= that.getGeneration();
+			}
+		}
+		else return super.intersects(context, that);
+	}
+	
+	@Override
 	protected String[] toString(Context context) throws IOException{
 		Path path = getPath(context).get(0);
-		FileSystem fs = this.getFileSystem(context, path);
-		return new String[] {fs.isFile(path)? path.getParent().toString() : path.toString()};
+		return new String[] {path.toString()};
 	}
 	
 	private Path toPath(Context context) throws IOException {
