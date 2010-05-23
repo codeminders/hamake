@@ -123,16 +123,16 @@ public class FilesetDataFunction extends DataFunction {
 	}
 
 	@Override
-	public long getMinTimeStamp(Context context) throws IOException {
+	public long getMaxTimeStamp(Context context) throws IOException {
 		FileSystem fs = getFileSystem(context, null);
-		long modificationTime = Long.MAX_VALUE;
+		long modificationTime = 0;
 		for (Path p : getPath(context)) {
 			if (!fs.exists(p))
 				continue;
 
 			FileStatus stat = fs.getFileStatus(p);
 
-			if (stat.getModificationTime() < modificationTime) {
+			if (stat.getModificationTime() > modificationTime) {
 				modificationTime = stat.getModificationTime();
 			}
 		}

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	
+<project name="local-cp">
+
+	<!-- properties:
+		tmpdir, cp, ls 
+		are set by unit test
+	-->
+
+	<foreach name="map">
+		<description>first map</description>
+		<input>
+			<fileset path="${tmpdir}/input" />
+		</input>
+		<output>
+			<file id="mapOut" path="${tmpdir}/map1/${foreach:filename}" />
+		</output>
+		<exec binary="${cp}">
+			<parameter>
+				<literal value="${foreach:path}" />
+			</parameter>
+			<parameter>
+				<reference idref="mapOut" />
+			</parameter>
+		</exec>
+	</foreach>
+
+</project>

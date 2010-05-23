@@ -104,7 +104,7 @@ public class Foreach extends DataTransformationRule {
 			command.getContext().setForbidden(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
 			command.getContext().setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
 			for (DataFunction outputFunc : output) {
-				if (outputFunc.getMinTimeStamp(command.getContext()) >= input.getMinTimeStamp(command.getContext())) {
+				if (outputFunc.getMaxTimeStamp(command.getContext()) >= input.getMaxTimeStamp(command.getContext())) {
 						return 0;
 				} 
 				else{

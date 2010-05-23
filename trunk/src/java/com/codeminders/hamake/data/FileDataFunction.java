@@ -92,7 +92,7 @@ public class FileDataFunction extends DataFunction {
 	}
 
 	@Override
-	public long getMinTimeStamp(Context context) throws IOException {
+	public long getMaxTimeStamp(Context context) throws IOException {
 		FileSystem fs = getFileSystem(context, null);
 		Path p = getPath(context).get(0);
 		if (!fs.exists(p))

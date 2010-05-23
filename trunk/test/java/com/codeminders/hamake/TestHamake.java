@@ -1,8 +1,12 @@
 package com.codeminders.hamake;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -11,6 +15,7 @@ import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.BufferedFSInputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,6 +74,47 @@ public class TestHamake {
 		Assert.assertEquals(10, map1OutSize);
 		Assert.assertTrue(outputFile.exists());
 		Assert.assertTrue("File size of output is 0 ", outputFile.length() > 0);
+	}
+	
+	@Test
+	public void testThatForeachLaunchesInCaseDataHasBeenChanged() throws IOException,
+			ParserConfigurationException, SAXException,
+			InvalidMakefileException, InterruptedException,
+			PigNotFoundException, InvalidContextStateException {
+
+		File inputDir = new File(tempDir, "input");
+		inputDir.mkdirs();
+		File[] files = HelperUtils.generateTemporaryFiles(inputDir.getAbsolutePath(), 10);
+		File map1Dir = new File(tempDir, "map1");
+		map1Dir.mkdirs();
+		String tempDirPath = tempDir.getAbsolutePath().toString();
+		Context context = new Context(new Configuration(), null, false, false, false);
+		context.set("tmpdir", tempDirPath);
+		if (OS.isLinux()) {
+			context.set("cp", "cp");
+		} else if (OS.isWindows()) {
+			context.set("cp", "copy");
+		}
+
+		Hamake make = null;
+		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
+				+ File.separator + "hamakefile-foreach-test.xml");
+		make = BaseSyntaxParser.parse(context, new FileInputStream(
+				localHamakeFile));
+		make.setNumJobs(2);
+		make.run();
+		int map1OutSize = FileUtils.listFiles(map1Dir, TrueFileFilter.INSTANCE,
+				TrueFileFilter.INSTANCE).size();
+		Assert.assertEquals(10, map1OutSize);
+		PrintWriter writer = new PrintWriter(files[0]);
+		writer.println("someInfo");
+		writer.close();
+		make.run();
+		File out = new File(map1Dir, files[0].getName());
+		BufferedReader reader = new BufferedReader(new FileReader(out));
+		String line = reader.readLine();
+		reader.close();
+		Assert.assertEquals("someInfo", line);
 	}
 
 	@Test
