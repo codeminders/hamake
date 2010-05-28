@@ -16,7 +16,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.util.RunJar;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,7 +81,8 @@ public class MapReduce extends Task {
             	LOG.info("Executing Hadoop task " + StringUtils.join(s_args, ' '));
             if (context.getBoolean(Context.HAMAKE_PROPERTY_DRY_RUN))
                 return 0;
-            RunJar.main(s_args);            
+
+            RunJarThread.main(s_args);
         } catch (ExitException e){
             return e.status;
         } catch (Throwable ex) {
