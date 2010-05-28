@@ -6,7 +6,8 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.mortbay.log.Log;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.context.ContextAware;
@@ -14,6 +15,8 @@ import com.codeminders.hamake.data.DataFunction;
 import com.codeminders.hamake.task.Task;
 
 public abstract class DataTransformationRule extends ContextAware{
+
+    public static final Log LOG = LogFactory.getLog(DataTransformationRule.class);
 
 	private String name;
 	private Task task;
@@ -66,7 +69,7 @@ public abstract class DataTransformationRule extends ContextAware{
 				for(Path path : depDataFunc.getPath(getContext())){
 					FileSystem fs = depDataFunc.getFileSystem(getContext(), path);
 					if(!fs.exists(path)){
-						Log.warn("DTR " + getName() + " depends on " + path + ". DTR will not execute");
+						LOG.warn("DTR " + getName() + " depends on " + path + ". DTR will not execute");
 						canStart = false;
 					}
 				}

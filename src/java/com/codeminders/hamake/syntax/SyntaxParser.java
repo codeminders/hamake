@@ -97,7 +97,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	protected boolean validate(InputStream is) throws SAXException, IOException{	
 		ForgivingErrorHandler errorHandler = new ForgivingErrorHandler();
 		SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
-		Schema schema = factory.newSchema(new StreamSource(SyntaxParser.class.getResourceAsStream(SCHEMA_NAME)));
+		Schema schema = factory.newSchema(new StreamSource(SyntaxParser.class.getClassLoader().getResourceAsStream(SCHEMA_NAME)));
 		Validator validator = schema.newValidator();
 		validator.setErrorHandler(errorHandler);
         validator.validate(new StreamSource(is));
