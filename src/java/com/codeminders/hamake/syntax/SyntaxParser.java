@@ -186,7 +186,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 		if(input == null){
 			throw new InvalidMakefileException(getPath(root) + " should have one input sub-element");
 		}
-		DataFunction inputFunc = parseDTRData(input, Arrays.asList("fileset", "include"), 1, 1).get(0);
+		DataFunction inputFunc = parseDTRData(input, Arrays.asList("fileset", "file", "set", "include"), 1, 1).get(0);
 		Element output = getOneSubElement(root, "output");
 		if(output == null){
 			throw new InvalidMakefileException(getPath(root) + " should have one output sub-element");
@@ -245,11 +245,9 @@ public class SyntaxParser extends BaseSyntaxParser {
 				}
 			}
 		}
-		if(functions.size() < minElementsAmount){
-			throw new InvalidMakefileException(getPath(root) + " should have at least one of " + StringUtils.join(allowedSubElements, ","));
-		}
-		if(functions.size() > maxElementsAmount){
-			throw new InvalidMakefileException(getPath(root) + " should have no more then " + maxElementsAmount + " sub-elements");
+		if(functions.size() < minElementsAmount || functions.size() > maxElementsAmount){
+			String message = (maxElementsAmount == minElementsAmount)? " and only " + minElementsAmount + " elements: " : " or more elements: ";
+			throw new InvalidMakefileException(getPath(root) + " should have " + minElementsAmount + message + StringUtils.join(allowedSubElements, ","));
 		}
 		return functions;
 	}
