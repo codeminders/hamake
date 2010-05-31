@@ -13,12 +13,12 @@
 		<output>
 			<file path="does_not_matter1"/>
 		</output>
-		<mapreduce jar="${examples.jar}" main="com.codeminders.hamake.examples.DummyTestMapReduce">
+		<mapreduce jar="${examples.jar}" main="com.codeminders.hamake.examples.DummyClassThatDependsOnJars">
 			<classpath>
 				<fileset path="${test.classpath}" mask="*.jar" />
 			</classpath>
 			<parameter>
-				<literal value="does_not_matter" />
+				<literal value="textInput.txt" />
 			</parameter>
 		</mapreduce>
 	</fold>

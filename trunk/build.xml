@@ -212,7 +212,8 @@
 
   <target name="build-examples" depends="compile">
     <mkdir dir="${dist.dir}/examples" />
-    <jar destfile="${dist.dir}/examples/hamake-examples-${hamake.version}-${release.number}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" />
+    <jar destfile="${dist.dir}/examples/hamake-examples-${hamake.version}-${release.number}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" excludes="com/codeminders/hamake/examples/DummyTestMapReduce**"/>
+  	<jar destfile="${build.dir}/testMapreduce.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/DummyTestMapReduce**" />
   </target>
 
   <target name="test" description="runs hamake JUnit tests" depends="compile-test, dist">

@@ -103,6 +103,7 @@ public class TestHamake {
 				localHamakeFile));
 		make.setNumJobs(2);
 		make.run();
+		Thread.sleep(1000);
 		int map1OutSize = FileUtils.listFiles(map1Dir, TrueFileFilter.INSTANCE,
 				TrueFileFilter.INSTANCE).size();
 		Assert.assertEquals(10, map1OutSize);
