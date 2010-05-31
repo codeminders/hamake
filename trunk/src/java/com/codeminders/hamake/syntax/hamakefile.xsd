@@ -29,14 +29,7 @@
       <xs:sequence>
         <xs:element ref="description" minOccurs="0"/>
         <xs:element minOccurs="0" ref="dependencies"/>
-        <xs:element name="input">
-          <xs:complexType>
-            <xs:choice>
-              <xs:element ref="fileset"/>
-              <xs:element ref="include"/>
-            </xs:choice>
-          </xs:complexType>
-        </xs:element>
+        <xs:element ref="input"> </xs:element>
         <xs:element ref="output"/>
         <xs:choice>
           <xs:element ref="exec"/>
@@ -53,16 +46,7 @@
       <xs:sequence>
         <xs:element ref="description" minOccurs="0"/>
         <xs:element minOccurs="0" ref="dependencies"/>
-        <xs:element name="input">
-          <xs:complexType>
-            <xs:choice maxOccurs="unbounded" minOccurs="0">
-              <xs:element ref="file"/>
-              <xs:element ref="fileset"/>
-              <xs:element ref="set"/>
-              <xs:element ref="include"/>
-            </xs:choice>
-          </xs:complexType>
-        </xs:element>
+        <xs:element ref="input"/>
         <xs:element ref="output"/>
         <xs:choice>
           <xs:element ref="mapreduce"/>
@@ -72,6 +56,16 @@
       </xs:sequence>
       <xs:attribute name="name" use="required" type="xs:ID"/>
       <xs:attribute name="disabled" type="xs:boolean"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="input">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded" minOccurs="0">
+        <xs:element ref="file"/>
+        <xs:element ref="fileset"/>
+        <xs:element ref="set"/>
+        <xs:element ref="include"/>
+      </xs:choice>
     </xs:complexType>
   </xs:element>
   <xs:element name="dependencies">
