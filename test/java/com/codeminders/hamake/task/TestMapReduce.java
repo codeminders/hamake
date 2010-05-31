@@ -35,7 +35,6 @@ public class TestMapReduce {
 		final Hamake make = BaseSyntaxParser.parse(context,
 				new FileInputStream(localHamakeFile));
 		make.setNumJobs(1);
-		make.run();
 		Assert.assertEquals(Hamake.ExitCode.OK, make.run());
 	}
 
