@@ -16,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.JobShell;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,24 +34,30 @@ public class MapReduce extends Task {
 	public int execute(Context context) {
         FileSystem fs;
         List<String> args = new ArrayList<String>();
+        List<File> classpathJars = new ArrayList<File>();
         try {
             Path jarPath = new Path(getJar());             
             fs = jarPath.getFileSystem(new Configuration());
             File jarFile = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(getJar(), fs), Arrays.asList(new String[] {"Main-Class"}));
             if(!classpath.isEmpty()){
-            	File tempDir = File.createTempFile(FilenameUtils.getBaseName(jar), "_classpath");
-        		if(tempDir.exists())FileUtils.deleteQuietly(tempDir);
-        		if(!tempDir.mkdirs()){
-        			throw new IOException("can not create folder " + tempDir.getAbsolutePath());
-        		}
-            	for(DataFunction func : classpath){
-            		for(Path cp : func.getPath(context)){
-            			File copied = Utils.copyToTemporaryLocal(cp.toUri().getPath().toString(), fs);
-            			FileUtils.moveFileToDirectory(copied, tempDir, true);
-            		}
-            	}
-            	jarFile = Utils.combineJars(jarFile, tempDir);
-            	FileUtils.deleteQuietly(tempDir);
+                for(DataFunction func : classpath){
+                	for(Path cp : func.getPath(context)){
+                		File copied = Utils.copyToTemporaryLocal(cp.toUri().getPath().toString(), fs);
+                		classpathJars.add(copied);
+                		copied.deleteOnExit();
+                	}
+                }
+                if(!"local".equals(((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION)).get("mapred.job.tracker", "local"))){
+                	List<String> libs = new ArrayList<String>(); 
+                	for(DataFunction func : classpath){
+                		for(Path cp : func.getPath(context)){
+                			libs.add(cp.toString());
+                		}
+                	}
+                	args.add("-libjars");
+                	args.add(StringUtils.join(libs, ","));
+                }
+            	
             }
             args.add(jarFile.getAbsolutePath());
         } catch (IOException ex) {
@@ -82,7 +89,7 @@ public class MapReduce extends Task {
             if (context.getBoolean(Context.HAMAKE_PROPERTY_DRY_RUN))
                 return 0;
 
-            RunJarThread.main(s_args);
+            MapReduceRunner.main(s_args, classpathJars.toArray(new File[classpathJars.size()]));
         } catch (ExitException e){
             return e.status;
         } catch (Throwable ex) {

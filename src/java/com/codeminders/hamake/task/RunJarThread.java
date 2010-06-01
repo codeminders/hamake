@@ -19,6 +19,11 @@ public class RunJarThread extends Thread {
     protected File workDir, file;
     protected String mainClassName = null;
     protected int firstArg = 0;
+    protected File[] additionalJars;
+    
+    protected RunJarThread(File[] additionalJars){
+    	this.additionalJars = additionalJars;
+    }
 
     /**
      * Unpack a jar file into a directory.
@@ -59,8 +64,8 @@ public class RunJarThread extends Thread {
         }
     }
 
-    public static void main(String[] args) throws Throwable {
-        RunJarThread rj = new RunJarThread();
+    public static void main(String[] args, File[] additionalJars) throws Throwable {
+        RunJarThread rj = new RunJarThread(additionalJars);
         try
         {
             rj.start(args);
@@ -166,6 +171,21 @@ public class RunJarThread extends Thread {
 
                         classPath.add( jarURL );
                     }
+                }
+                if(additionalJars.length > 0){
+	                for (int i = 0; i < additionalJars.length; i++) {
+	                    final URL jarURL = new URL(
+	                            "jar", "", -1, (new StringBuilder()).append(additionalJars[i].toURL()).append("!/").toString()
+	                    );
+	
+	                    // cache all the connections to JAR files
+	                    JarURLConnection jarConnection = (JarURLConnection)jarURL.openConnection();
+	                    jarConnection.setUseCaches(true);
+	                    jarConnection.getJarFile();
+	                    jarConnections.add(jarConnection);
+	
+	                    classPath.add( jarURL );
+	                }
                 }
 
                 loader = new URLClassLoader(classPath.toArray(new URL[0]));
