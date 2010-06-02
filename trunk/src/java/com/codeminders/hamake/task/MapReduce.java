@@ -42,9 +42,7 @@ public class MapReduce extends Task {
             if(!classpath.isEmpty()){
                 for(DataFunction func : classpath){
                 	for(Path cp : func.getPath(context)){
-                		File copied = Utils.copyToTemporaryLocal(cp.toUri().getPath().toString(), fs);
-                		classpathJars.add(copied);
-                		copied.deleteOnExit();
+                		classpathJars.add(new File(cp.toUri().getPath().toString()));
                 	}
                 }
                 if(!"local".equals(((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION)).get("mapred.job.tracker", "local"))){

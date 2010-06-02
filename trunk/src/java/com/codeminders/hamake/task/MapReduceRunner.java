@@ -10,6 +10,8 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import com.codeminders.hamake.ExitException;
+
 
 public class MapReduceRunner extends Configured implements Tool{
 	
@@ -20,28 +22,23 @@ public class MapReduceRunner extends Configured implements Tool{
 	}
 
 	public int run(String argv[]) throws Exception {
-		int exitCode = -1;
 		Configuration conf = getConf();
 		try {
 			Method setCommandLineConfigMethod = JobClient.class.getDeclaredMethod("setCommandLineConfig", Configuration.class);
 			setCommandLineConfigMethod.setAccessible(true);
 			setCommandLineConfigMethod.invoke(null, conf);
-			try {
-				RunJarThread.main(argv, additionalCPJars);
-				exitCode = 0;
-			} catch (Throwable th) {
-				System.err.println(StringUtils.stringifyException(th));
-			}
-		} catch (RuntimeException re) {
-			exitCode = -1;
-			System.err.println(re.getLocalizedMessage());
+			RunJarThread.main(argv, additionalCPJars);
+		} catch(ExitException e){
+			throw e;
 		}
-		return exitCode;
+		catch (Throwable re) {
+			throw new Exception(re);
+		}
+		return 0;
 	}
 
 	public static void main(String[] argv, File[] additionalCPJars) throws Exception {
 		MapReduceRunner runner = new MapReduceRunner(additionalCPJars);
-		int status = ToolRunner.run(runner, argv);
-		System.exit(status);
+		ToolRunner.run(runner, argv);
 	}
 }
