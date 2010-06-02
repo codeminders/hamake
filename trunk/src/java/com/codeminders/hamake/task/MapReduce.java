@@ -42,20 +42,36 @@ public class MapReduce extends Task {
             if(!classpath.isEmpty()){
                 for(DataFunction func : classpath){
                 	for(Path cp : func.getPath(context)){
-                		classpathJars.add(new File(cp.toUri().getPath().toString()));
+                		if(fs.exists(cp)){
+                			File localFile = Utils.copyToTemporaryLocal(cp.toString(), fs);
+                			classpathJars.add(localFile);
+                		}
                 	}
+                }
+                if(classpathJars.isEmpty()){
+	                for(DataFunction func : classpath){
+	                	for(Path cp : func.getLocalPath(context)){
+	                		File localFile = new File(cp.toString());
+	            			if(localFile.exists()){
+	            				classpathJars.add(localFile);
+	            			}
+	                	}
+	                }
                 }
                 if(!"local".equals(((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION)).get("mapred.job.tracker", "local"))){
                 	List<String> libs = new ArrayList<String>(); 
-                	for(DataFunction func : classpath){
-                		for(Path cp : func.getPath(context)){
-                			libs.add(cp.toString());
-                		}
+                	for(File jar : classpathJars){
+                		libs.add(jar.getAbsolutePath());
                 	}
-                	args.add("-libjars");
-                	args.add(StringUtils.join(libs, ","));
+                	if(!libs.isEmpty()){
+	                	args.add("-libjars");
+	                	args.add(StringUtils.join(libs, ","));
+                	}
                 }
-            	
+            	if(classpathJars.isEmpty()){
+            		LOG.error("You have specified wrong classpath for " + getMain() + " task");
+            		return -1000;
+            	}
             }
             args.add(jarFile.getAbsolutePath());
         } catch (IOException ex) {

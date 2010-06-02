@@ -47,9 +47,18 @@ public class SetDataFunction extends DataFunction {
 				: new Configuration();
 		return FileSystem.get(conf);
 	}
+	
+	@Override
+	public List<Path> getLocalPath(Context context) throws IOException {
+		List<Path> paths = new ArrayList<Path>();
+		for (DataFunction func : dataFunctions) {
+			paths.addAll(func.getLocalPath(context));
+		}
+		return paths;
+	}
 
 	@Override
-	public List<Path> getPath(Context context, Object... arguments)
+	public List<Path> getPath(Context context)
 			throws IOException {
 		List<Path> paths = new ArrayList<Path>();
 		for (DataFunction func : dataFunctions) {
