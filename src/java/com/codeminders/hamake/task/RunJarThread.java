@@ -94,8 +94,7 @@ public class RunJarThread extends Thread {
             try {
                 jarFile = new JarFile(fileName);
             } catch (IOException io) {
-                throw new IOException("Error opening job jar: " + fileName)
-                        .initCause(io);
+                throw new IOException("Error opening job jar: " + fileName);
             }
 
             Manifest manifest = jarFile.getManifest();
@@ -198,10 +197,11 @@ public class RunJarThread extends Thread {
                 });
                 String[] newArgs = Arrays.asList(args)
                         .subList(firstArg, args.length).toArray(new String[0]);
-                try {
-                    main.invoke(null, new Object[]{newArgs});
-                } catch (InvocationTargetException e) {
-                    throw e.getTargetException();
+                try{
+                	main.invoke(null, new Object[]{newArgs});
+                }
+                catch(InvocationTargetException e){
+                	throw e.getTargetException();
                 }
             }
             finally {

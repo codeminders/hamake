@@ -1,5 +1,6 @@
 package com.codeminders.hamake.data;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,8 +72,16 @@ public class FilesetDataFunction extends DataFunction {
 		Path path = toPath(context);
 		FileSystem fs = getFileSystem(context, path);
 		if (!fs.exists(path) || !fs.getFileStatus(path).isDir()) {
-			throw new IOException("Folder " + path
-					+ " should exist and be a folder");
+			Path localPath = new Path(this.path);
+			FileSystem localFs = FileSystem.getLocal((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
+			if(localFs.exists(localPath) && localFs.getFileStatus(localPath).isDir()){
+				fs = localFs;
+				path = localPath; 
+			}
+			else{
+				throw new IOException("Folder " + path
+						+ " should exist and be a folder");
+			}
 		}
 		List<Path> filesList = new ArrayList<Path>();
 		Boolean create = false;

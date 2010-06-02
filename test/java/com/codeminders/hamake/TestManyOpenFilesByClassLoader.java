@@ -10,6 +10,8 @@ import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.util.ArrayList;
 
+import org.junit.Test;
+
 public class TestManyOpenFilesByClassLoader {
     public static void main(String[] args) throws Exception
     {
@@ -75,6 +77,11 @@ public class TestManyOpenFilesByClassLoader {
         }
 
         return ;
+    }
+    
+    @Test
+    public void testManyOpenFiles() throws Exception{
+    	TestManyOpenFilesByClassLoader.main(new String[] {"unload"});
     }
 }
 
