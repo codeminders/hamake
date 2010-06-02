@@ -59,13 +59,15 @@ public class FileDataFunction extends DataFunction {
 	}
 
 	@Override
-	public List<Path> getPath(Context context, Object... arguments)
+	public List<Path> getPath(Context context)
 			throws IOException {
 		Path path = toPath(context);
-		if (arguments.length > 1 && arguments[0] instanceof Path)
-			return Arrays.asList(new Path((Path) arguments[0], path));
-		else
-			return Arrays.asList(path);
+		return Arrays.asList(path);
+	}
+	
+	@Override
+	public List<Path> getLocalPath(Context context) throws IOException {
+		return Arrays.asList(new Path(Utils.replaceVariables(context, this.path)));
 	}
 
 	@Override

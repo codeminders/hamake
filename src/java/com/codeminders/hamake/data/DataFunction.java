@@ -24,7 +24,9 @@ public abstract class DataFunction{
 		this.workFolder = workFolder;
 	}
 
-	public abstract List<Path> getPath(Context context, Object... arguments)  throws IOException;
+	public abstract List<Path> getPath(Context context)  throws IOException;
+	
+	public abstract List<Path> getLocalPath(Context context)  throws IOException;
 	
 	public abstract boolean clear(Context context) throws IOException;
 	

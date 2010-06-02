@@ -66,59 +66,28 @@ public class FilesetDataFunction extends DataFunction {
 	}
 
 	@Override
-	public List<Path> getPath(Context context, Object... arguments)
+	public List<Path> getPath(Context context)
 			throws IOException {
 
 		Path path = toPath(context);
 		FileSystem fs = getFileSystem(context, path);
-		if (!fs.exists(path) || !fs.getFileStatus(path).isDir()) {
-			Path localPath = new Path(this.path);
-			FileSystem localFs = FileSystem.getLocal((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
-			if(localFs.exists(localPath) && localFs.getFileStatus(localPath).isDir()){
-				fs = localFs;
-				path = localPath; 
-			}
-			else{
-				throw new IOException("Folder " + path
-						+ " should exist and be a folder");
-			}
+		if (fs.exists(path) && !fs.getFileStatus(path).isDir()) {
+			throw new IOException("Folder " + path	+ " should be a folder");
 		}
-		List<Path> filesList = new ArrayList<Path>();
-		Boolean create = false;
-		Variant variant = Variant.LIST;
-		if (arguments.length == 1 && arguments[0] instanceof Boolean)
-			create = (Boolean) arguments[0];
-		if (arguments.length == 1 && arguments[0] instanceof String)
-			variant = Variant.parseString((String) arguments[0]);
-
-		boolean exists = fs.exists(path);
-		if (!exists) {
-			if (create) {
-				LOG.info("Creating " + path);
-				fs.mkdirs(path);
-			} else {
-				LOG.error("Path " + this + " does not exist!");
-			}
-			return Collections.emptyList();
-		}
-
-		if (variant == Variant.LIST) {
-			FileStatus[] list = fs.listStatus(path);
-
-			for (FileStatus s : list) {
-				Path p = ((fs instanceof LocalFileSystem? new Path(s.getPath().toUri().getPath()) : new Path(s.getPath().toString())));
-				if (Utils.matches(p, mask))
-					filesList.add(p);
-			}
-		} else if (variant == Variant.MASK) {
-			if (mask != null) {
-				return Arrays.asList(new Path(path.toString() + "/" + mask));
-			}
-		}
-
-		return filesList;
+		return listFiles(context, fs, path);
 	}
-
+	
+	@Override
+	public List<Path> getLocalPath(Context context) throws IOException {
+		Path localPath = new Path(this.path);
+		FileSystem localFs = FileSystem.getLocal((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
+		if(localFs.exists(localPath) && !localFs.getFileStatus(localPath).isDir()){
+			throw new IOException("Folder " + path + " should be a folder"); 
+		}
+		return listFiles(context, localFs, localPath);
+	}
+	
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null || !(obj instanceof FilesetDataFunction))
@@ -158,6 +127,27 @@ public class FilesetDataFunction extends DataFunction {
 	private Path toPath(Context context) throws IOException {
 		return Utils.resolvePath(Utils.replaceVariables(context, this.path),
 				getWorkFolder());
+	}
+	
+	private List<Path> listFiles(Context context, FileSystem fs, Path folder) throws IOException{
+		List<Path> filesList = new ArrayList<Path>();
+		
+		boolean exists = fs.exists(folder);
+		if (!exists) {
+			LOG.info("Creating " + folder);
+			fs.mkdirs(folder);
+			return Collections.emptyList();
+		}
+
+		FileStatus[] list = fs.listStatus(folder);
+
+		for (FileStatus s : list) {
+			Path p = ((fs instanceof LocalFileSystem? new Path(s.getPath().toUri().getPath()) : new Path(s.getPath().toString())));
+			if (Utils.matches(p, mask))
+				filesList.add(p);
+		}
+
+		return filesList;
 	}
 
 }
