@@ -40,25 +40,30 @@ public class TestDataFunctions {
 		context.set("somepath", FilenameUtils.getFullPath(file2.getAbsolutePath()));
 		FileDataFunction fileFunc1 = new FileDataFunction("1", 0, Long.MAX_VALUE, null, file1.getAbsolutePath());
 		Assert.assertEquals(1, fileFunc1.getPath(context).size());
-		Assert.assertEquals(file1.getAbsolutePath(), fileFunc1.getPath(context).get(0).toString());
+		Assert.assertEquals(new File(file1.getAbsolutePath()), new File(fileFunc1.getPath(context).get(0).toString()));
 		Assert.assertTrue(fileFunc1 + " should be a file", fileFunc1.isFile(context));
 		FileDataFunction folderFunc = new FileDataFunction("1", 0, Long.MAX_VALUE, null, folder.getAbsolutePath());
 		Assert.assertEquals(1, folderFunc.getPath(context).size());
-		Assert.assertEquals(folder.getAbsolutePath(), folderFunc.getPath(context).get(0).toString());
+		Assert.assertEquals(new File(folder.getAbsolutePath()), new File(folderFunc.getPath(context).get(0).toString()));
 		Assert.assertTrue(folderFunc + " should be a folder", folderFunc.isFolder(context));
 		Assert.assertTrue("FileDataFunction.getFileSystem should return an instance of LocalFileSystem", folderFunc.getFileSystem(context, folderFunc.getPath(context).get(0)) instanceof LocalFileSystem);
 		FileDataFunction fileFunc2 = new FileDataFunction(null, 0, Long.MAX_VALUE, folder.getAbsolutePath(), FilenameUtils.getName(file2.getAbsolutePath()));
 		Assert.assertEquals(1, fileFunc2.getPath(context).size());
-		Assert.assertEquals(folder.getAbsolutePath() + File.separator + FilenameUtils.getName(file2.getAbsolutePath()), fileFunc2.getPath(context).get(0).toString());
+		Assert.assertEquals(new File(folder.getAbsolutePath() + File.separator + FilenameUtils.getName(file2.getAbsolutePath())),
+                new File(fileFunc2.getPath(context).get(0).toString()));
 		FileDataFunction fileFunc3 = new FileDataFunction(null, 0, Long.MAX_VALUE, folder.getAbsolutePath(), file1.getAbsolutePath());
 		Assert.assertEquals(1, fileFunc3.getPath(context).size());
-		Assert.assertEquals(file1.getAbsolutePath(), fileFunc3.getPath(context).get(0).toString());
+		Assert.assertEquals(
+                new File(file1.getAbsolutePath()),
+                new File(fileFunc3.getPath(context).get(0).toString()));
 		FileDataFunction fileFunc4 = new FileDataFunction(null, 0, Long.MAX_VALUE, null, file1.getAbsolutePath());
 		Assert.assertTrue(fileFunc4.equals(fileFunc3));
 		Assert.assertFalse(fileFunc4.equals(fileFunc2));
 		FileDataFunction fileFunc5 = new FileDataFunction("2", 0, Long.MAX_VALUE, null, "${somepath}" + File.separator + FilenameUtils.getName(file2.getAbsolutePath()));
 		Assert.assertEquals(1, fileFunc5.getPath(context).size());
-		Assert.assertEquals(file2.getAbsolutePath(), fileFunc5.getPath(context).get(0).toString());
+		Assert.assertEquals(
+                new File(file2.getAbsolutePath()),
+                new File(fileFunc5.getPath(context).get(0).toString()));
 		Assert.assertTrue(folderFunc.intersects(context, fileFunc2));
 		Assert.assertFalse(folderFunc.intersects(context, fileFunc3));
 		Assert.assertTrue(fileFunc1.clear(context));

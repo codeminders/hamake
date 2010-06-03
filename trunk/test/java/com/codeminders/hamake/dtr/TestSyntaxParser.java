@@ -17,10 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.InvalidContextStateException;
-import com.codeminders.hamake.PigNotFoundException;
-import com.codeminders.hamake.HelperUtils;
+import com.codeminders.hamake.*;
 import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.dtr.Fold;
 import com.codeminders.hamake.dtr.Foreach;
@@ -46,8 +43,8 @@ public class TestSyntaxParser {
 	}
 	
 	@Test
-	public void testFull() throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InvalidContextStateException{
-		File localHamakeFile = new File(HelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testsyntax.xml");
+	public void testFull() throws IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InvalidContextStateException{
+		File localHamakeFile = TestHamake.getHamakefile("hamakefile-testsyntax.xml");
 		File depPath = new File(tempDir, "deppath");
 		depPath.mkdirs();
 		File someDir = new File(tempDir, "somedir");
@@ -86,10 +83,11 @@ public class TestSyntaxParser {
 		Assert.assertEquals(1, mdtr1.getDeps().size());
 		Assert.assertTrue(mdtr1.getTask() instanceof MapReduce);
 		MapReduce mr = (MapReduce)mdtr1.getTask();
-		Assert.assertEquals(tempDir.getAbsoluteFile().toString() + "/datamining.jar", mr.getJar());
+		Assert.assertEquals(new File(tempDir.getAbsoluteFile().toString() + "/datamining.jar"), new File(mr.getJar()));
 		Assert.assertEquals("us.imageshack.datamining.Access2Referrers", mr.getMain());
 		Assert.assertEquals(1, mr.getParameters().size());
-		Assert.assertEquals(tempDirPath + "/referrers/1.log," + tempDirPath + "/related/1/1.txt", mr.getParameters().get(0).get(context));
+		Assert.assertEquals(new File(tempDirPath + "/referrers/1.log," + tempDirPath + "/related/1/1.txt"),
+                new File(mr.getParameters().get(0).get(context)));
 		Assert.assertEquals("[somepath]", mr.getClasspath().get(0).getPath(context).toString());
 		//2nd foreach
 		Foreach mdtr2 = (Foreach)make.getTasks().get(1);
@@ -101,21 +99,28 @@ public class TestSyntaxParser {
 		Exec ex = (Exec)mdtr2.getTask();
 		Assert.assertEquals("cat", ex.getBinary().toString());
 		Assert.assertEquals(3, ex.getParameters().size());
-		Assert.assertEquals(tempDirPath + "/referrers/1.log", ex.getParameters().get(0).get(context));
+		Assert.assertEquals(new File(tempDirPath + "/referrers/1.log"),
+                new File(ex.getParameters().get(0).get(context)));
 		Assert.assertEquals(">", ex.getParameters().get(1).get(context));
-		Assert.assertEquals(tempDirPath + "/related/image_domains1", ex.getParameters().get(2).get(context));
+		Assert.assertEquals(
+                new File(tempDirPath + "/related/image_domains1"),
+                new File(ex.getParameters().get(2).get(context)));
 		//reduce
 		Fold fold = (Fold)make.getTasks().get(2);
 		Assert.assertEquals("reduce", fold.getName());
 		Assert.assertEquals(1, fold.getInputs().size());
 		Assert.assertEquals(3, fold.getInputs().get(0).getPath(context).size());
 		Assert.assertEquals(2, fold.getOutputs().size());
-		Assert.assertEquals(tempDirPath + "/somedir", fold.getOutputs().get(0).getPath(context).get(0).toString());
+		Assert.assertEquals(
+                new File(tempDirPath + "/somedir"),
+                new File(fold.getOutputs().get(0).getPath(context).get(0).toString()));
 		Assert.assertEquals(4, fold.getOutputs().get(1).getPath(context).size());
 		Assert.assertEquals(0, fold.getDeps().size());
 		Assert.assertTrue(fold.getTask() instanceof Pig);
 		Pig pig = (Pig)fold.getTask();
-		Assert.assertEquals(tempDirPath + "/median.pig", pig.getScript().toString());
+		Assert.assertEquals(
+                new File(tempDirPath + "/median.pig"),
+                new File(pig.getScript().toString()));
 		Assert.assertEquals(3, pig.getParameters().size());
 		Assert.assertEquals("", pig.getParameters().get(0).get(context));
 		Assert.assertEquals("-jobconf jcname=jcvalue", pig.getParameters().get(1).get(context));
@@ -123,7 +128,7 @@ public class TestSyntaxParser {
 	
 	@Test
 	public void testMinimal() throws IOException, InvalidContextStateException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException{
-		File localHamakeFile = new File(HelperUtils.getHamakefilesDir() + File.separator + "hamakefile-testsyntax-minimal.xml");
+		File localHamakeFile = TestHamake.getHamakefile("hamakefile-testsyntax-minimal.xml");
 		File fileset = new File(tempDir, "fileset");
 		fileset.mkdirs();
 		HelperUtils.generateTemporaryFiles(fileset.getAbsolutePath(), 3);
@@ -150,7 +155,9 @@ public class TestSyntaxParser {
 		Assert.assertEquals(0, mdtr1.getDeps().size());
 		Assert.assertTrue(mdtr1.getTask() instanceof MapReduce);
 		MapReduce mr = (MapReduce)mdtr1.getTask();
-		Assert.assertEquals(tempDir.getAbsoluteFile().toString() + "/datamining.jar", mr.getJar());
+		Assert.assertEquals(
+                new File(tempDir.getAbsoluteFile().toString() + "/datamining.jar"),
+                new File(mr.getJar()));
 		Assert.assertEquals("us.imageshack.datamining.Access2Referrers", mr.getMain());
 		Assert.assertEquals(1, mr.getParameters().size());
 		Assert.assertEquals(">", mr.getParameters().get(0).get(context));
