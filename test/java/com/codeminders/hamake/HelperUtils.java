@@ -92,13 +92,4 @@ public class HelperUtils {
 		}
 		return f;
 	}
-	
-	public static File getHamakefilesDir() throws IOException{
-		String hamakefilesDir = System.getProperty("hamakefiles.dir");
-		File f = new File(hamakefilesDir);
-		if(StringUtils.isEmpty(hamakefilesDir) || !f.exists() || !f.isDirectory()){
-			throw new IOException("hamakefiles dir " + hamakefilesDir + " is not found or is not a folder");
-		}
-		return f;
-	}
 }

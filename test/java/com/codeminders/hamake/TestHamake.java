@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URISyntaxException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -28,6 +30,18 @@ import com.codeminders.hamake.syntax.InvalidMakefileException;
 public class TestHamake {
 	
 	private File tempDir;
+
+    public static File getHamakefile(String name) throws IOException {
+        URL f = Thread.currentThread().getContextClassLoader().getResource(name);
+        if (f == null)
+            throw new IOException("File " + name  + " not found. Please, make sure it's in CLASSPATH.");
+
+        try {
+            return new File(f.toURI());
+        } catch (URISyntaxException e) {
+            throw new IOException("File " + name  + " not found. Please, make sure it's in CLASSPATH.", e);
+        }
+    }
 
 	@After
 	public void tearDown() {
@@ -63,8 +77,7 @@ public class TestHamake {
 		}
 
 		Hamake make = null;
-		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
-				+ File.separator + "hamakefile-local-cp.xml");
+		File localHamakeFile = getHamakefile("hamakefile-local-cp.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile));
 		make.setNumJobs(2);
@@ -97,8 +110,7 @@ public class TestHamake {
 		}
 
 		Hamake make = null;
-		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
-				+ File.separator + "hamakefile-foreach-test.xml");
+		File localHamakeFile = getHamakefile("hamakefile-foreach-test.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile));
 		make.setNumJobs(2);
@@ -149,8 +161,7 @@ public class TestHamake {
 		}
 
 		Hamake make = null;
-		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
-				+ File.separator + "hamakefile-local-2-branches-cp.xml");
+		File localHamakeFile = getHamakefile("hamakefile-local-2-branches-cp.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile));
 		make.setNumJobs(2);
@@ -184,8 +195,7 @@ public class TestHamake {
 		Context context = new Context(new Configuration(), null, false, false, false);
 		context.set("examples.jar", HelperUtils.getExamplesJar()
 				.getAbsolutePath());
-		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
-				+ File.separator + "hamakefile-testexit.xml");
+		File localHamakeFile = getHamakefile("hamakefile-testexit.xml");
 		final Hamake make = BaseSyntaxParser.parse(context,
 				new FileInputStream(localHamakeFile));
 		make.setNumJobs(1);

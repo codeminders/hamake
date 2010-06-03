@@ -74,6 +74,7 @@
   <path id="test.runtime.classpath">
     <path refid="test.classpath" />
     <pathelement location="${test.build.dir}/classes" />
+    <pathelement location="${basedir}/test/resources/hamakefiles/currentsyntax" />
   </path>
 
   <target name="init" description="Build initialization">
@@ -108,21 +109,21 @@
     <copy todir="${dist.dir}">
       <fileset file="${basedir}/README.txt" />
     </copy>
-  	<buildnumber file="build.num"/>
-  	<tstamp>
-  	    <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
-  	</tstamp>
+    <buildnumber file="build.num"/>
+    <tstamp>
+        <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+    </tstamp>
     <jar destfile="${dist.dir}/hamake-${hamake.version}-${release.number}.jar">
       <manifest>
         <attribute name="Main-Class" value="com.codeminders.hamake.Main" />
-      	<attribute name="Built-By" value="${user.name}"/>
-      	<attribute name="Implementation-Version" 
-      	                     value="${hamake.version}-${release.number}"/>
-      	<attribute name="Built-Date" value="${TODAY}"/> 
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Implementation-Version" 
+                             value="${hamake.version}-${release.number}"/>
+        <attribute name="Built-Date" value="${TODAY}"/> 
       </manifest>
       <fileset dir="${build.dir}/classes" includes="**/*.class, **/*.xsd" excludes="com/codeminders/hamake/examples/**" />
       <fileset dir="${build.dir}" includes="lib/*.jar" />
-      <fileset dir="${build.dir}" includes="lib/*.jar" />
+      <zipfileset dir="lib/hadoop-0.18" includes="pig-0.4.0-core.jar" prefix="lib" />
     </jar>
     <mkdir dir="${dist.examples.dir}/hamakefiles" />
     <copy todir="${dist.examples.dir}/hamakefiles">
@@ -134,15 +135,15 @@
     <copy todir="${dist.examples.dir}/scripts">     
       <fileset file="${test.resources.dir}/scripts/median.pig" />
     </copy>
-  	<mkdir dir="${dist.examples.dir}/data" />
-	<copy todir="${dist.examples.dir}/data">     
-		<fileset dir="${build.dir}/lib" includes="*.jar" />
-  	</copy>
+    <mkdir dir="${dist.examples.dir}/data" />
+  <copy todir="${dist.examples.dir}/data">     
+    <fileset dir="${build.dir}/lib" includes="*.jar" />
+    </copy>
     <copy todir="${dist.examples.dir}/bin">     
       <fileset file="${test.resources.dir}/bin/*" />
     </copy>
-  	<replace value="${hamake.version}-${release.number}" file="${dist.examples.dir}/bin/start-class-size-example.sh" token="#@hamake.version@" />
-  	
+    <replace value="${hamake.version}-${release.number}" file="${dist.examples.dir}/bin/start-class-size-example.sh" token="#@hamake.version@" />
+    
   </target>
 
   <target name="build.rpm" depends="dist">
@@ -165,15 +166,15 @@
         <include name="**"/>
       </fileset>
     </copy>
-  	<replace value="${hamake.version}" file="${rpmroot}/SPECS/hamake.spec" token="#@hamake.version@" />
-  	<replace value="${release.number}" file="${rpmroot}/SPECS/hamake.spec" token="#@release.number@" />
-  	<replace value="${hamake.version}-${release.number}" file="${rpmroot}/usr/lib/hamake/examples/bin/start-class-size-example.sh" token="#@hamake.version@" />
+    <replace value="${hamake.version}" file="${rpmroot}/SPECS/hamake.spec" token="#@hamake.version@" />
+    <replace value="${release.number}" file="${rpmroot}/SPECS/hamake.spec" token="#@release.number@" />
+    <replace value="${hamake.version}-${release.number}" file="${rpmroot}/usr/lib/hamake/examples/bin/start-class-size-example.sh" token="#@hamake.version@" />
     <rpm
          specFile="hamake.spec"
          topDir="${rpmroot}"
          cleanBuildDir="false"
          failOnError="true"
-  		 command="--target noarch -bb"/>
+       command="--target noarch -bb"/>
 
     <copy todir="${dist.dir}" file="${rpmroot}/RPMS/noarch/hamake-${hamake.version}-${release.number}.noarch.rpm"/>
   </target>
@@ -191,7 +192,7 @@
         <include name="**"/>
       </fileset>
     </copy>
-  	
+    
     <copy todir="${debroot}/DEBIAN">
       <fileset dir="${basedir}/etc/deb-spec">
         <include name="*"/>
@@ -199,9 +200,9 @@
     </copy>
 
     <chmod file="${debroot}/DEBIAN/postinst" perm="755"/>
-  	
-  	<replace value="${hamake.version}" file="${debroot}/DEBIAN/control" token="#@hamake.version@" />
-  	<replace value="${hamake.version}" file="${debroot}/usr/lib/hamake/examples/bin/start-class-size-example.sh" token="#@hamake.version@" />
+    
+    <replace value="${hamake.version}" file="${debroot}/DEBIAN/control" token="#@hamake.version@" />
+    <replace value="${hamake.version}" file="${debroot}/usr/lib/hamake/examples/bin/start-class-size-example.sh" token="#@hamake.version@" />
 
     <exec executable="dpkg" failonerror="true">
         <arg value="-b"/>
@@ -213,7 +214,7 @@
   <target name="build-examples" depends="compile">
     <mkdir dir="${dist.dir}/examples" />
     <jar destfile="${dist.dir}/examples/hamake-examples-${hamake.version}-${release.number}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" excludes="com/codeminders/hamake/examples/DummyTestMapReduce**"/>
-  	<jar destfile="${build.dir}/testMapreduce.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/DummyTestMapReduce**" />
+    <jar destfile="${build.dir}/testMapreduce.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/DummyTestMapReduce**" />
   </target>
 
   <target name="test" description="runs hamake JUnit tests" depends="compile-test, dist">

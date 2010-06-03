@@ -12,10 +12,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import com.codeminders.hamake.Hamake;
-import com.codeminders.hamake.HelperUtils;
-import com.codeminders.hamake.InvalidContextStateException;
-import com.codeminders.hamake.PigNotFoundException;
+import com.codeminders.hamake.*;
 import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
@@ -30,8 +27,7 @@ public class TestMapReduce {
 				false);
 		context.set("examples.jar", new File("testMapReduce.jar").getAbsoluteFile().toString());
 		context.set("test.classpath", new File("testMapReduceLib").getAbsoluteFile().toString());
-		File localHamakeFile = new File(HelperUtils.getHamakefilesDir()
-				+ File.separator + "hamakefile-testclasspath.xml");
+		File localHamakeFile = TestHamake.getHamakefile("hamakefile-testclasspath.xml");
 		final Hamake make = BaseSyntaxParser.parse(context,
 				new FileInputStream(localHamakeFile));
 		make.setNumJobs(1);
