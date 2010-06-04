@@ -13,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.util.RunJar;
+import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.conf.Configuration;
 
 import com.codeminders.hamake.context.Context;
@@ -308,6 +309,22 @@ public class Utils {
 		if (!path.isAbsolute() && !StringUtils.isEmpty(workFolder))
 			path = new Path(workFolder, path);
 		return path;
+	}
+	
+	public static int[] getHadoopVersion(){
+		int[] result = {0,0,0};
+		String[] version = VersionInfo.getVersion().split("[.|-]");
+		try{
+			if(version.length >= 3 ){
+				result[0] = Integer.parseInt(version[0]);
+				result[1] = Integer.parseInt(version[1]);
+				result[2] = Integer.parseInt(version[2]);
+			}
+		}
+		catch(NumberFormatException e){
+			LOG.error("Could not get Hadoop version");
+		}
+		return result;
 	}
 
 }

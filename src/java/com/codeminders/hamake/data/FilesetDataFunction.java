@@ -79,7 +79,7 @@ public class FilesetDataFunction extends DataFunction {
 	
 	@Override
 	public List<Path> getLocalPath(Context context) throws IOException {
-		Path localPath = new Path(this.path);
+		Path localPath = new Path(Utils.replaceVariables(context, this.path));
 		FileSystem localFs = FileSystem.getLocal((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
 		if(localFs.exists(localPath) && !localFs.getFileStatus(localPath).isDir()){
 			throw new IOException("Folder " + path + " should be a folder"); 

@@ -13,7 +13,7 @@
 		<output>
 			<file path="does_not_matter1"/>
 		</output>
-		<mapreduce jar="${examples.jar}" main="com.codeminders.hamake.examples.DummyJobThatCallsSystemExit">
+		<mapreduce jar="${test.jar}" main="com.codeminders.hamake.testjar.DummyJobThatCallsSystemExit">
 			<parameter>
 				<literal value="does_not_matter" />
 			</parameter>

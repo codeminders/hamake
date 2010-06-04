@@ -84,11 +84,11 @@ public class HelperUtils {
 		return fold;
 	}
 	
-	public static File getExamplesJar() throws IOException{
-		String examplesJar = System.getProperty("examples.jar");
+	public static File getTestJar() throws IOException{
+		String examplesJar = System.getProperty("test.jar");
 		File f = new File(examplesJar);
 		if(StringUtils.isEmpty(examplesJar) || !f.exists() || !f.isFile()){
-			throw new IOException("examples jar " + examplesJar + " is not found or is not a file");
+			throw new IOException("test jar " + examplesJar + " is not found or is not a file");
 		}
 		return f;
 	}

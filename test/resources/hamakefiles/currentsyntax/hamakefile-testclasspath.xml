@@ -13,7 +13,7 @@
 		<output>
 			<file path="does_not_matter1"/>
 		</output>
-		<mapreduce jar="${examples.jar}" main="com.codeminders.hamake.examples.DummyClassThatDependsOnJars">
+		<mapreduce jar="${test.jar}" main="com.codeminders.hamake.testjar.DummyClassThatDependsOnJars">
 			<classpath>
 				<fileset path="${test.classpath}" mask="*.jar" />
 			</classpath>

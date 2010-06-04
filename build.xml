@@ -69,6 +69,7 @@
   <path id="test.classpath">
     <path refid="library.commons.classpath" />
     <pathelement location="${build.dir}/classes" />
+  	<fileset file="${test.resources.dir}/testMapReduceLib/*.jar" />
   </path>
 
   <path id="test.runtime.classpath">
@@ -214,10 +215,10 @@
   <target name="build-examples" depends="compile">
     <mkdir dir="${dist.dir}/examples" />
     <jar destfile="${dist.dir}/examples/hamake-examples-${hamake.version}-${release.number}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" excludes="com/codeminders/hamake/examples/DummyTestMapReduce**"/>
-    <jar destfile="${build.dir}/testMapreduce.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/DummyTestMapReduce**" />
   </target>
 
-  <target name="test" description="runs hamake JUnit tests" depends="compile-test, dist">
+  <target name="test" description="runs hamake JUnit tests" depends="compile-test">
+  	<jar destfile="${build.dir}/testMapReduce.jar" basedir="${test.build.dir}/classes" includes="com/codeminders/hamake/testjar/**" />
     <mkdir dir="${test.build.dir}/test_report" />
     <junit showoutput="yes" haltonfailure="yes" fork="yes" dir="${test.resources.dir}" maxmemory="256M" printsummary="withOutAndErr">
       <classpath>
@@ -230,7 +231,7 @@
         </fileset>
         <formatter type="xml" />
       </batchtest>
-      <sysproperty key="examples.jar" value="${dist.examples.dir}/hamake-examples-${hamake.version}-${release.number}.jar" />
+      <sysproperty key="test.jar" value="${build.dir}/testMapReduce.jar" />
       <sysproperty key="hamakefiles.dir" value="${test.current.hamakefiles.dir}" />
       <sysproperty key="hamake.version" value="${hamake.version}-${release.number}" />
 
