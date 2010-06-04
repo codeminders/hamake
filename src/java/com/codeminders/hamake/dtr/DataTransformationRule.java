@@ -46,6 +46,13 @@ public abstract class DataTransformationRule extends ContextAware{
 					return true;
 			}
 		}
+		if(getDeps() != null){
+			for (DataFunction i : getDeps()) {
+				for (DataFunction o : t.getOutputs()) {
+					if (i.intersects(getContext(), o)) return true;
+				}
+			} 
+		}
 		return false;
 	}
 
