@@ -57,7 +57,7 @@ public class MapReduce extends Task {
                     			File localJar = Utils.copyToTemporaryLocal(cp.toString(), fs);
                     			localJar.deleteOnExit();
                     			classpathJars.add(localJar);
-                    			DistributedCache.addArchiveToClassPath(cp, hamakeJobConf);
+                    			DistributedCache.addArchiveToClassPath(new Path(cp.toUri().getPath()), hamakeJobConf);
                     			alreadyHasList.put(cp.getName(), true);
                     		}
                     	}
