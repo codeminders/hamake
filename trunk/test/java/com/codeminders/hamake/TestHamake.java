@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import com.codeminders.hamake.HelperUtils.HamakeRunner;
 import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
@@ -203,6 +204,45 @@ public class TestHamake {
 		Assert.assertFalse("Hamake has passed System.exit()", manager
 				.getClass().getDeclaredField("exitCalled").getBoolean(manager));
 		System.setSecurityManager(securityManager);
+	}
+	
+	@Test
+	public void testDependencies() throws IOException, InvalidContextStateException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InterruptedException{
+		File inputDir = new File(tempDir, "input");
+		inputDir.mkdirs();
+		HelperUtils.generateTemporaryFiles(inputDir.getAbsolutePath(), 1);
+		File outputDir = new File(tempDir, "output");
+		outputDir.mkdirs();
+		File dependencyFile = new File(tempDir, "dependency");
+		String tempDirPath = tempDir.getAbsolutePath().toString();
+		Context context = new Context(new Configuration(), null, true, false, false);
+		context.set("tmpdir", tempDirPath);
+		context.set("dependency.file", dependencyFile.getCanonicalPath());
+		if (OS.isLinux()) {
+			context.set("cp", "cp");
+		} else if (OS.isWindows()) {
+			context.set("cp", "copy");
+		}
+
+		File localHamakeFile = getHamakefile("hamakefile-test-dependencies.xml");
+		final Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(
+				localHamakeFile));
+		make.setNumJobs(2);
+		HamakeRunner runner = new HamakeRunner(make);
+		
+		Thread th = new Thread(runner);
+		th.start();
+		Thread.sleep(2000);
+		Assert.assertNull(runner.getException());
+		int map1OutSize = FileUtils.listFiles(outputDir, TrueFileFilter.INSTANCE,
+				TrueFileFilter.INSTANCE).size();
+		Assert.assertEquals(0, map1OutSize);
+		Assert.assertTrue(dependencyFile.createNewFile());
+		Thread.sleep(2000);
+		Assert.assertNull(runner.getException());
+		map1OutSize = FileUtils.listFiles(outputDir, TrueFileFilter.INSTANCE,
+				TrueFileFilter.INSTANCE).size();
+		Assert.assertEquals(1, map1OutSize);
 	}
 
 }
