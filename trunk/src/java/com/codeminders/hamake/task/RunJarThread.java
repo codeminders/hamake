@@ -1,7 +1,14 @@
 package com.codeminders.hamake.task;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.JobClient;
+
+import com.codeminders.hamake.Utils;
 
 import java.io.*;
 import java.util.jar.JarFile;
@@ -14,15 +21,20 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 
 public class RunJarThread extends Thread {
+	
+	public static final Log LOG = LogFactory.getLog(RunJarThread.class);
+	
     protected String[] args;
     protected Throwable[] tt = new Throwable[1];
     protected File workDir, file;
     protected String mainClassName = null;
     protected int firstArg = 0;
     protected File[] additionalJars;
+    protected Configuration customHadoopConf; 
     
-    protected RunJarThread(File[] additionalJars){
+    protected RunJarThread(File[] additionalJars, Configuration additionalConfiguration){
     	this.additionalJars = additionalJars;
+    	this.customHadoopConf = additionalConfiguration;
     }
 
     /**
@@ -64,8 +76,8 @@ public class RunJarThread extends Thread {
         }
     }
 
-    public static void main(String[] args, File[] additionalJars) throws Throwable {
-        RunJarThread rj = new RunJarThread(additionalJars);
+    public static void main(String[] args, File[] additionalJars, Configuration additionalConfiguration) throws Throwable {
+        RunJarThread rj = new RunJarThread(additionalJars, additionalConfiguration);
         try
         {
             rj.start(args);
@@ -184,6 +196,36 @@ public class RunJarThread extends Thread {
 	                    jarConnections.add(jarConnection);
 	
 	                    classPath.add( jarURL );
+	                }
+	                if(Utils.getHadoopVersion()[1] > 19){
+		                File tempConfigurationFile = File.createTempFile("hamake-configuration-", ".xml");
+		                DataOutputStream writer = null;
+	             		try{
+	             			writer = new DataOutputStream(new FileOutputStream(tempConfigurationFile));
+	             			customHadoopConf.writeXml(writer);
+	             		}
+	             		finally{
+	             			if(writer != null) writer.close();
+	             		}
+		                classPath.add(tempConfigurationFile.getParentFile().toURI().toURL());
+		                Configuration.addDefaultResource(tempConfigurationFile.getName());
+	                }
+	                else{
+	                	try{
+	                		List<String> tmpJars = new ArrayList<String>();
+	                		String[] archives = customHadoopConf.get("mapred.cache.archives").split(",");
+	                		for(String archive : archives){
+	                			tmpJars.add(new Path(archive).toUri().getPath());
+	                		}
+	                		customHadoopConf.set("tmpjars", StringUtils.join(tmpJars, ",")); 
+	        				Method setCommandLineConfigMethod = JobClient.class.getDeclaredMethod("setCommandLineConfig", Configuration.class);
+	        				setCommandLineConfigMethod.setAccessible(true);
+	        				setCommandLineConfigMethod.invoke(null, customHadoopConf);
+	        				
+	        			}
+	        			catch(NoSuchMethodException e){
+	        				LOG.error("Failed to set custom configuration of Hadoop via 'setCommandLineConfig' method: <classpath> and <jobconf> won't make any effect on your Hadoop jobs");
+	        			}
 	                }
                 }
 

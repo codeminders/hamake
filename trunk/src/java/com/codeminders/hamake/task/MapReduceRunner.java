@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.mapred.JobClient;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -16,18 +15,16 @@ import com.codeminders.hamake.ExitException;
 public class MapReduceRunner extends Configured implements Tool{
 	
 	private File[] additionalCPJars;
+	private Configuration additionalConfiguration;
 	
-	public MapReduceRunner(File[] additionalCPJars){
+	public MapReduceRunner(File[] additionalCPJars, Configuration additionalConfiguration){
 		this.additionalCPJars = additionalCPJars;
+		this.additionalConfiguration = additionalConfiguration;
 	}
 
 	public int run(String argv[]) throws Exception {
-		Configuration conf = getConf();
 		try {
-			Method setCommandLineConfigMethod = JobClient.class.getDeclaredMethod("setCommandLineConfig", Configuration.class);
-			setCommandLineConfigMethod.setAccessible(true);
-			setCommandLineConfigMethod.invoke(null, conf);
-			RunJarThread.main(argv, additionalCPJars);
+			RunJarThread.main(argv, additionalCPJars, additionalConfiguration);
 		} catch(ExitException e){
 			throw e;
 		}
@@ -37,8 +34,8 @@ public class MapReduceRunner extends Configured implements Tool{
 		return 0;
 	}
 
-	public static void main(String[] argv, File[] additionalCPJars) throws Exception {
-		MapReduceRunner runner = new MapReduceRunner(additionalCPJars);
+	public static void main(String[] argv, File[] additionalCPJars, Configuration additionalConfiguration) throws Exception {
+		MapReduceRunner runner = new MapReduceRunner(additionalCPJars, additionalConfiguration);
 		ToolRunner.run(runner, argv);
 	}
 }

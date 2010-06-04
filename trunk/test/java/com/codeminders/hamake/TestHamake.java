@@ -193,7 +193,7 @@ public class TestHamake {
 		ExitSecurityManager manager = new ExitSecurityManager();
 		System.setSecurityManager(manager);
 		Context context = new Context(new Configuration(), null, false, false, false);
-		context.set("examples.jar", HelperUtils.getExamplesJar()
+		context.set("test.jar", HelperUtils.getTestJar()
 				.getAbsolutePath());
 		File localHamakeFile = getHamakefile("hamakefile-testexit.xml");
 		final Hamake make = BaseSyntaxParser.parse(context,

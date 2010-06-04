@@ -25,7 +25,7 @@ public class TestMapReduce {
 			InvalidMakefileException, PigNotFoundException {
 		Context context = new Context(new Configuration(), null, false, false,
 				false);
-		context.set("examples.jar", new File("testMapReduce.jar").getAbsoluteFile().toString());
+		context.set("test.jar", HelperUtils.getTestJar().getAbsolutePath());
 		context.set("test.classpath", new File("testMapReduceLib").getAbsoluteFile().toString());
 		File localHamakeFile = TestHamake.getHamakefile("hamakefile-testclasspath.xml");
 		final Hamake make = BaseSyntaxParser.parse(context,

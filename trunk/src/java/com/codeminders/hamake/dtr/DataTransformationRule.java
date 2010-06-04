@@ -47,12 +47,12 @@ public abstract class DataTransformationRule extends ContextAware{
 			}
 		}
 
-        for (DataFunction i : getDeps()) {
-            for (DataFunction o : t.getOutputs()) {
-                if (i.intersects(getContext(), o))
-                    return true;
-            }
-        }
+//        for (DataFunction i : getDeps()) {
+//            for (DataFunction o : t.getOutputs()) {
+//                if (i.intersects(getContext(), o))
+//                    return true;
+//            }
+//        }
 		return false;
 	}
 
