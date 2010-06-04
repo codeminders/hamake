@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import junit.framework.Assert;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.codeminders.hamake.context.Context;
@@ -91,5 +93,29 @@ public class HelperUtils {
 			throw new IOException("test jar " + examplesJar + " is not found or is not a file");
 		}
 		return f;
+	}
+	
+	public static class HamakeRunner implements Runnable{
+		
+		private Hamake make;
+		private IOException exception;
+		
+		public HamakeRunner(Hamake make){
+			this.make = make;
+		}
+		
+		public IOException getException() {
+			return exception;
+		}
+
+		@Override
+		public void run() {
+			try {
+				make.run();
+			} catch (IOException e) {
+				exception = e;
+			}
+		}
+		
 	}
 }

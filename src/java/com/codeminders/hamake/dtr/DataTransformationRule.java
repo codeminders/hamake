@@ -46,13 +46,6 @@ public abstract class DataTransformationRule extends ContextAware{
 					return true;
 			}
 		}
-
-//        for (DataFunction i : getDeps()) {
-//            for (DataFunction o : t.getOutputs()) {
-//                if (i.intersects(getContext(), o))
-//                    return true;
-//            }
-//        }
 		return false;
 	}
 
@@ -69,20 +62,31 @@ public abstract class DataTransformationRule extends ContextAware{
 		return getName();
 	}
 	
-	public int executeIfCan(Semaphore semaphore) throws IOException{
-		boolean canStart = true;
+	/**
+	 * Start DTR as soon as all dependencies are satisfied
+	 * @param semaphore
+	 * @return
+	 * @throws IOException
+	 */
+	public int executeWhenReady(Semaphore semaphore) throws IOException{
 		if((Boolean)getContext().get(Context.HAMAKE_PROPERTY_WITH_DEPENDENCIES)){
 			for(DataFunction depDataFunc : getDeps()){
 				for(Path path : depDataFunc.getPath(getContext())){
 					FileSystem fs = depDataFunc.getFileSystem(getContext(), path);
 					if(!fs.exists(path)){
-						LOG.warn("DTR " + getName() + " depends on " + path + ". DTR will not execute");
-						canStart = false;
+						LOG.warn("DTR " + getName() + " is waiting for " + path);
+					}
+					while(!fs.exists(path)){
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							LOG.error(e);
+						}
 					}
 				}
 			}
 		}
-		return canStart? execute(semaphore) : 0;
+		return execute(semaphore);
 	}
 
 	protected abstract int execute(Semaphore semaphore)
