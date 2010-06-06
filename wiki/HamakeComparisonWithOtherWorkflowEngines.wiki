@@ -12,8 +12,8 @@ The table below attempts to compare Hamake and similar workflow engines for Hado
 || event notification || no || no || no || yes ||
 || requires installation || no || yes || yes || no ||
 || supported Hadoop version || 0.18+ || 0.20+ || currently unknown || 0.18+ ||
-|| retries || no || no || yes || yes ||
-|| ability to run arbitrary commands || yes || no || yes || yes ||
+|| retries || no || at workflow node level || yes || yes ||
+|| ability to run arbitrary commands || yes || yes || yes || yes ||
 || can be run on  Amazon EMR || yes || no || currently unknown || yes || 
 
 From [FAQ]:
