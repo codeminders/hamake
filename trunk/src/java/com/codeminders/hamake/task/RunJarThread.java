@@ -21,20 +21,20 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 
 public class RunJarThread extends Thread {
-	
-	public static final Log LOG = LogFactory.getLog(RunJarThread.class);
-	
+
+    public static final Log LOG = LogFactory.getLog(RunJarThread.class);
+
     protected String[] args;
     protected Throwable[] tt = new Throwable[1];
     protected File workDir, file;
     protected String mainClassName = null;
     protected int firstArg = 0;
     protected File[] additionalJars;
-    protected Configuration customHadoopConf; 
-    
-    protected RunJarThread(File[] additionalJars, Configuration additionalConfiguration){
-    	this.additionalJars = additionalJars;
-    	this.customHadoopConf = additionalConfiguration;
+    protected Configuration customHadoopConf;
+
+    protected RunJarThread(File[] additionalJars, Configuration additionalConfiguration) {
+        this.additionalJars = additionalJars;
+        this.customHadoopConf = additionalConfiguration;
     }
 
     /**
@@ -78,8 +78,7 @@ public class RunJarThread extends Thread {
 
     public static void main(String[] args, File[] additionalJars, Configuration additionalConfiguration) throws Throwable {
         RunJarThread rj = new RunJarThread(additionalJars, additionalConfiguration);
-        try
-        {
+        try {
             rj.start(args);
         }
         finally {
@@ -90,8 +89,7 @@ public class RunJarThread extends Thread {
 
     public void start(String[] args) throws Throwable {
         this.args = args;
-        try
-        {
+        try {
             String usage = "RunJar jarFile [mainClass] args...";
 
             if (args.length < 1) {
@@ -166,8 +164,7 @@ public class RunJarThread extends Thread {
             URLClassLoader loader;
             final ArrayList<JarURLConnection> jarConnections = new ArrayList<JarURLConnection>();
 
-            try
-            {
+            try {
                 if (libs != null) {
                     for (int i = 0; i < libs.length; i++) {
                         final URL jarURL = new URL(
@@ -175,58 +172,30 @@ public class RunJarThread extends Thread {
                         );
 
                         // cache all the connections to JAR files
-                        JarURLConnection jarConnection = (JarURLConnection)jarURL.openConnection();
+                        JarURLConnection jarConnection = (JarURLConnection) jarURL.openConnection();
                         jarConnection.setUseCaches(true);
                         jarConnection.getJarFile();
                         jarConnections.add(jarConnection);
 
-                        classPath.add( jarURL );
+                        classPath.add(jarURL);
                     }
                 }
-                if(additionalJars.length > 0){
-	                for (int i = 0; i < additionalJars.length; i++) {
-	                    final URL jarURL = new URL(
-	                            "jar", "", -1, (new StringBuilder()).append(additionalJars[i].toURL()).append("!/").toString()
-	                    );
-	
-	                    // cache all the connections to JAR files
-	                    JarURLConnection jarConnection = (JarURLConnection)jarURL.openConnection();
-	                    jarConnection.setUseCaches(true);
-	                    jarConnection.getJarFile();
-	                    jarConnections.add(jarConnection);
-	
-	                    classPath.add( jarURL );
-	                }
-	                if(Utils.getHadoopVersion()[1] > 19){
-		                File tempConfigurationFile = File.createTempFile("hamake-configuration-", ".xml");
-		                DataOutputStream writer = null;
-	             		try{
-	             			writer = new DataOutputStream(new FileOutputStream(tempConfigurationFile));
-	             			customHadoopConf.writeXml(writer);
-	             		}
-	             		finally{
-	             			if(writer != null) writer.close();
-	             		}
-		                classPath.add(tempConfigurationFile.getParentFile().toURI().toURL());
-		                Configuration.addDefaultResource(tempConfigurationFile.getName());
-	                }
-	                else{
-	                	try{
-	                		List<String> tmpJars = new ArrayList<String>();
-	                		String[] archives = customHadoopConf.get("mapred.cache.archives").split(",");
-	                		for(String archive : archives){
-	                			tmpJars.add(new Path(archive).toUri().getPath());
-	                		}
-	                		customHadoopConf.set("tmpjars", StringUtils.join(tmpJars, ",")); 
-	        				Method setCommandLineConfigMethod = JobClient.class.getDeclaredMethod("setCommandLineConfig", Configuration.class);
-	        				setCommandLineConfigMethod.setAccessible(true);
-	        				setCommandLineConfigMethod.invoke(null, customHadoopConf);
-	        				
-	        			}
-	        			catch(NoSuchMethodException e){
-	        				LOG.error("Failed to set custom configuration of Hadoop via 'setCommandLineConfig' method: <classpath> and <jobconf> won't make any effect on your Hadoop jobs");
-	        			}
-	                }
+                if (additionalJars.length > 0) {
+                    for (int i = 0; i < additionalJars.length; i++) {
+                        final URL jarURL = new URL(
+                                "jar", "", -1, (new StringBuilder()).append(additionalJars[i].toURL()).append("!/").toString()
+                        );
+
+                        // cache all the connections to JAR files
+                        JarURLConnection jarConnection = (JarURLConnection) jarURL.openConnection();
+                        jarConnection.setUseCaches(true);
+                        jarConnection.getJarFile();
+                        jarConnections.add(jarConnection);
+
+                        classPath.add(jarURL);
+                    }
+
+                    setDefaultConfiguration(classPath);
                 }
 
                 loader = new URLClassLoader(classPath.toArray(new URL[0]));
@@ -239,22 +208,20 @@ public class RunJarThread extends Thread {
                 });
                 String[] newArgs = Arrays.asList(args)
                         .subList(firstArg, args.length).toArray(new String[0]);
-                try{
-                	main.invoke(null, new Object[]{newArgs});
+                try {
+                    main.invoke(null, new Object[]{newArgs});
                 }
-                catch(InvocationTargetException e){
-                	throw e.getTargetException();
+                catch (InvocationTargetException e) {
+                    throw e.getTargetException();
                 }
             }
             finally {
                 // close opened JARs
-                for (JarURLConnection c:jarConnections)
-                    try
-                    {
+                for (JarURLConnection c : jarConnections)
+                    try {
                         c.getJarFile().close();
                     }
-                    catch (Throwable e)
-                    {
+                    catch (Throwable e) {
                     }
             }
 
@@ -262,6 +229,45 @@ public class RunJarThread extends Thread {
         catch (Throwable ex) {
             tt[0] = ex;
         }
+    }
+
+    public boolean setDefaultConfiguration(ArrayList<URL> classPath)
+    {
+        try
+        {
+            if (Utils.getHadoopVersion()[1] > 19) {
+                File tempConfigurationFile = File.createTempFile("hamake-configuration-", ".xml");
+                DataOutputStream writer = null;
+                try {
+                    writer = new DataOutputStream(new FileOutputStream(tempConfigurationFile));
+                    Method writeXmlMethod = Configuration.class.getDeclaredMethod("writeXml", OutputStream.class);
+                    writeXmlMethod.invoke(customHadoopConf, writer);
+                }
+                finally {
+                    if (writer != null) writer.close();
+                }
+
+                classPath.add(tempConfigurationFile.getParentFile().toURI().toURL());
+                Method addDefaultResourceMethod = Configuration.class.getDeclaredMethod("addDefaultResource", String.class);
+                addDefaultResourceMethod.invoke(null, tempConfigurationFile.getName());
+
+            } else {
+                List<String> tmpJars = new ArrayList<String>();
+                String[] archives = customHadoopConf.get("mapred.cache.archives").split(",");
+                for (String archive : archives) {
+                    tmpJars.add(new Path(archive).toUri().getPath());
+                }
+                customHadoopConf.set("tmpjars", StringUtils.join(tmpJars, ","));
+                Method setCommandLineConfigMethod = JobClient.class.getDeclaredMethod("setCommandLineConfig", Configuration.class);
+                setCommandLineConfigMethod.setAccessible(true);
+                setCommandLineConfigMethod.invoke(null, customHadoopConf);
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to set default configuration of Hadoop job");
+            return false;
+        }
+
+        return true;
     }
 }
 
