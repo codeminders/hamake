@@ -312,17 +312,23 @@ public class Utils {
 	}
 	
 	public static int[] getHadoopVersion(){
-		int[] result = {0,0,0};
-		String[] version = VersionInfo.getVersion().split("[.|-]");
+		int[] result = {0,0};
+		String[] version = VersionInfo.getVersion().split("[.]|[+]|[-]|[_]|[,]");
 		try{
-			if(version.length >= 3 ){
+			if(version.length >= 1 ){
 				result[0] = Integer.parseInt(version[0]);
-				result[1] = Integer.parseInt(version[1]);
-				result[2] = Integer.parseInt(version[2]);
 			}
 		}
 		catch(NumberFormatException e){
-			LOG.error("Could not get Hadoop version");
+			LOG.error("Could not get Hadoop major version");
+		}
+		try{
+			if(version.length >= 2 ){
+				result[1] = Integer.parseInt(version[0]);
+			}
+		}
+		catch(NumberFormatException e){
+			LOG.error("Could not get Hadoop minor version");
 		}
 		return result;
 	}
