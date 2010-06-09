@@ -1,5 +1,6 @@
 package com.codeminders.hamake.task;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -158,11 +159,21 @@ public class RunJarThread extends Thread {
         try {
             ArrayList<URL> classPath = new ArrayList<URL>();
             classPath.add(new File(workDir + "/").toURL());
-            classPath.add(file.toURL());
+            final ArrayList<JarURLConnection> jarConnections = new ArrayList<JarURLConnection>();
+            {
+        		final URL jarURL = new URL(
+                        "jar", "", -1, (new StringBuilder()).append(file.toURL()).append("!/").toString()
+                );
+                // cache all the connections to JAR files
+                JarURLConnection jarConnection = (JarURLConnection) jarURL.openConnection();
+                jarConnection.setUseCaches(true);
+                jarConnection.getJarFile();
+                jarConnections.add(jarConnection);
+                classPath.add(jarURL);
+        	}
             classPath.add(new File(workDir, "classes/").toURL());
             File[] libs = new File(workDir, "lib").listFiles();
             URLClassLoader loader;
-            final ArrayList<JarURLConnection> jarConnections = new ArrayList<JarURLConnection>();
 
             try {
                 if (libs != null) {
@@ -170,7 +181,6 @@ public class RunJarThread extends Thread {
                         final URL jarURL = new URL(
                                 "jar", "", -1, (new StringBuilder()).append(libs[i].toURL()).append("!/").toString()
                         );
-
                         // cache all the connections to JAR files
                         JarURLConnection jarConnection = (JarURLConnection) jarURL.openConnection();
                         jarConnection.setUseCaches(true);
@@ -220,11 +230,13 @@ public class RunJarThread extends Thread {
                 for (JarURLConnection c : jarConnections)
                     try {
                         c.getJarFile().close();
+                        
                     }
                     catch (Throwable e) {
                     }
+                    FileUtils.deleteQuietly(file);
             }
-
+            
         }
         catch (Throwable ex) {
             tt[0] = ex;

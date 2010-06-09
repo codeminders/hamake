@@ -1,14 +1,11 @@
 package com.codeminders.hamake;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
-import java.net.URISyntaxException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -17,7 +14,6 @@ import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.BufferedFSInputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,18 +27,6 @@ import com.codeminders.hamake.syntax.InvalidMakefileException;
 public class TestHamake {
 	
 	private File tempDir;
-
-    public static File getHamakefile(String name) throws IOException {
-        URL f = Thread.currentThread().getContextClassLoader().getResource(name);
-        if (f == null)
-            throw new IOException("File " + name  + " not found. Please, make sure it's in CLASSPATH.");
-
-        try {
-            return new File(f.toURI());
-        } catch (URISyntaxException e) {
-            throw new IOException("File " + name  + " not found. Please, make sure it's in CLASSPATH.", e);
-        }
-    }
 
 	@After
 	public void tearDown() {
@@ -78,7 +62,7 @@ public class TestHamake {
 		}
 
 		Hamake make = null;
-		File localHamakeFile = getHamakefile("hamakefile-local-cp.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-local-cp.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile));
 		make.setNumJobs(2);
@@ -111,7 +95,7 @@ public class TestHamake {
 		}
 
 		Hamake make = null;
-		File localHamakeFile = getHamakefile("hamakefile-foreach-test.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-foreach-test.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile));
 		make.setNumJobs(2);
@@ -162,7 +146,7 @@ public class TestHamake {
 		}
 
 		Hamake make = null;
-		File localHamakeFile = getHamakefile("hamakefile-local-2-branches-cp.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-local-2-branches-cp.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile));
 		make.setNumJobs(2);
@@ -196,7 +180,7 @@ public class TestHamake {
 		Context context = new Context(new Configuration(), null, false, false, false);
 		context.set("test.jar", HelperUtils.getTestJar()
 				.getAbsolutePath());
-		File localHamakeFile = getHamakefile("hamakefile-testexit.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-testexit.xml");
 		final Hamake make = BaseSyntaxParser.parse(context,
 				new FileInputStream(localHamakeFile));
 		make.setNumJobs(1);
@@ -224,7 +208,7 @@ public class TestHamake {
 			context.set("cp", "copy");
 		}
 
-		File localHamakeFile = getHamakefile("hamakefile-test-dependencies.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-test-dependencies.xml");
 		final Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile));
 		make.setNumJobs(2);

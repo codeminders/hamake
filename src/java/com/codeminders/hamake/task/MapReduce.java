@@ -42,11 +42,12 @@ public class MapReduce extends Task {
         FileSystem fs;
         List<String> args = new ArrayList<String>();
         List<File> classpathJars = new ArrayList<File>();
+        File jarFile = null;
         Configuration hamakeJobConf = new Configuration();
         try {
             Path jarPath = new Path(getJar());             
             fs = jarPath.getFileSystem(new Configuration());
-            File jarFile = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(getJar(), fs), Arrays.asList(new String[] {"Main-Class"}));
+            jarFile = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(getJar(), fs), Arrays.asList(new String[] {"Main-Class"}));
             if(!classpath.isEmpty()){
             	Map<String, Boolean> alreadyHasList = new HashMap<String, Boolean>();
             	boolean isLocalMode = "local".equals(((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION)).get("mapred.job.tracker", "local"));

@@ -90,21 +90,22 @@ public class Foreach extends DataTransformationRule {
 			return -1;
 		}
 		
+		long inputMaxTimeStamp = input.getMaxTimeStamp(getContext());
 		for(Path ipath : inputlist){
+			CommandThread command = new CommandThread(getTask(), getContext(), semaphore);
 			FileSystem inputfs = input.getFileSystem(getContext(), ipath);
 			if(!inputfs.exists(ipath)){
 				LOG.error(ipath.toString() + " from input of DTR " + getName()
 						+ " does not exist. Ignoring");
 				continue;
 			}
-			CommandThread command = new CommandThread(getTask(), getContext(), semaphore);
 			command.getContext().setForbidden(FULL_FILENAME_VAR, ipath.toString());
 			command.getContext().setForbidden(SHORT_FILENAME_VAR, FilenameUtils.getName(ipath.toString()));
 			command.getContext().setForbidden(PARENT_FOLDER_VAR, ipath.getParent().toString());
 			command.getContext().setForbidden(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
 			command.getContext().setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
 			for (DataFunction outputFunc : output) {
-				if (outputFunc.getMaxTimeStamp(command.getContext()) >= input.getMaxTimeStamp(command.getContext())) {
+				if (outputFunc.getMaxTimeStamp(command.getContext()) >= inputMaxTimeStamp) {
 						return 0;
 				} 
 				else{
