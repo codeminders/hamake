@@ -10,6 +10,13 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+/**
+ * This class is a base class for all Hamake stress tests. To create your own stress test
+ * create a class in package  com.codeminders.hamake.perfomance that extends StressTest class 
+ * and override method start(Configuration conf, Path tempDir)
+ * Run your stress tests by issuing ant stress-test command
+ *
+ */
 public abstract class StressTest implements Runnable{
 	
 	private float loadFactor = 1.0F; //100%
