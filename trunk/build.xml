@@ -257,6 +257,7 @@
       <batchtest haltonfailure="no" todir="${test.build.dir}/test_report" fork="yes">
         <fileset dir="${test.build.dir}/classes">
           <include name="**/*Test*.class"/>
+          <exclude name="**/com/codeminders/hamake/perfomance/**"/>
         </fileset>
         <formatter type="xml" />
       </batchtest>
