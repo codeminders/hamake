@@ -2,6 +2,8 @@ package com.codeminders.hamake;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.jar.JarFile;
 
@@ -47,4 +49,5 @@ public class TestUtils {
 		Assert.assertNotNull(jar.getJarEntry("lib/testUtils2.jar"));
 		Assert.assertEquals("org/apache/hadoop/examples/ExampleDriver", jar.getManifest().getMainAttributes().getValue("Main-Class"));
 	}
+	
 }

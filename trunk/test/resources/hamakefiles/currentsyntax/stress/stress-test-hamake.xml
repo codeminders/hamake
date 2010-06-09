@@ -1,0 +1,23 @@
+<project name="test-system.exit">
+
+	<!-- property
+		examples.jar 
+		is set by unit test
+	-->	
+	
+	<foreach name="name">
+		<description>second map</description>
+		<input>
+			<fileset path="${input}"/>
+		</input>
+		<output>
+			<file path="${output}/${foreach:filename}"/>
+		</output>
+		<mapreduce jar="${test.jar}" main="com.codeminders.hamake.testjar.DummySimpleJob">
+			<parameter>
+				<literal value="${textInput.txt}" />
+			</parameter>
+		</mapreduce>
+	</foreach>
+
+</project>

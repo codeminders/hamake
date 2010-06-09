@@ -20,6 +20,7 @@
   <property name="test.src.dir" value="${test.dir}/java" />
   <property name="test.resources.dir" value="${test.dir}/resources" />
   <property name="test.current.hamakefiles.dir" value="${test.resources.dir}/hamakefiles/currentsyntax" />
+  <property name="stress.tests.dir" value="${build.dir}/stress" />
 
   <!--Apache Ivy(http://ant.apache.org/ivy/history/latest-milestone/install.html) -->
   <loadproperties srcfile="${basedir}/ivy/libraries.properties" />
@@ -103,7 +104,7 @@
       <src path="${test.src.dir}" />
     </javac>
   </target>
-
+  
   <target name="dist" depends="compile, build-examples">
     <mkdir dir="${dist.dir}" />
     <mkdir dir="${dist.examples.dir}" />
@@ -216,9 +217,37 @@
     <mkdir dir="${dist.dir}/examples" />
     <jar destfile="${dist.dir}/examples/hamake-examples-${hamake.version}-${release.number}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" excludes="com/codeminders/hamake/examples/DummyTestMapReduce**"/>
   </target>
+	
+  <target name="test-jar" depends="compile-test">
+  	<jar destfile="${build.dir}/testMapReduce.jar" basedir="${test.build.dir}/classes" includes="com/codeminders/hamake/testjar/**" >
+  		<fileset dir="${build.dir}" includes="lib/*.jar" />
+  	</jar>
+  </target>
+	
+  <target name="stress-test" depends="test-jar, dist">
+  	<mkdir dir="${stress.tests.dir}" />
+  	<copy todir="${stress.tests.dir}">
+  		<fileset file="${dist.dir}/hamake-${hamake.version}-${release.number}.jar" />
+  	</copy>
+  	<jar destfile="${stress.tests.dir}/stressTests.jar" basedir="${test.build.dir}/classes" includes="com/codeminders/hamake/perfomance/**, com/codeminders/hamake/HelperUtils**" >
+  		<manifest>
+  			<attribute name="Main-Class" value="com.codeminders.hamake.perfomance.StressTestHamake" />
+  			<attribute name="Class-Path" value="hamake-${hamake.version}-${release.number}.jar" />
+  		</manifest>
+  		<fileset dir="${build.dir}" includes="lib/*.jar" />
+  		<fileset file="${test.resources.dir}/textInput.txt" />
+  		<fileset dir="${test.current.hamakefiles.dir}/stress" includes="*.xml" />
+  		<fileset file="${build.dir}/testMapReduce.jar" />
+  	</jar>
+  	<exec executable="hadoop">
+  		<arg value="jar" />
+  		<arg value="${stress.tests.dir}/stressTests.jar" />
+  		<arg value="${stress.tests.load.factor}" />
+  	</exec>
+  </target>
 
-  <target name="test" description="runs hamake JUnit tests" depends="compile-test">
-  	<jar destfile="${build.dir}/testMapReduce.jar" basedir="${test.build.dir}/classes" includes="com/codeminders/hamake/testjar/**" />
+  <target name="test" description="runs hamake JUnit tests" depends="test-jar">
+  	
     <mkdir dir="${test.build.dir}/test_report" />
     <junit showoutput="yes" haltonfailure="yes" fork="yes" dir="${test.resources.dir}" maxmemory="256M" printsummary="withOutAndErr">
       <classpath>

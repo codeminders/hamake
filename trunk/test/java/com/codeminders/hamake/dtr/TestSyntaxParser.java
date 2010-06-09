@@ -44,7 +44,7 @@ public class TestSyntaxParser {
 	
 	@Test
 	public void testFull() throws IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InvalidContextStateException{
-		File localHamakeFile = TestHamake.getHamakefile("hamakefile-testsyntax.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-testsyntax.xml");
 		File depPath = new File(tempDir, "deppath");
 		depPath.mkdirs();
 		File someDir = new File(tempDir, "somedir");
@@ -128,7 +128,7 @@ public class TestSyntaxParser {
 	
 	@Test
 	public void testMinimal() throws IOException, InvalidContextStateException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException{
-		File localHamakeFile = TestHamake.getHamakefile("hamakefile-testsyntax-minimal.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-testsyntax-minimal.xml");
 		File fileset = new File(tempDir, "fileset");
 		fileset.mkdirs();
 		HelperUtils.generateTemporaryFiles(fileset.getAbsolutePath(), 3);

@@ -79,32 +79,30 @@ public class Utils {
 		if (srcFile.exists()) {
 			FileUtils.copyFile(srcFile, dstFile);
 		} else if (fs.exists(srcPath)) {
-			LOG.info("Downloading " + path + " to "
-						+ dstFile.getAbsolutePath());
+			LOG
+					.info("Downloading " + path + " to "
+							+ dstFile.getAbsolutePath());
 			fs.copyToLocalFile(srcPath, new Path(dstFile.getAbsolutePath()));
-			dstFile.deleteOnExit();
 		} else
 			throw new IOException("Path not found: " + path);
+		dstFile.deleteOnExit();
 		return dstFile;
 
 	}
 
-	public static File removeManifestAttributes(File jarFile,
-			List<String> attributesToRemove) throws IOException {
+	public static File removeManifestAttributes(File jarFile, List<String> attributesToRemove) throws IOException {
 		JarFile jar = new JarFile(jarFile);
-		Attributes attributes = jar.getManifest().getMainAttributes();
-		for (String attributeToRemove : attributesToRemove) {
-			if (!StringUtils.isEmpty(attributes.getValue(attributeToRemove))) {
-				File outputFile = File.createTempFile("hamake-", ".jar",
-						jarFile.getParentFile());
-				JarArchiveOutputStream jarOutputStream = new JarArchiveOutputStream(
-						new FileOutputStream(outputFile));
-				try {
+		JarArchiveOutputStream jarOutputStream = null;
+		try {
+			Attributes attributes = jar.getManifest().getMainAttributes();
+			for (String attributeToRemove : attributesToRemove) {
+				if (!StringUtils.isEmpty(attributes.getValue(attributeToRemove))) {
+					File outputFile = File.createTempFile("hamake-", ".jar", jarFile.getParentFile());
+					jarOutputStream = new JarArchiveOutputStream(new FileOutputStream(outputFile));
 					Enumeration<JarEntry> entries = jar.entries();
 					while (entries.hasMoreElements()) {
 						JarEntry entry = (JarEntry) entries.nextElement();
-						if (entry.getName().equalsIgnoreCase(
-								JarFile.MANIFEST_NAME)) {
+						if (entry.getName().equalsIgnoreCase(JarFile.MANIFEST_NAME)) {
 							File tempManifest = new File(jarFile
 									.getParentFile()
 									+ File.separator
@@ -117,18 +115,13 @@ public class Utils {
 							BufferedReader reader = null;
 							PrintWriter writer = null;
 							try {
-								reader = new BufferedReader(
-										new InputStreamReader(jar
-												.getInputStream(entry)));
+								reader = new BufferedReader(new InputStreamReader(jar.getInputStream(entry)));
 								writer = new PrintWriter(tempManifest);
 								String line = null;
 								while ((line = reader.readLine()) != null) {
-									String[] nameValuePair = StringUtils.split(
-											line, ":");
+									String[] nameValuePair = StringUtils.split(line, ":");
 									if (nameValuePair.length == 2) {
-										if (!StringUtils.equalsIgnoreCase(
-												nameValuePair[0],
-												attributeToRemove)) {
+										if (!StringUtils.equalsIgnoreCase(nameValuePair[0], attributeToRemove)) {
 											writer.println(line);
 										}
 									}
@@ -139,17 +132,12 @@ public class Utils {
 								if (reader != null)
 									reader.close();
 							}
-							ArchiveEntry newManifestArchiveEntry = jarOutputStream
-									.createArchiveEntry(tempManifest,
-											JarFile.MANIFEST_NAME);
-							jarOutputStream
-									.putArchiveEntry(newManifestArchiveEntry);
-							jarOutputStream.write(FileUtils
-									.readFileToByteArray(tempManifest));
+							ArchiveEntry newManifestArchiveEntry = jarOutputStream.createArchiveEntry(tempManifest,	JarFile.MANIFEST_NAME);
+							jarOutputStream.putArchiveEntry(newManifestArchiveEntry);
+							jarOutputStream.write(FileUtils.readFileToByteArray(tempManifest));
 							jarOutputStream.closeArchiveEntry();
 						} else {
-							jarOutputStream
-									.putArchiveEntry(new JarArchiveEntry(entry));
+							jarOutputStream.putArchiveEntry(new JarArchiveEntry(entry));
 							if (!entry.isDirectory()) {
 								InputStream in = null;
 								try {
@@ -162,20 +150,19 @@ public class Utils {
 									in.close();
 									jarOutputStream.closeArchiveEntry();
 								} finally {
-									if (in != null)
-										in.close();
+									if (in != null)	in.close();
 								}
 							}
 						}
 					}
-				} finally {
-					jar.close();
-					jarOutputStream.close();
+					FileUtils.deleteQuietly(jarFile);
+					jarFile = outputFile;
+					jarFile.deleteOnExit();
 				}
-				FileUtils.deleteQuietly(jarFile);
-				outputFile.deleteOnExit();
-				return outputFile;
 			}
+		} finally {
+			if(jar != null) jar.close();
+			if(jarOutputStream != null) jarOutputStream.close();
 		}
 		return jarFile;
 	}
@@ -211,34 +198,47 @@ public class Utils {
 
 		return false;
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public static File combineJars(File mainJar, File includeJarsLib) throws IOException{
-		if(!mainJar.exists()) throw new IOException("Jar file " + mainJar + " does not exist");
-		if(!includeJarsLib.exists() && !includeJarsLib.isDirectory()) throw new IOException("Folder " + includeJarsLib + " does not exist");
-		File jarFile = File.createTempFile(FilenameUtils.getBaseName(mainJar.getName()), ".jar");
+	public static File combineJars(File mainJar, File includeJarsLib)
+			throws IOException {
+		if (!mainJar.exists())
+			throw new IOException("Jar file " + mainJar + " does not exist");
+		if (!includeJarsLib.exists() && !includeJarsLib.isDirectory())
+			throw new IOException("Folder " + includeJarsLib
+					+ " does not exist");
+		File jarFile = File.createTempFile(FilenameUtils.getBaseName(mainJar
+				.getName()), ".jar");
 		jarFile.deleteOnExit();
 		File jarDir = File.createTempFile(mainJar.getName(), "-unpacked");
-		if(jarDir.exists())FileUtils.deleteQuietly(jarDir);
-		if(!jarDir.mkdirs()){
-			throw new IOException("can not create folder " + jarDir.getAbsolutePath());
+		if (jarDir.exists())
+			FileUtils.deleteQuietly(jarDir);
+		if (!jarDir.mkdirs()) {
+			throw new IOException("can not create folder "
+					+ jarDir.getAbsolutePath());
 		}
 		jarDir.deleteOnExit();
-		//unpack
+		// unpack
 		RunJar.unJar(mainJar, jarDir);
 		File libdir = new File(jarDir.getAbsolutePath(), "lib");
 		libdir.mkdir();
-		Collection<File> includeJars = FileUtils.listFiles(includeJarsLib, FileFilterUtils.suffixFileFilter(".jar"), FileFilterUtils.trueFileFilter());
-		for(File includeJar : includeJars){
+		Collection<File> includeJars = FileUtils.listFiles(includeJarsLib,
+				FileFilterUtils.suffixFileFilter(".jar"), FileFilterUtils
+						.trueFileFilter());
+		for (File includeJar : includeJars) {
 			FileUtils.copyFileToDirectory(includeJar, libdir);
 		}
-		//pack
+		// pack
 		JarArchiveOutputStream jarOutputStream = null;
-		try{
-			jarOutputStream = new JarArchiveOutputStream(
-					new FileOutputStream(jarFile));
-			for(File f : (Collection<File>)FileUtils.listFiles(jarDir, FileFilterUtils.trueFileFilter(), FileFilterUtils.trueFileFilter())){
-				String entryName = f.getAbsolutePath().substring(jarDir.getAbsolutePath().length() + 1, f.getAbsolutePath().length());
+		try {
+			jarOutputStream = new JarArchiveOutputStream(new FileOutputStream(
+					jarFile));
+			for (File f : (Collection<File>) FileUtils.listFiles(jarDir,
+					FileFilterUtils.trueFileFilter(), FileFilterUtils
+							.trueFileFilter())) {
+				String entryName = f.getAbsolutePath().substring(
+						jarDir.getAbsolutePath().length() + 1,
+						f.getAbsolutePath().length());
 				jarOutputStream.putArchiveEntry(new JarArchiveEntry(entryName));
 				if (!f.isDirectory()) {
 					InputStream in = null;
@@ -257,21 +257,24 @@ public class Utils {
 					}
 				}
 			}
-		}
-		finally{
-			if(jarOutputStream != null)jarOutputStream.close();
+		} finally {
+			if (jarOutputStream != null)
+				jarOutputStream.close();
 		}
 		return jarFile;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static String getCloudEraPigJar() {
 		try {
 			File cloudEraPigDir = new File(CloudEraPigDirPath);
-			if(cloudEraPigDir.exists() && cloudEraPigDir.isDirectory()){
-				Collection<File> files = (Collection<File>)FileUtils.listFiles(cloudEraPigDir, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
-				for(File f : files){
-					if(f.getName().startsWith("pig") && f.getName().endsWith(".jar")){
+			if (cloudEraPigDir.exists() && cloudEraPigDir.isDirectory()) {
+				Collection<File> files = (Collection<File>) FileUtils
+						.listFiles(cloudEraPigDir, TrueFileFilter.INSTANCE,
+								TrueFileFilter.INSTANCE);
+				for (File f : files) {
+					if (f.getName().startsWith("pig")
+							&& f.getName().endsWith(".jar")) {
 						return f.getAbsolutePath();
 					}
 				}
@@ -295,8 +298,9 @@ public class Utils {
 			if (!StringUtils.isEmpty(context.getString(variable))) {
 				outputValue.append(context.getString(variable));
 			} else {
-				if(context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
-					LOG.warn("Variable or property " + context.getString(variable) + " is not found.");	
+				if (context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
+					LOG.warn("Variable or property "
+							+ context.getString(variable) + " is not found.");
 			}
 			curPos = end;
 		}
@@ -310,24 +314,23 @@ public class Utils {
 			path = new Path(workFolder, path);
 		return path;
 	}
-	
-	public static int[] getHadoopVersion(){
-		int[] result = {0,0};
-		String[] version = VersionInfo.getVersion().split("[.]|[+]|[-]|[_]|[,]");
-		try{
-			if(version.length >= 1 ){
+
+	public static int[] getHadoopVersion() {
+		int[] result = { 0, 0 };
+		String[] version = VersionInfo.getVersion()
+				.split("[.]|[+]|[-]|[_]|[,]");
+		try {
+			if (version.length >= 1) {
 				result[0] = Integer.parseInt(version[0]);
 			}
-		}
-		catch(NumberFormatException e){
+		} catch (NumberFormatException e) {
 			LOG.error("Could not get Hadoop major version");
 		}
-		try{
-			if(version.length >= 2 ){
+		try {
+			if (version.length >= 2) {
 				result[1] = Integer.parseInt(version[0]);
 			}
-		}
-		catch(NumberFormatException e){
+		} catch (NumberFormatException e) {
 			LOG.error("Could not get Hadoop minor version");
 		}
 		return result;

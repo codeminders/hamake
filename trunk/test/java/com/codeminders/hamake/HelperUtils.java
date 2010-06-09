@@ -2,6 +2,8 @@ package com.codeminders.hamake;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -118,4 +120,16 @@ public class HelperUtils {
 		}
 		
 	}
+	
+	public static File getHamakeTestResource(String name) throws IOException {
+        URL f = Thread.currentThread().getContextClassLoader().getResource(name);
+        if (f == null)
+            throw new IOException("File " + name  + " not found. Please, make sure it's in CLASSPATH.");
+
+        try {
+            return new File(f.toURI());
+        } catch (URISyntaxException e) {
+            throw new IOException("File " + name  + " not found. Please, make sure it's in CLASSPATH.", e);
+        }
+    }
 }
