@@ -17,6 +17,7 @@ import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.conf.Configuration;
 
 import com.codeminders.hamake.context.Context;
+import com.codeminders.hamake.data.DataFunction;
 
 import java.io.*;
 import java.util.Collection;
@@ -295,9 +296,14 @@ public class Utils {
 			int end = matcher.end();
 			String variable = value.substring(start + 2, end - 1);
 			outputValue.append(value.substring(curPos, start));
-			if (!StringUtils.isEmpty(context.getString(variable))) {
-				outputValue.append(context.getString(variable));
-			} else {
+
+            Object var = context.get(variable);
+			if (var instanceof String && !StringUtils.isEmpty((String)var)) {
+				outputValue.append(var);
+			} else if (var instanceof DataFunction) {
+                DataFunction df = (DataFunction)var;
+                outputValue.append(StringUtils.join(df.toString(context), " "));
+            } else {
 				if (context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
 					LOG.warn("Variable or property "
 							+ context.getString(variable) + " is not found.");

@@ -36,9 +36,9 @@ public abstract class DataFunction{
 	
 	public abstract long getMaxTimeStamp(Context context) throws IOException;
 	
-	protected abstract String[] toString(Context context) throws IOException;
-	
-	public String getId(){
+	public abstract String[] toString(Context context);
+
+    public String getId(){
 		return this.id;
 	}
 	

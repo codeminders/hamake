@@ -6,6 +6,7 @@ import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.data.DataFunction;
 import com.codeminders.hamake.params.Parameter;
 import com.codeminders.hamake.params.SystemProperty;
+import com.codeminders.hamake.params.JobConfParam;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -96,6 +97,11 @@ public class MapReduce extends Task {
                     try {
                     	if(p instanceof SystemProperty){
                         	System.setProperty(((SystemProperty)p).getName(), ((SystemProperty)p).getValue());
+                        }
+                        else if(p instanceof JobConfParam){
+                        	hamakeJobConf.set(
+                                ((JobConfParam)p).getName(),
+                                ((JobConfParam)p).getValue());
                         }
                     	else{
                     		args.add(p.get(context));

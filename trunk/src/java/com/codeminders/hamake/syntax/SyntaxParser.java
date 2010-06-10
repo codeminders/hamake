@@ -125,7 +125,9 @@ public class SyntaxParser extends BaseSyntaxParser {
 		NodeList c = dom.getElementsByTagName("property");
 		for (int i = 0, sz = c.getLength(); i < sz; i++) {
 			Element e = (Element) c.item(i);
-			rootContext.set(getRequiredAttribute(e, "name"), getRequiredAttribute(e, "value"));
+            
+			rootContext.set(getRequiredAttribute(e, "name"),
+                    Utils.replaceVariables(rootContext, getRequiredAttribute(e, "value")));
 		}
 	}
 	
