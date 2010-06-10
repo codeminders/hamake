@@ -150,6 +150,11 @@ public class TestDataFunctions {
 		FileDataFunction fileFuncN = new FileDataFunction("/A/file.jpg");
 		Assert.assertTrue(fileFuncN.intersects(context, fileFuncM));
 		Assert.assertTrue(fileFuncM.intersects(context, fileFuncN));
+		
+		FileDataFunction fileFuncO = new FileDataFunction(null, 0, Long.MAX_VALUE, null, "somefolder/A/${foreach:filename}");
+		FilesetDataFunction fileFuncP = new FilesetDataFunction(null, 0, Long.MAX_VALUE, null, "somefolder/A/", "*.log");
+		Assert.assertTrue(fileFuncP.intersects(context, fileFuncO));
+		Assert.assertTrue(fileFuncO.intersects(context, fileFuncP));
 	}
 	
 }
