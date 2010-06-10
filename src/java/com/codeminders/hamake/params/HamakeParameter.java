@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.codeminders.hamake.context.Context;
+import org.apache.commons.lang.StringUtils;
 
 public class HamakeParameter implements Parameter{
 	
@@ -29,11 +30,15 @@ public class HamakeParameter implements Parameter{
 		for(Object value : values){
 			if(value instanceof Reference){
 				Reference reference = (Reference)value;
-				parameters.add(processingFunc.process(reference.getValue(context)));
+                String sv = processingFunc.process(reference.getValue(context, concatFunc));
+                if (!StringUtils.isEmpty(sv))
+				    parameters.add(sv);
 			}
 			else if(value instanceof Literal){
 				Literal literal = (Literal)value;
-				parameters.add(processingFunc.process(literal.getValue(context)));
+                String sv = processingFunc.process(literal.getValue(context));
+                if (!StringUtils.isEmpty(sv))
+				    parameters.add(sv);
 			}
 		}
 		return concatFunc.concat(parameters.toArray(new String[] {}));

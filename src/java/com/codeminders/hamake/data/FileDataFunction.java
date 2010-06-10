@@ -59,8 +59,7 @@ public class FileDataFunction extends DataFunction {
 	}
 
 	@Override
-	public List<Path> getPath(Context context)
-			throws IOException {
+	public List<Path> getPath(Context context) {
 		Path path = toPath(context);
 		return Arrays.asList(path);
 	}
@@ -137,12 +136,12 @@ public class FileDataFunction extends DataFunction {
 	}
 	
 	@Override
-	protected String[] toString(Context context) throws IOException{
+	public String[] toString(Context context) {
 		Path path = getPath(context).get(0);
 		return new String[] {path.toString()};
 	}
 	
-	private Path toPath(Context context) throws IOException {
+	private Path toPath(Context context) {
 		return Utils.resolvePath(Utils.replaceVariables(context, this.path),
 				getWorkFolder());
 	}

@@ -110,7 +110,7 @@ public class SetDataFunction extends DataFunction {
 	}
 	
 	@Override
-	protected String[] toString(Context context) throws IOException{
+	public String[] toString(Context context) {
 		List<String> paths = new ArrayList<String>();
 		for(DataFunction func : dataFunctions){
 			paths.addAll(Arrays.asList(func.toString(context)));
