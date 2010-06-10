@@ -334,7 +334,7 @@ public class Utils {
 		}
 		try {
 			if (version.length >= 2) {
-				result[1] = Integer.parseInt(version[0]);
+				result[1] = Integer.parseInt(version[1]);
 			}
 		} catch (NumberFormatException e) {
 			LOG.error("Could not get Hadoop minor version");

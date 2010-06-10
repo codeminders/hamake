@@ -127,7 +127,7 @@ public class Hamake extends ContextAware{
         @Override
         public void checkExit(int status) {
             super.checkExit(status);
-            LOG.warn("Some of your tasks have called System.exit() method. This is not recommended behaviour because it will prevent Hamake from launching other tasks.");
+            LOG.warn("Some of your tasks have called System.exit() method. This is not recommended behaviour.");
             throw new ExitException(status);
         }
     }
