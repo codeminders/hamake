@@ -66,6 +66,15 @@ public class SetDataFunction extends DataFunction {
 		}
 		return paths;
 	}
+	
+	@Override 
+	public List<Path> getParent(Context context) throws IOException{
+		List<Path> paths = new ArrayList<Path>();
+		for (DataFunction func : dataFunctions) {
+			paths.addAll(func.getParent(context));
+		}
+		return paths;
+	}
 
 	@Override
 	public int getGeneration() {

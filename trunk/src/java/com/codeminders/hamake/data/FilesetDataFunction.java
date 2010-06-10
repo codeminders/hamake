@@ -77,6 +77,15 @@ public class FilesetDataFunction extends DataFunction {
 		return listFiles(context, fs, path);
 	}
 	
+	@Override 
+	public List<Path> getParent(Context context) throws IOException{
+		Path thisPath = toPath(context);
+		if(thisPath.getParent() == null){
+			return Arrays.asList(thisPath.getParent());
+		}
+		else return Arrays.asList(thisPath);
+	}
+	
 	@Override
 	public List<Path> getLocalPath(Context context) throws IOException {
 		Path localPath = new Path(Utils.replaceVariables(context, this.path));

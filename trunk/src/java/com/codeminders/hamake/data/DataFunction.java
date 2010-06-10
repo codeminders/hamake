@@ -26,6 +26,8 @@ public abstract class DataFunction{
 
 	public abstract List<Path> getPath(Context context)  throws IOException;
 	
+	public abstract List<Path> getParent(Context context)  throws IOException;
+	
 	public abstract List<Path> getLocalPath(Context context)  throws IOException;
 	
 	public abstract boolean clear(Context context) throws IOException;
@@ -67,15 +69,23 @@ public abstract class DataFunction{
 	}
 	
 	public boolean intersects(Context context, DataFunction that) throws IOException {
+		boolean matches = false;
 		for(String thisPath : this.toString(context)){
 			for(String thatPath : that.toString(context)){
-				boolean matches = false;
 				matches = (FilenameUtils.wildcardMatch(thisPath, thatPath) || FilenameUtils.wildcardMatch(thatPath, thisPath))
 				&& getGeneration() >= that.getGeneration();
 				if(matches) return true;
 			}
 		}
-		return false;
+		if(!matches){
+			for(Path thisParent : this.getParent(context)){
+				for(Path thatParent : that.getParent(context)){
+					matches = (FilenameUtils.equals(thisParent.toString(), thatParent.toString()));
+					if(matches) return true;
+				}
+			}
+		}
+		return matches;
 	}
 	
 	public int getGeneration() {
