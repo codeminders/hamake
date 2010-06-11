@@ -1,6 +1,8 @@
 package com.codeminders.hamake.data;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -75,7 +77,13 @@ public class FileDataFunction extends DataFunction {
 	
 	@Override
 	public List<Path> getLocalPath(Context context) throws IOException {
-		return Arrays.asList(new Path(Utils.replaceVariables(context, this.path)));
+		Path localPath;
+		try {
+			localPath = new Path(Utils.removeSchema(Utils.replaceVariables(context, this.path)));
+		} catch (URISyntaxException e) {
+			throw new IOException(e);
+		}
+		return Arrays.asList(localPath);
 	}
 
 	@Override

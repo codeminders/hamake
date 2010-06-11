@@ -6,7 +6,6 @@ import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -28,7 +27,10 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 
 public class Utils {
 
@@ -91,19 +93,24 @@ public class Utils {
 
 	}
 
-	public static File removeManifestAttributes(File jarFile, List<String> attributesToRemove) throws IOException {
+	public static File removeManifestAttributes(File jarFile,
+			List<String> attributesToRemove) throws IOException {
 		JarFile jar = new JarFile(jarFile);
 		JarArchiveOutputStream jarOutputStream = null;
 		try {
 			Attributes attributes = jar.getManifest().getMainAttributes();
 			for (String attributeToRemove : attributesToRemove) {
-				if (!StringUtils.isEmpty(attributes.getValue(attributeToRemove))) {
-					File outputFile = File.createTempFile("hamake-", ".jar", jarFile.getParentFile());
-					jarOutputStream = new JarArchiveOutputStream(new FileOutputStream(outputFile));
+				if (!StringUtils
+						.isEmpty(attributes.getValue(attributeToRemove))) {
+					File outputFile = File.createTempFile("hamake-", ".jar",
+							jarFile.getParentFile());
+					jarOutputStream = new JarArchiveOutputStream(
+							new FileOutputStream(outputFile));
 					Enumeration<JarEntry> entries = jar.entries();
 					while (entries.hasMoreElements()) {
 						JarEntry entry = (JarEntry) entries.nextElement();
-						if (entry.getName().equalsIgnoreCase(JarFile.MANIFEST_NAME)) {
+						if (entry.getName().equalsIgnoreCase(
+								JarFile.MANIFEST_NAME)) {
 							File tempManifest = new File(jarFile
 									.getParentFile()
 									+ File.separator
@@ -116,13 +123,18 @@ public class Utils {
 							BufferedReader reader = null;
 							PrintWriter writer = null;
 							try {
-								reader = new BufferedReader(new InputStreamReader(jar.getInputStream(entry)));
+								reader = new BufferedReader(
+										new InputStreamReader(jar
+												.getInputStream(entry)));
 								writer = new PrintWriter(tempManifest);
 								String line = null;
 								while ((line = reader.readLine()) != null) {
-									String[] nameValuePair = StringUtils.split(line, ":");
+									String[] nameValuePair = StringUtils.split(
+											line, ":");
 									if (nameValuePair.length == 2) {
-										if (!StringUtils.equalsIgnoreCase(nameValuePair[0], attributeToRemove)) {
+										if (!StringUtils.equalsIgnoreCase(
+												nameValuePair[0],
+												attributeToRemove)) {
 											writer.println(line);
 										}
 									}
@@ -133,12 +145,17 @@ public class Utils {
 								if (reader != null)
 									reader.close();
 							}
-							ArchiveEntry newManifestArchiveEntry = jarOutputStream.createArchiveEntry(tempManifest,	JarFile.MANIFEST_NAME);
-							jarOutputStream.putArchiveEntry(newManifestArchiveEntry);
-							jarOutputStream.write(FileUtils.readFileToByteArray(tempManifest));
+							ArchiveEntry newManifestArchiveEntry = jarOutputStream
+									.createArchiveEntry(tempManifest,
+											JarFile.MANIFEST_NAME);
+							jarOutputStream
+									.putArchiveEntry(newManifestArchiveEntry);
+							jarOutputStream.write(FileUtils
+									.readFileToByteArray(tempManifest));
 							jarOutputStream.closeArchiveEntry();
 						} else {
-							jarOutputStream.putArchiveEntry(new JarArchiveEntry(entry));
+							jarOutputStream
+									.putArchiveEntry(new JarArchiveEntry(entry));
 							if (!entry.isDirectory()) {
 								InputStream in = null;
 								try {
@@ -151,7 +168,8 @@ public class Utils {
 									in.close();
 									jarOutputStream.closeArchiveEntry();
 								} finally {
-									if (in != null)	in.close();
+									if (in != null)
+										in.close();
 								}
 							}
 						}
@@ -162,8 +180,10 @@ public class Utils {
 				}
 			}
 		} finally {
-			if(jar != null) jar.close();
-			if(jarOutputStream != null) jarOutputStream.close();
+			if (jar != null)
+				jar.close();
+			if (jarOutputStream != null)
+				jarOutputStream.close();
 		}
 		return jarFile;
 	}
@@ -297,13 +317,13 @@ public class Utils {
 			String variable = value.substring(start + 2, end - 1);
 			outputValue.append(value.substring(curPos, start));
 
-            Object var = context.get(variable);
-			if (var instanceof String && !StringUtils.isEmpty((String)var)) {
+			Object var = context.get(variable);
+			if (var instanceof String && !StringUtils.isEmpty((String) var)) {
 				outputValue.append(var);
 			} else if (var instanceof DataFunction) {
-                DataFunction df = (DataFunction)var;
-                outputValue.append(StringUtils.join(df.toString(context), " "));
-            } else {
+				DataFunction df = (DataFunction) var;
+				outputValue.append(StringUtils.join(df.toString(context), " "));
+			} else {
 				if (context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
 					LOG.warn("Variable or property "
 							+ context.getString(variable) + " is not found.");
@@ -340,6 +360,47 @@ public class Utils {
 			LOG.error("Could not get Hadoop minor version");
 		}
 		return result;
+	}
+
+	public static String removeSchema(String path) throws URISyntaxException {
+		String schema = new URI(path).getScheme();
+		if (!StringUtils.isEmpty(schema)) {
+			return path.substring(schema.length() + 3);
+		}
+		return path;
+	}
+
+	public static boolean compareFs(FileSystem srcFs, FileSystem destFs) {
+		URI srcUri = srcFs.getUri();
+		URI dstUri = destFs.getUri();
+		if (srcUri.getScheme() == null) {
+			return false;
+		}
+		if (!srcUri.getScheme().equals(dstUri.getScheme())) {
+			return false;
+		}
+		String srcHost = srcUri.getHost();
+		String dstHost = dstUri.getHost();
+		if ((srcHost != null) && (dstHost != null)) {
+			try {
+				srcHost = InetAddress.getByName(srcHost).getCanonicalHostName();
+				dstHost = InetAddress.getByName(dstHost).getCanonicalHostName();
+			} catch (UnknownHostException ue) {
+				return false;
+			}
+			if (!srcHost.equals(dstHost)) {
+				return false;
+			}
+		} else if (srcHost == null && dstHost != null) {
+			return false;
+		} else if (srcHost != null && dstHost == null) {
+			return false;
+		}
+		// check for ports
+		if (srcUri.getPort() != dstUri.getPort()) {
+			return false;
+		}
+		return true;
 	}
 
 }

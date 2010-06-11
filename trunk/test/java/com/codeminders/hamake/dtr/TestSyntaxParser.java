@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -122,7 +123,7 @@ public class TestSyntaxParser {
                 new File(tempDirPath + "/median.pig"),
                 new File(pig.getScript().toString()));
 		Assert.assertEquals(3, pig.getParameters().size());
-		Assert.assertEquals("", pig.getParameters().get(0).get(context));
+		Assert.assertEquals(tempDirPath + "/somedir/somefile", pig.getParameters().get(0).get(context));
 		Assert.assertEquals("-jobconf jcname=jcvalue", pig.getParameters().get(1).get(context));
 	}
 	
