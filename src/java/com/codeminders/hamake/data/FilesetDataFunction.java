@@ -2,6 +2,8 @@ package com.codeminders.hamake.data;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -88,9 +90,14 @@ public class FilesetDataFunction extends DataFunction {
 	
 	@Override
 	public List<Path> getLocalPath(Context context) throws IOException {
-		Path localPath = new Path(Utils.replaceVariables(context, this.path));
+		Path localPath;
+		try {
+			localPath = new Path(Utils.removeSchema(Utils.replaceVariables(context, this.path)));
+		} catch (URISyntaxException e) {
+			throw new IOException(e);
+		}
 		FileSystem localFs = FileSystem.getLocal((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
-		if(localFs.exists(localPath) && !localFs.getFileStatus(localPath).isDir()){
+		if(localFs.exists(new Path(localPath.toUri().getPath())) && !localFs.getFileStatus(localPath).isDir()){
 			throw new IOException("Folder " + path + " should be a folder"); 
 		}
 		return listFiles(context, localFs, localPath);

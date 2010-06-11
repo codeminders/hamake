@@ -2,6 +2,8 @@ package com.codeminders.hamake.data;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 
 import junit.framework.Assert;
 
@@ -155,6 +157,17 @@ public class TestDataFunctions {
 		FilesetDataFunction fileFuncP = new FilesetDataFunction(null, 0, Long.MAX_VALUE, null, "somefolder/A/", "*.log");
 		Assert.assertTrue(fileFuncP.intersects(context, fileFuncO));
 		Assert.assertTrue(fileFuncO.intersects(context, fileFuncP));
+	}
+	
+	@Test
+	public void testGetLocal() throws IOException{
+		Context context = new Context(new Configuration(), null, false, false, false);
+		FileDataFunction file = new FileDataFunction("hdfs://tmp/file");
+		FileDataFunction localFile = new FileDataFunction("file:///tmp/file");
+		FilesetDataFunction fileset = new FilesetDataFunction(null, 0, Long.MAX_VALUE, null, "s3://bucket/folder", "*.log");
+		Assert.assertEquals(Collections.EMPTY_LIST, fileset.getLocalPath(context));
+		Assert.assertEquals("[tmp/file]", file.getLocalPath(context).toString());
+		Assert.assertEquals("[/tmp/file]", localFile.getLocalPath(context).toString());
 	}
 	
 }

@@ -34,7 +34,7 @@ public class Context {
 	private Map<String, Object> nameValuePairs = new HashMap<String, Object>();
 
 	public Context(Configuration hadoopConf, String workDir, boolean dependenciesEnabled, boolean verbose, boolean dryRun){
-		setForbidden(HAMAKE_PROPERTY_HADOOP_CONFIGURATION, new Configuration());
+		setForbidden(HAMAKE_PROPERTY_HADOOP_CONFIGURATION, hadoopConf);
 		setForbidden(HAMAKE_PROPERTY_WORKING_FOLDER, workDir);
 		setForbidden(HAMAKE_PROPERTY_HAMAKE_VERSION, Hamake.HAMAKE_VERSION);
 		setForbidden(HAMAKE_PROPERTY_WITH_DEPENDENCIES, dependenciesEnabled);
