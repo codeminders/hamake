@@ -11,6 +11,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
@@ -45,7 +46,7 @@ public class TestSyntaxParser {
 	
 	@Test
 	public void testFull() throws IOException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InvalidContextStateException{
-		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-testsyntax.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("test-full.xml");
 		File depPath = new File(tempDir, "deppath");
 		depPath.mkdirs();
 		File someDir = new File(tempDir, "somedir");
@@ -123,13 +124,13 @@ public class TestSyntaxParser {
                 new File(tempDirPath + "/median.pig"),
                 new File(pig.getScript().toString()));
 		Assert.assertEquals(3, pig.getParameters().size());
-		Assert.assertEquals(tempDirPath + "/somedir/somefile", pig.getParameters().get(0).get(context));
+		Assert.assertEquals(tempDirPath + FilenameUtils.normalize("/somedir/somefile"), FilenameUtils.normalize(pig.getParameters().get(0).get(context)));
 		Assert.assertEquals("-jobconf jcname=jcvalue", pig.getParameters().get(1).get(context));
 	}
 	
 	@Test
 	public void testMinimal() throws IOException, InvalidContextStateException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException{
-		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-testsyntax-minimal.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("test-minimal.xml");
 		File fileset = new File(tempDir, "fileset");
 		fileset.mkdirs();
 		HelperUtils.generateTemporaryFiles(fileset.getAbsolutePath(), 3);

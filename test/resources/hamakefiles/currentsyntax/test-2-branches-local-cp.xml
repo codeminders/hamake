@@ -13,11 +13,15 @@
 			<file id="map11Out" path="${tmpdir}/map11/${foreach:filename}" />
 		</output>
 		<exec binary="${cp}">
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<literal value="${foreach:path}" />
+				<literal value="&quot;" />
 			</parameter>
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<reference idref="map11Out" />
+				<literal value="&quot;" />
 			</parameter>
 		</exec>
 	</foreach>
@@ -29,11 +33,15 @@
 			<file id="map12Out" path="${tmpdir}/map12/${foreach:filename}" />
 		</output>
 		<exec binary="${cp}">
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<literal value="${foreach:path}" />
+				<literal value="&quot;" />
 			</parameter>
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<reference idref="map12Out" />
+				<literal value="&quot;" />
 			</parameter>
 		</exec>
 	</foreach>
@@ -45,11 +53,15 @@
 			<file id="map21Out" path="${tmpdir}/map21/${foreach:filename}" />
 		</output>
 		<exec binary="${cp}">
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<literal value="${foreach:path}" />
+				<literal value="&quot;" />
 			</parameter>
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<reference idref="map21Out" />
+				<literal value="&quot;" />
 			</parameter>
 		</exec>
 	</foreach>
@@ -61,11 +73,15 @@
 			<file id="map22Out" path="${tmpdir}/map22/${foreach:filename}" />
 		</output>
 		<exec binary="${cp}">
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<literal value="${foreach:path}" />
+				<literal value="&quot;" />
 			</parameter>
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<reference idref="map22Out" />
+				<literal value="&quot;" />
 			</parameter>
 		</exec>
 	</foreach>
@@ -77,14 +93,18 @@
 			<file id="output1" path="${tmpdir}/output1.txt" />
 		</output>
 		<exec binary="${ls}">
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<reference idref="reduce1In" />
+				<literal value="&quot;" />
 			</parameter>
 			<parameter>
 				<literal value=">" />
 			</parameter>
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<reference idref="output1" />
+				<literal value="&quot;" />
 			</parameter>
 		</exec>
 	</fold>
@@ -97,14 +117,18 @@
 			<file id="output2" path="${tmpdir}/output2.txt" />
 		</output>
 		<exec binary="${ls}">
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<reference idref="reduce2In" />
+				<literal value="&quot;" />
 			</parameter>
 			<parameter>
 				<literal value=">" />
 			</parameter>
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<reference idref="output2" />
+				<literal value="&quot;" />
 			</parameter>
 		</exec>
 	</fold>

@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import junit.framework.Assert;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 
@@ -14,7 +15,9 @@ import com.codeminders.hamake.params.AppendConcatFunction;
 import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.params.IdentityProcessingFunction;
 import com.codeminders.hamake.params.Literal;
+import com.codeminders.hamake.params.NormalizePathProcessingFunction;
 import com.codeminders.hamake.params.Reference;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 
 public class TestHamakeParameter {
 	
@@ -33,6 +36,23 @@ public class TestHamakeParameter {
 		Assert.assertEquals("/input/in > /output/out", params.get(context));
 		Reference ref1 = new Reference("gesse.file1");
 		Assert.assertEquals("\"gesse_german_stepnoi_volk (1).fb2\"", ref1.getValue(context, new AppendConcatFunction()));
+	}
+	
+	@Test
+	public void testNormalizePathProcessingFunction() throws InvalidContextStateException, IOException{
+		Context context = new Context(new Configuration(), null, false, false, false);
+		context.set("input", "c:/somefolder/somefile");
+		Literal input = new Literal("${input}");
+		Assert.assertEquals(FilenameUtils.normalize("c:\\somefolder\\somefile"), new NormalizePathProcessingFunction().process(input.getValue(context)));
+		context.set("reference", new FileDataFunction("/somefolder/../somefolder/somefile"));
+		Reference reference = new Reference("reference");
+		Assert.assertEquals("/somefolder/somefile", new NormalizePathProcessingFunction().process(reference.getValue(context, new AppendConcatFunction())));
+		context.set("input1", "somekey/../somekey/somevalue");
+		Literal input1 = new Literal("${input1}");
+		Assert.assertEquals("somekey/../somekey/somevalue", new NormalizePathProcessingFunction().process(input1.getValue(context)));
+		context.set("input2", "\"c:/somefolder/somefile\"");
+		Literal input2 = new Literal("${input2}");
+		Assert.assertEquals(FilenameUtils.normalize("\"c:\\somefolder\\somefile\""), new NormalizePathProcessingFunction().process(input2.getValue(context)));
 	}
 	
 }

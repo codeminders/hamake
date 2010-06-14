@@ -62,7 +62,7 @@ public class TestHamake {
 		}
 
 		Hamake make = null;
-		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-local-cp.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("test-local-cp.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile));
 		make.setNumJobs(2);
@@ -95,7 +95,7 @@ public class TestHamake {
 		}
 
 		Hamake make = null;
-		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-foreach-test.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("test-that-foreach-launches-in-case-data-has-been-changed.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile));
 		make.setNumJobs(2);
@@ -146,7 +146,7 @@ public class TestHamake {
 		}
 
 		Hamake make = null;
-		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-local-2-branches-cp.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("test-2-branches-local-cp.xml");
 		make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile));
 		make.setNumJobs(2);
@@ -180,7 +180,7 @@ public class TestHamake {
 		Context context = new Context(new Configuration(), null, false, false, false);
 		context.set("test.jar", HelperUtils.getTestJar()
 				.getAbsolutePath());
-		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-testexit.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("test-system-exit-is-prohibited.xml");
 		final Hamake make = BaseSyntaxParser.parse(context,
 				new FileInputStream(localHamakeFile));
 		make.setNumJobs(1);
@@ -208,7 +208,7 @@ public class TestHamake {
 			context.set("cp", "copy");
 		}
 
-		File localHamakeFile = HelperUtils.getHamakeTestResource("hamakefile-test-dependencies.xml");
+		File localHamakeFile = HelperUtils.getHamakeTestResource("test-dependencies.xml");
 		final Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(
 				localHamakeFile));
 		make.setNumJobs(2);

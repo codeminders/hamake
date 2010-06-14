@@ -44,12 +44,17 @@ public class MapReduce extends Task {
             Configuration conf = (Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION);
             fs = FileSystem.get(conf);
             jarFile = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(getJar(), jarPath.getFileSystem(conf)), Arrays.asList(new String[] {"Main-Class"}));
+        } catch (IOException ex) {
+        	LOG.error("Can't download JAR file: " + getJar(), ex);
+            return -1000;
+        }
+        try{
             if(!classpath.isEmpty()){
             	processClassPath(fs, context, classpathJars, hamakeJobConf);
             }
             args.add(jarFile.getAbsolutePath());
         } catch (IOException ex) {
-        	LOG.error("Can't download JAR file: " + getJar(), ex);
+        	LOG.error("Can't process classpath", ex);
             return -1000;
         }
         args.add(getMain());

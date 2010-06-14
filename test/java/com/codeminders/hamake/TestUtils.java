@@ -6,10 +6,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +37,6 @@ public class TestUtils {
 		FileUtils.copyFile(manifest, tempFile);
 		JarFile jar = new JarFile(Utils.removeManifestAttributes(tempFile, Arrays.asList(new String[] {"Main-Class"})));
 		Assert.assertNull(jar.getManifest().getMainAttributes().getValue("Main-Class"));
-		Assert.assertFalse(tempFile.exists());
 	}
 	
 	@Test
@@ -47,6 +48,7 @@ public class TestUtils {
 		JarFile jar = new JarFile(combinedJar);
 		Assert.assertNotNull(jar.getJarEntry("lib/testUtils1.jar"));
 		Assert.assertNotNull(jar.getJarEntry("lib/testUtils2.jar"));
+		Manifest man = jar.getManifest();
 		Assert.assertEquals("org/apache/hadoop/examples/ExampleDriver", jar.getManifest().getMainAttributes().getValue("Main-Class"));
 	}
 	

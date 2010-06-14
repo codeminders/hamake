@@ -257,9 +257,9 @@ public class Utils {
 			for (File f : (Collection<File>) FileUtils.listFiles(jarDir,
 					FileFilterUtils.trueFileFilter(), FileFilterUtils
 							.trueFileFilter())) {
-				String entryName = f.getAbsolutePath().substring(
-						jarDir.getAbsolutePath().length() + 1,
-						f.getAbsolutePath().length());
+				String entryName = f.getCanonicalPath().substring(
+						jarDir.getCanonicalPath().length() + 1,
+						f.getCanonicalPath().length()).replace("\\", "/");
 				jarOutputStream.putArchiveEntry(new JarArchiveEntry(entryName));
 				if (!f.isDirectory()) {
 					InputStream in = null;
@@ -363,9 +363,11 @@ public class Utils {
 	}
 
 	public static String removeSchema(String path) throws URISyntaxException {
-		String schema = new URI(path).getScheme();
-		if (!StringUtils.isEmpty(schema)) {
-			return path.substring(schema.length() + 3);
+		if(!path.matches("^[\"]?([A-Z]|[a-z]){1}[\\:]{1}.*")){
+			String schema = new URI(path).getScheme();
+			if (!StringUtils.isEmpty(schema)) {
+				return path.substring(schema.length() + 3);
+			}
 		}
 		return path;
 	}
