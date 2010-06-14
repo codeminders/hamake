@@ -30,9 +30,6 @@ public class Reference extends ParameterItem{
             {
             	String s = p.toString();
                 if (!StringUtils.isEmpty(s)){
-                	if(s.contains(" ") || s.contains("\t")){
-                		sPath[i++] = "\"" + p.toString() + "\"";
-                	}
                 	else sPath[i++] = p.toString();
                 }
                     
