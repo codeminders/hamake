@@ -101,7 +101,7 @@ public class MapReduce extends Task {
             	for(Path cp : func.getPath(context)){
             		FileSystem cpFs = func.getFileSystem(context, cp);
             		if(cpFs.exists(cp)){
-            			File localJar = Utils.copyToTemporaryLocal(cp.toString(), fs);
+            			File localJar = Utils.copyToTemporaryLocal(cp.toString(), cp.getFileSystem(conf));
             			localJar.deleteOnExit();
             			localClasspath.add(localJar);
             			Path jar = copyRemoteFiles(conf, fs, new Path(conf.get("hadoop.tmp.dir")), cp);
