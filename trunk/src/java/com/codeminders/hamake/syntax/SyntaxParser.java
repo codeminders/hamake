@@ -50,6 +50,7 @@ import com.codeminders.hamake.params.IdentityProcessingFunction;
 import com.codeminders.hamake.params.JobConfParam;
 import com.codeminders.hamake.params.Literal;
 import com.codeminders.hamake.params.AppendConcatFunction;
+import com.codeminders.hamake.params.NormalizePathProcessingFunction;
 import com.codeminders.hamake.params.Parameter;
 import com.codeminders.hamake.params.ParameterItem;
 import com.codeminders.hamake.params.ProcessingFunction;
@@ -444,7 +445,8 @@ public class SyntaxParser extends BaseSyntaxParser {
         String parameterName = getOptionalAttribute(root, "name", "param" + Math.abs(random.nextInt() % 10000));
         ProcessingFunction processingFunc = null;
         if(!StringUtils.isEmpty(processingFuncIdentificator)){
-        	if("identity".equals(processingFuncIdentificator)) concatFunction = new SpaceConcatFunction();
+        	if("identity".equals(processingFuncIdentificator)) processingFunc = new IdentityProcessingFunction();
+        	else if("normalizePath".equals(processingFuncIdentificator)) processingFunc = new NormalizePathProcessingFunction();
         	else throw new InvalidMakefileException("'processing_function' attribute of " + getPath(root) + "contains unknown function");
         }
         else{

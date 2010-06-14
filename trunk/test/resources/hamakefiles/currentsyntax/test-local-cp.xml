@@ -16,14 +16,18 @@
 			<file id="output" path="${tmpdir}/output.txt" />
 		</output>
 		<exec binary="${ls}">
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<reference idref="reduceIn" />
+				<literal value="&quot;" />
 			</parameter>
 			<parameter>
 				<literal value=">" />
 			</parameter>
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<reference idref="output" />
+				<literal value="&quot;" />
 			</parameter>
 		</exec>
 	</fold>
@@ -36,11 +40,15 @@
 			<file id="mapOut" path="${tmpdir}/map1/${foreach:filename}" />
 		</output>
 		<exec binary="${cp}">
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<literal value="${foreach:path}" />
+				<literal value="&quot;" />
 			</parameter>
-			<parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
 				<reference idref="mapOut" />
+				<literal value="&quot;" />
 			</parameter>
 		</exec>
 	</foreach>
