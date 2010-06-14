@@ -336,6 +336,24 @@ Example:
 </exec>
 }}}
 
+== classpath ==
+
+Sometimes your jar files depends on 3rd party libraries. To add those libraries use _classpath_ element. Hamake will use Hadoop feature called [http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/filecache/DistributedCache.html Distributed Cache] to add your dependencies to the classpath of your job.
+
+Nested elements:
+|| *Element name* || *Number of times it can occur* ||
+|| [#fileset fileset] || 0 or more ||
+|| [#file file] || 0 or more ||
+|| [#set set] || 0 or more ||
+|| [#include include] || 0 or more ||
+
+Example: 
+{{{
+<classpath>
+   <fileset path="lib/cluster/mahout-0.3" mask="*.jar" />
+</classpath>
+}}}
+
 = Task Parameters =
 
 Arguments are passed to Hadoop Map Reduce job, Pig script or program according to task parameters. Please remember that the order of parameters in task body is important.
@@ -347,8 +365,8 @@ This tag defines one parameter of a task. Whithin this element you should specif
 For a Pig task you can optionally specify name of parameter with _name_ attribute.
 
 || *Attribute* || *Description* || *Required* ||
-|| concat_function || function that will combine sub-elements or parameter in a string. Valid values are: _space_, _comma_, _append_. Default value is append || No ||
-|| processing_function || function that will process each sub-element of this parameter. Currently there is only one function available - _identity_, that will output value as it is. || No ||
+|| concat_function || function that will combine sub-elements or parameter in a string. Valid values are: _space_, _comma_, _append_. Default value is _append_ || No ||
+|| processing_function || function that will process each sub-element of this parameter. Valid values are: _identity_ (output value as it is), _normalizePath_ (normalizes a path, removing double and single dot path steps). Default value is _identity_ || No ||
 || name || a name of this parameter that will be passed to Pig || No ||
 
 Nested elements:
