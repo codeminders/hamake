@@ -35,7 +35,7 @@ public class TestHamakeParameter {
 		HamakeParameter params = new HamakeParameter(Arrays.asList(input, arrowSymbol, output), new AppendConcatFunction(), new IdentityProcessingFunction());
 		Assert.assertEquals("/input/in > /output/out", params.get(context));
 		Reference ref1 = new Reference("gesse.file1");
-		Assert.assertEquals("\"gesse_german_stepnoi_volk (1).fb2\"", ref1.getValue(context, new AppendConcatFunction()));
+		Assert.assertEquals("gesse_german_stepnoi_volk (1).fb2", ref1.getValue(context, new AppendConcatFunction()));
 	}
 	
 	@Test

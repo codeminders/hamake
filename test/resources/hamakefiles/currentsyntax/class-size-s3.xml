@@ -2,17 +2,20 @@
 
 <project name="test">
 
-  <property name="output" value="s3://hamake/test/" />
-  <property name="lib" value="s3://hamake/lib/" />
-  <property name="dist" value="s3://hamake/" />
-  <property name="scripts" value="s3://hamake/" />
+  <property name="bucket-name" value="hamake-examples"/>
+  <property name="temp" value="temp" />
+  <property name="lib" value="s3://${bucket-name}/lib/" />
+  <property name="dist" value="s3://${bucket-name}/" />
+  <property name="scripts" value="s3://${bucket-name}/" />
+  
+  <file id="medianOut" path="s3://${bucket-name}/class-size-median-bin"/>
 
   <foreach name="jar-listings">
           <input>
               <fileset path="${lib}" mask="*.jar"/>
           </input>
           <output>
-              <file id="jarListing" path="${output}/jar-listings/${foreach:filename}"/>
+              <file id="jarListing" path="${temp}/jar-listings/${foreach:filename}"/>
           </output>
           <mapreduce jar="${dist}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.JarListing">
             <parameter>
@@ -26,10 +29,10 @@
 
       <foreach name="filter-listing">
           <input>
-              <fileset path="${output}/jar-listings"/>
+              <fileset path="${temp}/jar-listings"/>
           </input>
           <output>
-              <file id="filterListing" path="${output}/jar-listings-filtered/${foreach:filename}"/>
+              <file id="filterListing" path="${temp}/jar-listings-filtered/${foreach:filename}"/>
           </output>
           <mapreduce jar="${dist}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.JarListingFilter">
             <parameter>
@@ -43,10 +46,10 @@
 
       <fold name="histogram">
           <input>
-              <file id="histogramIn" path="${output}/jar-listings-filtered"/>
+              <file id="histogramIn" path="${temp}/jar-listings-filtered"/>
           </input>
           <output>
-              <file id="histogramOut" path="${output}/class-size-histogram"/>
+              <file id="histogramOut" path="${temp}/class-size-histogram"/>
           </output>
           <mapreduce jar="${dist}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
             <parameter>
@@ -60,10 +63,10 @@
 
     <fold name="median">
         <input>
-            <file id="medianIn" path="${output}/class-size-histogram"/>
+            <file id="medianIn" path="${temp}/class-size-histogram"/>
         </input>
         <output>
-            <file id="medianOut" path="${output}/class-size-median-bin"/>
+            <include idref="medianOut" />
         </output>
         <pig script="${scripts}/median.pig">
           <parameter name="infile">
