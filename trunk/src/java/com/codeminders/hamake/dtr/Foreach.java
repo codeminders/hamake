@@ -104,15 +104,18 @@ public class Foreach extends DataTransformationRule {
 			command.getContext().setForbidden(PARENT_FOLDER_VAR, ipath.getParent().toString());
 			command.getContext().setForbidden(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
 			command.getContext().setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
+			boolean addCommand = false;
 			for (DataFunction outputFunc : output) {
 				if (outputFunc.getMaxTimeStamp(command.getContext()) >= inputMaxTimeStamp) {
-						return 0;
+					LOG.error(outputFunc.getId() + " is fresh enough");	
+					continue;
 				} 
 				else{
 					outputFunc.clear(command.getContext());
 				}
+				addCommand = true;
 			}
-			queue.add(new ExecQueueItem(command, new Thread(command, getTask().toString())));
+			if(addCommand)queue.add(new ExecQueueItem(command, new Thread(command, getTask().toString())));
 		}
 		if(queue.size() > 0) return execQueue(queue, semaphore);
 		else return 0;

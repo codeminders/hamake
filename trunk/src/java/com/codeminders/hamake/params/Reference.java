@@ -30,7 +30,7 @@ public class Reference extends ParameterItem{
             {
             	String s = p.toString();
                 if (!StringUtils.isEmpty(s)){
-                	else sPath[i++] = p.toString();
+                	sPath[i++] = p.toString();
                 }
                     
             }

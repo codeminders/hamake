@@ -118,9 +118,10 @@ public class FilesetDataFunction extends DataFunction {
 
 	@Override
 	public long getMaxTimeStamp(Context context) throws IOException {
-		FileSystem fs = getFileSystem(context, null);
 		long modificationTime = 0;
+		FileSystem fs = null;
 		for (Path p : getPath(context)) {
+			if(fs == null)fs = p.getFileSystem((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
 			if (!fs.exists(p))
 				continue;
 
