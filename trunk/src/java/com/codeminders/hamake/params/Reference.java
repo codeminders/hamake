@@ -2,8 +2,12 @@ package com.codeminders.hamake.params;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.codeminders.hamake.context.Context;
@@ -24,9 +28,14 @@ public class Reference extends ParameterItem{
             int i = 0;
             for (Path p:paths)
             {
-                String s = p.toUri().toString();                
-                if (!StringUtils.isEmpty(s))
-                    sPath[i++] = p.toUri().toString();
+            	String s = p.toString();
+                if (!StringUtils.isEmpty(s)){
+                	if(s.contains(" ") || s.contains("\t")){
+                		sPath[i++] = "\"" + p.toString() + "\"";
+                	}
+                	else sPath[i++] = p.toString();
+                }
+                    
             }
 
 			//return StringUtils.join(paths, " ");
