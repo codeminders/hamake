@@ -90,7 +90,6 @@ public class Foreach extends DataTransformationRule {
 			return -1;
 		}
 		
-		long inputMaxTimeStamp = input.getMaxTimeStamp(getContext());
 		for(Path ipath : inputlist){
 			CommandThread command = new CommandThread(getTask(), getContext(), semaphore);
 			FileSystem inputfs = input.getFileSystem(getContext(), ipath);
@@ -104,21 +103,20 @@ public class Foreach extends DataTransformationRule {
 			command.getContext().setForbidden(PARENT_FOLDER_VAR, ipath.getParent().toString());
 			command.getContext().setForbidden(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
 			command.getContext().setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
-			boolean addCommand = false;
+			long inputTimeStamp = inputfs.getFileStatus(ipath).getModificationTime();
 			for (DataFunction outputFunc : output) {
-				if (outputFunc.getMaxTimeStamp(command.getContext()) >= inputMaxTimeStamp) {
-					LOG.error(outputFunc.getId() + " is fresh enough");	
-					continue;
-				} 
-				else{
+				if (outputFunc.getMaxTimeStamp(command.getContext()) < inputTimeStamp) {
+					LOG.info("adding " + ipath.toString());
 					outputFunc.clear(command.getContext());
-				}
-				addCommand = true;
+					queue.add(new ExecQueueItem(command, new Thread(command, getTask().toString())));
+				} 
 			}
-			if(addCommand)queue.add(new ExecQueueItem(command, new Thread(command, getTask().toString())));
 		}
-		if(queue.size() > 0) return execQueue(queue, semaphore);
-		else return 0;
+		if(queue.size() > 0) return execQueue(queue, semaphore);		
+		else{
+			LOG.info("all output data of DTR "+ getName() + " is fresh enough");
+			return 0;
+		}
 	}
 
 	protected int execQueue(List<ExecQueueItem> queue, Semaphore jobSemaphore) {
