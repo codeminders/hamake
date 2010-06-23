@@ -29,6 +29,7 @@ public class TaskRunner {
 
 	@SuppressWarnings("serial")
     public TaskRunner(List<DataTransformationRule> tasks, int numJobs, List<String> targets) throws IOException {
+		LOG.info("Calculating dependencies");
 		graph = new NoDepsExecutionGraph(tasks);
 		this.tasks = new HashMap<String, DataTransformationRule>();
 		for (DataTransformationRule t : tasks)
@@ -69,6 +70,7 @@ public class TaskRunner {
 	}
 
 	void run() {
+		LOG.info("Starting DTRs");
 		while (true) {
 			lock.lock();
 

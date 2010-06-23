@@ -67,12 +67,14 @@ public class FileDataFunction extends DataFunction {
 	}
 	
 	@Override 
-	public List<Path> getParent(Context context) throws IOException{
+	public List<HamakePath> getHamakePath(Context context) throws IOException{		
 		Path thisPath = getPath(context).get(0);
-		if(thisPath.getParent() == null){
-			return Arrays.asList(thisPath.getParent());
+		if(thisPath.getParent() != null){
+			return Arrays.asList(new HamakePath(thisPath.toString(), thisPath.getParent().toString()));
 		}
-		else return Arrays.asList(thisPath);
+		else{
+			return Arrays.asList(new HamakePath(thisPath.toString(), thisPath.toString()));
+		}
 	}
 	
 	@Override
@@ -119,28 +121,6 @@ public class FileDataFunction extends DataFunction {
 		FileStatus stat = fs.getFileStatus(p);
 
 		return stat.getModificationTime();
-	}
-	
-	@Override
-	public boolean intersects(Context context, DataFunction that) throws IOException {
-		if(that instanceof FileDataFunction){
-			Path thisPath = getPath(context).get(0);
-			Path thatPath = that.getPath(context).get(0);
-			Path thisParent = (thisPath.getParent() == null)? thisPath : thisPath.getParent();
-			Path thatParent = (thatPath.getParent() == null)? thatPath : thatPath.getParent();
-			if(thisParent.equals(thatParent)){
-				return thisPath.getName().equals(thatPath.getName()) && getGeneration() >= that.getGeneration();
-			}
-			if(thisPath.toUri().toString().length() > thatPath.toUri().toString().length()){
-				return thisParent.toString().equals(thatPath.toString())
-				&& getGeneration() >= that.getGeneration();
-			}
-			else{
-				return thatParent.toString().equals(thisPath.toString())
-				&& getGeneration() >= that.getGeneration();
-			}
-		}
-		else return super.intersects(context, that);
 	}
 	
 	@Override
