@@ -109,6 +109,7 @@ public class Main {
                 is = fs.open(makefilePath);
             }
             Context context = new Context(hadoopCfg, wdir, withDeps, verbose, dryRun);
+            LOG.info("Parsing hamake-file " + mname);
             make = BaseSyntaxParser.parse(context, is);
             if(line.getArgs().length > 0){
             	for(String target : line.getArgs()){
@@ -116,22 +117,25 @@ public class Main {
             	}
             }
         } catch (IOException ex) {
-            System.err.println("Cannot load makefile " + mname + ": " + ex.getMessage());
+        	LOG.error("Cannot load makefile " + mname, ex);
             System.exit(ExitCodes.INITERR.ordinal());
         } catch (ParserConfigurationException ex) {
-            System.err.println("Cannot initialize XML parser: " + ex.getMessage());
+        	LOG.error("Cannot initialize XML parser: ", ex);
             System.exit(ExitCodes.INITERR.ordinal());
         } catch (SAXException ex) {
-            System.err.println("Invalid makefile content: " + ex.getMessage());
+        	LOG.error("Invalid makefile content: ", ex);
             System.exit(ExitCodes.INITERR.ordinal());
         } catch (InvalidMakefileException ex) {
-            System.err.println("Error in makefile: " + ex.getMessage());
+        	LOG.error("Error in makefile: ", ex);
             System.exit(ExitCodes.INITERR.ordinal());
         } catch (PigNotFoundException ex) {
-            System.err.println("Cannot execute Pig task: " + ex.getMessage());
+        	LOG.error("Cannot execute Pig task: ", ex);
             System.exit(ExitCodes.INITERR.ordinal());
         } catch(InvalidContextStateException e){
-        	System.err.println("Cannot execute Pig task: " + e.getMessage());
+        	LOG.error("Cannot execute Pig task: ", e);
+        	System.exit(ExitCodes.INITERR.ordinal());
+        }catch(Exception e){
+        	LOG.error("Error occured", e);
         	System.exit(ExitCodes.INITERR.ordinal());
         } finally {
             IOUtils.closeQuietly(is);

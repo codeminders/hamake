@@ -105,8 +105,7 @@ public class Foreach extends DataTransformationRule {
 			command.getContext().setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
 			long inputTimeStamp = inputfs.getFileStatus(ipath).getModificationTime();
 			for (DataFunction outputFunc : output) {
-				if (outputFunc.getMaxTimeStamp(command.getContext()) < inputTimeStamp) {
-					LOG.info("adding " + ipath.toString());
+				if (outputFunc.getMaxTimeStamp(command.getContext()) < inputTimeStamp) {					
 					outputFunc.clear(command.getContext());
 					queue.add(new ExecQueueItem(command, new Thread(command, getTask().toString())));
 				} 

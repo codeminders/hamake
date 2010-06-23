@@ -68,10 +68,10 @@ public class SetDataFunction extends DataFunction {
 	}
 	
 	@Override 
-	public List<Path> getParent(Context context) throws IOException{
-		List<Path> paths = new ArrayList<Path>();
+	public List<HamakePath> getHamakePath(Context context) throws IOException{
+		List<HamakePath> paths = new ArrayList<HamakePath>();
 		for (DataFunction func : dataFunctions) {
-			paths.addAll(func.getParent(context));
+			paths.addAll(func.getHamakePath(context));
 		}
 		return paths;
 	}

@@ -11,6 +11,25 @@ import org.apache.hadoop.fs.Path;
 import com.codeminders.hamake.context.Context;
 
 public abstract class DataFunction{
+	
+	public class HamakePath {
+		
+		private String path;		
+		private String parent;
+		
+		public HamakePath(String filename, String folder){
+			this.path = filename;
+			this.parent = folder;
+		}
+		
+		public String getPath() {
+			return path;
+		}
+		public String getParent() {
+			return parent;
+		}
+
+	}
 
 	private String id;
 	private int generation;
@@ -26,7 +45,7 @@ public abstract class DataFunction{
 
 	public abstract List<Path> getPath(Context context)  throws IOException;
 	
-	public abstract List<Path> getParent(Context context)  throws IOException;
+	public abstract List<HamakePath> getHamakePath(Context context)  throws IOException;
 	
 	public abstract List<Path> getLocalPath(Context context)  throws IOException;
 	
@@ -69,23 +88,20 @@ public abstract class DataFunction{
 	}
 	
 	public boolean intersects(Context context, DataFunction that) throws IOException {
-		boolean matches = false;
-		for(String thisPath : this.toString(context)){
-			for(String thatPath : that.toString(context)){
-				matches = (FilenameUtils.wildcardMatch(thisPath, thatPath) || FilenameUtils.wildcardMatch(thatPath, thisPath))
-				&& getGeneration() >= that.getGeneration();
-				if(matches) return true;
-			}
-		}
-		if(!matches){
-			for(Path thisParent : this.getParent(context)){
-				for(Path thatParent : that.getParent(context)){
-					matches = (FilenameUtils.equals(thisParent.toString(), thatParent.toString()));
-					if(matches) return true;
+		for(HamakePath thisPath : this.getHamakePath(context)){
+			for(HamakePath thatPath : that.getHamakePath(context)){
+				if(getGeneration() >= that.getGeneration()){
+					if(thisPath.getParent().equals(thatPath.getParent())){
+						if((FilenameUtils.wildcardMatch(thisPath.getPath(), thatPath.getPath()) || FilenameUtils.wildcardMatch(thatPath.getPath(), thisPath.getPath()))) return true;
+					}
+					else if(FilenameUtils.wildcardMatch(thatPath.getPath(), thisPath.getParent())) return true;
+					else if(FilenameUtils.wildcardMatch(thisPath.getParent(),thatPath.getPath())) return true;
+					else if(FilenameUtils.wildcardMatch(thatPath.getParent(),thisPath.getPath())) return true;
+					else if(FilenameUtils.wildcardMatch(thisPath.getPath(),thatPath.getParent())) return true;
 				}
 			}
 		}
-		return matches;
+		return false;
 	}
 	
 	public int getGeneration() {

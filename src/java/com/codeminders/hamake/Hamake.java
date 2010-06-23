@@ -102,8 +102,9 @@ public class Hamake extends ContextAware{
 	        runner.run();
 	        if (runner.getFailed() > 0)
 	            return ExitCode.FAILED;
-        }
-        finally{
+        } catch(Exception e){
+        	LOG.error("An error occured", e);
+        } finally{
         	System.setSecurityManager(securityManager);
         }
         return ExitCode.OK;

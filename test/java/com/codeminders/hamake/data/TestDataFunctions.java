@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.Path;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -168,6 +169,17 @@ public class TestDataFunctions {
 		Assert.assertEquals(Collections.EMPTY_LIST, fileset.getLocalPath(context));
 		Assert.assertEquals("[tmp/file]", file.getLocalPath(context).toString());
 		Assert.assertEquals("[/tmp/file]", localFile.getLocalPath(context).toString());
+	}
+	
+	@Test
+	public void testGetParent() throws IOException{
+		Context context = new Context(new Configuration(), null, false, false, false);
+		FileDataFunction file = new FileDataFunction("s3://some_bucket");
+		Assert.assertNotNull(file.getHamakePath(context).get(0));
+		Assert.assertNotNull(file.getHamakePath(context).get(0).toString());
+		FilesetDataFunction fileset = new FilesetDataFunction(null, 0, Long.MAX_VALUE, null, "s3://some_bucket", "*.log");
+		Assert.assertNotNull(fileset.getHamakePath(context).get(0));
+		Assert.assertNotNull(fileset.getHamakePath(context).get(0));
 	}
 	
 }
