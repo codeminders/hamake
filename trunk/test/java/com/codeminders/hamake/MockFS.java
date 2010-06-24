@@ -53,7 +53,9 @@ public abstract class MockFS extends FileSystem{
 
 	@Override
 	public FileStatus getFileStatus(Path path) throws IOException {
-		return new FileStatus(0, new File(path.toUri().getPath()).isDirectory(), 1, 64, Long.MAX_VALUE, Long.MAX_VALUE, null, "owner", "755", path);
+// TODO: make it portable for v0.18        
+//		return new FileStatus(0, new File(path.toUri().getPath()).isDirectory(), 1, 64, Long.MAX_VALUE, Long.MAX_VALUE, null, "owner", "755", path);
+        return null;
 	}
 
 	@Override

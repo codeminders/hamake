@@ -1,6 +1,9 @@
 package com.codeminders.hamake;
 
+import org.apache.hadoop.conf.Configuration;
+
 import java.net.URI;
+import java.io.IOException;
 
 public class MockHDFs extends MockFS {
 	
@@ -11,7 +14,12 @@ public class MockHDFs extends MockFS {
 	public MockHDFs() {
 	}
 
-	@Override
+    @Override
+    public void initialize(URI name, Configuration conf) throws IOException {
+        //TODO: implement it for 0.18
+    }
+
+    @Override
 	public URI getUri() {
 		return NAME;
 	}

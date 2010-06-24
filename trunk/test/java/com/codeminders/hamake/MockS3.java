@@ -1,6 +1,9 @@
 package com.codeminders.hamake;
 
+import org.apache.hadoop.conf.Configuration;
+
 import java.net.URI;
+import java.io.IOException;
 
 public class MockS3 extends MockFS{
 
@@ -8,7 +11,12 @@ public class MockS3 extends MockFS{
 	
 	static final URI NAME = URI.create(DEFAULT_URL);
 
-	@Override
+    @Override
+    public void initialize(URI name, Configuration conf) throws IOException {
+        //TODO: implement it for 0.18
+    }
+
+    @Override
 	public URI getUri() {
 		return NAME;
 	}
