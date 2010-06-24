@@ -15,10 +15,6 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
-import org.mortbay.jetty.AbstractGenerator.Output;
-
-import com.codeminders.helper.SomeHelper;
-import com.codeminders.problem.Problem;
 
 public class DummySimpleJob {
 
