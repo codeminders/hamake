@@ -70,7 +70,6 @@ public class TaskRunner {
 	}
 
 	void run() {
-		LOG.info("Starting DTRs");
 		while (true) {
 			lock.lock();
 
