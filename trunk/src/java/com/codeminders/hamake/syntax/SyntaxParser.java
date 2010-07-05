@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -87,7 +88,8 @@ public class SyntaxParser extends BaseSyntaxParser {
 	
 	private Random random = new Random();
 	private Context rootContext;
-	private static final String SCHEMA_NAME = "hamakefile.xsd";
+	private static final String XSD_SCHEMA_NAME = "hamakefile.xsd";
+	private static final String RELAXNG_SCHEMA_NAME = "hamakefile.rng";
 	
 	
 	protected SyntaxParser(Context rootContext){
@@ -97,10 +99,20 @@ public class SyntaxParser extends BaseSyntaxParser {
 	@Override
 	protected boolean validate(InputStream is) throws SAXException, IOException{	
 		ForgivingErrorHandler errorHandler = new ForgivingErrorHandler();
-		SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
-		InputStream xSDresource = SyntaxParser.class.getClassLoader().getResourceAsStream(SCHEMA_NAME);
-		if(xSDresource == null) xSDresource = SyntaxParser.class.getResourceAsStream(SCHEMA_NAME);
-		Schema schema = factory.newSchema(new StreamSource(xSDresource));
+		Schema schema = null;
+		try{
+			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.RELAXNG_NS_URI);
+			InputStream xSDresource = SyntaxParser.class.getClassLoader().getResourceAsStream(RELAXNG_SCHEMA_NAME);
+			if(xSDresource == null) xSDresource = SyntaxParser.class.getResourceAsStream(RELAXNG_SCHEMA_NAME);
+			schema = factory.newSchema(new StreamSource(xSDresource));
+		}
+		catch(IllegalArgumentException e){
+			LOG.warn("Could not locate RELAX NG validator, using XSD validator");
+			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			InputStream xSDresource = SyntaxParser.class.getClassLoader().getResourceAsStream(XSD_SCHEMA_NAME);
+			if(xSDresource == null) xSDresource = SyntaxParser.class.getResourceAsStream(XSD_SCHEMA_NAME);
+			schema = factory.newSchema(new StreamSource(xSDresource));
+		}
 		Validator validator = schema.newValidator();
 		validator.setErrorHandler(errorHandler);
         validator.validate(new StreamSource(is));

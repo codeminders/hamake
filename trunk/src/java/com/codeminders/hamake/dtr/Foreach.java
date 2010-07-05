@@ -105,11 +105,18 @@ public class Foreach extends DataTransformationRule {
 			command.getContext().setForbidden(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
 			command.getContext().setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
 			long inputTimeStamp = inputfs.getFileStatus(ipath).getModificationTime();
-//			LOG.info(ipath.toString() + " timestamp: " + inputTimeStamp);
+			//on S3 or Native S3 FS directories always have 0 modification time
+			if(inputTimeStamp <= 0){
+				Path firstPartFile = new Path(ipath, "part-00000");
+				if(inputfs.exists(firstPartFile)){
+					inputTimeStamp = inputfs.getFileStatus(ipath).getModificationTime();;
+				}
+			}
+			LOG.info(ipath.toString() + " timestamp: " + inputTimeStamp);
 			for (DataFunction outputFunc : output) {
 				long outputTimeStamp = outputFunc.getMaxTimeStamp(command.getContext());
 				outputTimeStamp = (outputTimeStamp == 0)? -1 : outputTimeStamp;
-//				LOG.info(outputFunc.getPath(command.getContext()) + " timestamp: " + outputTimeStamp);
+				LOG.info(outputFunc.getPath(command.getContext()) + " timestamp: " + outputTimeStamp);
 				if (outputTimeStamp < inputTimeStamp || outputTimeStamp == -1) {					
 					outputFunc.clear(command.getContext());
 					queue.add(new ExecQueueItem(command, new Thread(command, getTask().toString())));

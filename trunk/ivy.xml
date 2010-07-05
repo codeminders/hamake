@@ -46,6 +46,14 @@
     <dependency org="junit"
       name="junit"
       rev="${junit.version}"
+      conf="common->master"/>
+    <dependency org="thaiopensource"
+      name="jing"
+      rev="${jing.version}"
+      conf="common->master"/>
+    <dependency org="javax.xml.parsers"
+      name="jaxp-api"
+      rev="${jaxp.api.version}"
       conf="common->master"/>           
   </dependencies>
 </ivy-module>

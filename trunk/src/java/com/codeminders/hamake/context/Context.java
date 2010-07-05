@@ -26,6 +26,7 @@ public class Context {
 	public static final String HAMAKE_PROPERTY_WITH_DEPENDENCIES = HAMAKE_VARS_PREFIX + "dependencies.enabled";
 	public static final String HAMAKE_PROPERTY_VERBOSE = HAMAKE_VARS_PREFIX + "verbose";
 	public static final String HAMAKE_PROPERTY_DRY_RUN = HAMAKE_VARS_PREFIX + "dry.run";
+	public static final String HAMAKE_PROPERTY_VALIDATOR_SCHEMA_TYPE = HAMAKE_VARS_PREFIX + "schema.type";
 	
 	public static final String HADOOP_PROPERTY_TEMP_FOLDER = HADOOP_VARS_PREFIX + "temp.folder";
 	
