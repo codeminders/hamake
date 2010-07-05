@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+    <start>
+        <ref name="project"/>
+    </start>
+    <define name="project" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+        <element name="project">
+            <attribute name="default">
+                <data type="NCName"/>
+            </attribute>
+            <attribute name="name">
+                <data type="normalizedString"/>
+            </attribute>
+            <zeroOrMore>
+                    <ref name="property"/>
+            </zeroOrMore>
+            <zeroOrMore>
+                    <ref name="file_group"/>
+            </zeroOrMore>
+            <oneOrMore>
+                <choice>
+                    <ref name="foreach"/>
+                    <ref name="fold" />
+                </choice>
+            </oneOrMore>
+        </element>
+    </define>
+    <define name="foreach">
+        <element name="foreach">
+            <optional>
+                <attribute name="name">
+                    <data type="ID"/>
+                </attribute>
+            </optional>
+            <optional>
+                <attribute name="disabled">
+                    <data type="boolean"/>
+                </attribute>
+            </optional>
+            <interleave>
+                <optional>
+                    <element name="description">
+                        <data type="string"/>
+                    </element>
+                </optional>
+                <optional>
+                    <element name="dependencies">
+                        <ref name="file_group"/>
+                    </element>
+                </optional>
+                <element name="input">
+                    <optional>
+                    <ref name="file_group"/>
+                    </optional>
+                </element>
+                <element name="output">
+                    <optional>
+                        <attribute name="expiration">
+                            <data type="token"/>
+                        </attribute>
+                    </optional>
+                    <ref name="file_group"/>
+                </element>
+                <ref name="task_group"/>
+            </interleave>
+        </element>
+    </define>
+    <define name="fold">
+        <element name="fold">
+            <optional>
+                <attribute name="name">
+                    <data type="ID"/>
+                </attribute>
+            </optional>
+            <optional>
+                <attribute name="disabled">
+                    <data type="boolean"/>
+                </attribute>
+            </optional>
+            <interleave>
+                <optional>
+                    <element name="description">
+                        <data type="string"/>
+                    </element>
+                </optional>
+                <optional>
+                    <element name="dependencies">
+                        <ref name="file_group"/>
+                    </element>
+                </optional>
+                <element name="input">
+                    <optional>
+                    <ref name="file_group"/>
+                    </optional>
+                </element>
+                <element name="output">
+                    <optional>
+                        <attribute name="expiration">
+                            <data type="token"/>
+                        </attribute>
+                    </optional>
+                    <ref name="file_group"/>
+                </element>
+                <ref name="task_group"/>
+            </interleave>
+        </element>
+    </define>    
+    <define name="property" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+        <element name="property">
+            <attribute name="name">
+                <data type="normalizedString"/>
+            </attribute>
+            <attribute name="value">
+                <data type="normalizedString"/>
+            </attribute>
+        </element>
+    </define>
+    <define name="file_group">
+        <oneOrMore>
+            <choice>
+                <element name="file">
+                    <optional>
+                        <attribute name="generation">
+                            <data type="positiveInteger"/>
+                        </attribute>
+                    </optional>
+                    <optional>
+                        <attribute name="id">
+                            <data type="ID"/>
+                        </attribute>
+                    </optional>
+                    <attribute name="path">
+                        <data type="normalizedString"/>
+                    </attribute>
+                </element>
+                <element name="fileset">
+                    <optional>
+                        <attribute name="generation">
+                            <data type="positiveInteger"/>
+                        </attribute>
+                    </optional>
+                    <optional>
+                        <attribute name="id">
+                            <data type="ID"/>
+                        </attribute>
+                    </optional>
+                    <optional>
+                        <attribute name="mask">
+                            <data type="normalizedString"/>
+                        </attribute>
+                    </optional>
+                    <attribute name="path">
+                        <data type="normalizedString"/>
+                    </attribute>
+                </element>
+                <element name="set">
+                    <optional>
+                        <attribute name="id">
+                            <data type="ID"/>
+                        </attribute>
+                    </optional>
+                    <ref name="file_group"/>
+                </element>
+                <element name="include">
+                    <attribute name="idref">
+                        <data type="IDREF"/>
+                    </attribute>
+                </element>
+            </choice>
+        </oneOrMore>
+    </define>
+    <define name="task_group">
+        <oneOrMore>
+            <choice>
+                <element name="exec">
+                    <attribute name="binary">
+                        <data type="normalizedString"/>
+                    </attribute>
+                    <oneOrMore>
+                        <ref name="parameter"/>
+                    </oneOrMore>
+                </element>
+                <element name="mapreduce">
+                    <attribute name="jar">
+                        <data type="normalizedString"/>
+                    </attribute>
+                    <attribute name="main">
+                        <data type="normalizedString"/>
+                    </attribute>
+                    <element name="classpath">
+                        <ref name="file_group"/>
+                    </element>
+                    <oneOrMore>
+                        <ref name="parameters"/>
+                    </oneOrMore>
+                </element>
+                <element name="pig">
+                    <optional>
+                    <attribute name="jar">
+                        <data type="normalizedString"/>
+                    </attribute>
+                        </optional>
+                    <attribute name="script">
+                        <data type="normalizedString"/>
+                    </attribute>
+                    <oneOrMore>
+                        <ref name="parameters"/>
+                    </oneOrMore>
+                </element>
+            </choice>
+        </oneOrMore>
+    </define>
+    <define name="parameter">
+        <element name="parameter">
+            <optional>
+                <attribute name="concat_function">
+                    <choice>
+                        <value>space</value>
+                        <value>comma</value>
+                        <value>append</value>
+                    </choice>
+                </attribute>
+            </optional>
+            <optional>
+                <attribute name="processing_function">
+                    <choice>
+                        <value>identity</value>
+                    </choice>
+                </attribute>
+            </optional>
+            <optional>
+                <attribute name="name">
+                    <data type="normalizedString"/>
+                </attribute>
+            </optional>
+            <oneOrMore>
+                <choice>
+                    <element name="reference">
+                        <attribute name="idref">
+                            <data type="IDREF"/>
+                        </attribute>
+                    </element>
+                    <element name="literal">
+                        <attribute name="value">
+                            <data type="normalizedString"/>
+                        </attribute>
+                    </element>
+                </choice>
+            </oneOrMore>
+        </element>
+    </define>
+    <define name="parameters">
+        <oneOrMore>
+            <choice>
+                <ref name="jobconf" />
+                <ref name="parameter" />
+            </choice>
+        </oneOrMore>
+    </define>
+    <define name="jobconf">
+        <element name="jobconf">
+            <attribute name="name">
+                <data type="normalizedString"/>
+            </attribute>
+            <attribute name="value">
+                <data type="normalizedString"/>
+            </attribute>
+        </element>
+    </define>
+</grammar>

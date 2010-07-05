@@ -119,6 +119,13 @@ public class FileDataFunction extends DataFunction {
 			return 0;
 
 		FileStatus stat = fs.getFileStatus(p);
+		//on S3 or Native S3 FS directories always have 0 modification time
+		if(stat.getModificationTime() <= 0){
+			Path firstPartFile = new Path(p, "part-00000");
+			if(fs.exists(firstPartFile)){
+				stat = fs.getFileStatus(p);
+			}
+		}
 
 		return stat.getModificationTime();
 	}
