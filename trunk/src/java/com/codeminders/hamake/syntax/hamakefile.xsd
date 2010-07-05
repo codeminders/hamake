@@ -24,59 +24,50 @@
       <xs:attribute name="value" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
-  <xs:group name="task_group">
-      <xs:sequence>
-          <xs:element ref="description" minOccurs="0"/>
-          <xs:element ref="dependencies" minOccurs="0" />
-          <xs:element ref="input"/>
-          <xs:element ref="output"/>
-          <xs:choice>
-            <xs:element ref="exec"/>
-            <xs:element ref="mapreduce"/>
-            <xs:element ref="pig"/>
-          </xs:choice>
-      </xs:sequence>
-  </xs:group>
   <xs:element name="foreach">
     <xs:complexType>
-      <xs:group ref="task_group" maxOccurs="1" minOccurs="1" />
+      <xs:sequence>
+        <xs:element maxOccurs="5" minOccurs="3" ref="dtr_element"/>
+      </xs:sequence>
       <xs:attribute name="name" type="xs:ID"/>
       <xs:attribute name="disabled" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="fold">
     <xs:complexType>
-      <xs:group ref="task_group" maxOccurs="1" minOccurs="1"/>
+      <xs:sequence>
+        <xs:element maxOccurs="5" minOccurs="3" ref="dtr_element"/>
+      </xs:sequence>
       <xs:attribute name="name" use="required" type="xs:ID"/>
       <xs:attribute name="disabled" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
 
   <xs:group name="file_group">
-      <xs:choice>
-        <xs:element ref="file"/>
-        <xs:element ref="fileset"/>
-        <xs:element ref="set"/>
-        <xs:element ref="include"/>
-      </xs:choice>
+    <xs:choice>
+      <xs:element ref="file"/>
+      <xs:element ref="fileset"/>
+      <xs:element ref="set"/>
+      <xs:element ref="include"/>
+    </xs:choice>
   </xs:group>
-  <xs:element name="input">
+  <xs:element name="input" substitutionGroup="dtr_element">
     <xs:complexType>
-      <xs:group ref="file_group"  maxOccurs="unbounded" minOccurs="0" />
+      <xs:group maxOccurs="unbounded" minOccurs="0" ref="file_group"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="dependencies">
+  <xs:element name="dependencies" substitutionGroup="dtr_element">
     <xs:complexType>
-      <xs:group ref="file_group"  maxOccurs="unbounded" minOccurs="1" />
+      <xs:group ref="file_group" maxOccurs="unbounded" minOccurs="1"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="output">
+  <xs:element name="output" substitutionGroup="dtr_element">
     <xs:complexType>
-      <xs:group ref="file_group"  maxOccurs="unbounded" />
+      <xs:group ref="file_group" maxOccurs="unbounded"/>
       <xs:attribute name="expiration" type="expiration" form="unqualified"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="exec">
+  <xs:element name="exec" substitutionGroup="task_element">
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
         <xs:element ref="parameter"/>
@@ -85,7 +76,7 @@
       <xs:attribute name="binary" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="mapreduce">
+  <xs:element name="mapreduce" substitutionGroup="task_element">
     <xs:complexType>
       <xs:sequence>
         <xs:choice minOccurs="0">
@@ -100,7 +91,7 @@
       <xs:attribute name="main" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="pig">
+  <xs:element name="pig" substitutionGroup="task_element">
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
         <xs:element ref="parameter"/>
@@ -125,7 +116,7 @@
       <xs:attribute name="path" use="required" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="description" type="xs:string"/>
+  <xs:element name="description" type="xs:string" substitutionGroup="dtr_element"/>
   <xs:element name="jobconf">
     <xs:complexType>
       <xs:attribute name="name" use="required" type="xs:normalizedString"/>
@@ -160,7 +151,7 @@
   </xs:element>
   <xs:element name="set">
     <xs:complexType>
-      <xs:group ref="file_group"  maxOccurs="unbounded" />
+      <xs:group ref="file_group" maxOccurs="unbounded"/>
       <xs:attribute name="id" type="xs:ID"/>
     </xs:complexType>
   </xs:element>
@@ -186,7 +177,9 @@
   </xs:simpleType>
   <xs:element name="classpath">
     <xs:complexType>
-      <xs:group ref="file_group"  maxOccurs="unbounded" />
+      <xs:group ref="file_group" maxOccurs="unbounded"/>
     </xs:complexType>
   </xs:element>
+  <xs:element abstract="true" name="dtr_element"/>
+  <xs:element abstract="true" name="task_element" substitutionGroup="dtr_element"/>
 </xs:schema>
