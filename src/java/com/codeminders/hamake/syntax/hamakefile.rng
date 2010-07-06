@@ -7,12 +7,16 @@
     </start>
     <define name="project" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
         <element name="project">
+            <optional>
             <attribute name="default">
                 <data type="NCName"/>
             </attribute>
+            </optional>
+            <optional>
             <attribute name="name">
                 <data type="normalizedString"/>
             </attribute>
+                </optional>
             <zeroOrMore>
                     <ref name="property"/>
             </zeroOrMore>
@@ -189,18 +193,20 @@
                     <attribute name="main">
                         <data type="normalizedString"/>
                     </attribute>
+                    <optional>
                     <element name="classpath">
                         <ref name="file_group"/>
                     </element>
+                        </optional>
                     <oneOrMore>
                         <ref name="parameters"/>
                     </oneOrMore>
                 </element>
                 <element name="pig">
                     <optional>
-                    <attribute name="jar">
-                        <data type="normalizedString"/>
-                    </attribute>
+                        <attribute name="jar">
+                            <data type="normalizedString"/>
+                        </attribute>
                         </optional>
                     <attribute name="script">
                         <data type="normalizedString"/>
@@ -227,6 +233,7 @@
                 <attribute name="processing_function">
                     <choice>
                         <value>identity</value>
+                        <value>normalizePath</value>
                     </choice>
                 </attribute>
             </optional>

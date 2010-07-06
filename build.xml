@@ -95,6 +95,7 @@
     </javac>
     <copy todir="${build.dir}/classes">
       <fileset dir="${src.dir}" includes="**/*.xsd"/>
+      <fileset dir="${src.dir}" includes="**/*.rng"/>
     </copy>
   </target>
 

@@ -130,7 +130,7 @@
         <xs:element ref="literal"/>
       </xs:choice>
       <xs:attribute name="concat_function" type="cancatFunction"/>
-      <xs:attribute name="processing_function" type="xs:normalizedString"/>
+      <xs:attribute name="processing_function" type="processingFunction"/>
       <xs:attribute name="name" type="xs:normalizedString"/>
     </xs:complexType>
   </xs:element>
@@ -173,6 +173,7 @@
   <xs:simpleType name="processingFunction">
     <xs:restriction base="xs:normalizedString">
       <xs:enumeration value="identity"/>
+      <xs:enumeration value="normalizePath"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:element name="classpath">
