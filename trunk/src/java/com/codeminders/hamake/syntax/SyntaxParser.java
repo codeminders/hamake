@@ -101,13 +101,18 @@ public class SyntaxParser extends BaseSyntaxParser {
 		ForgivingErrorHandler errorHandler = new ForgivingErrorHandler();
 		Schema schema = null;
 		try{
+			System.setProperty(SchemaFactory.class.getName() + ":" + XMLConstants.RELAXNG_NS_URI, "com.thaiopensource.relaxng.jaxp.XMLSyntaxSchemaFactory");
 			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.RELAXNG_NS_URI);
 			InputStream xSDresource = SyntaxParser.class.getClassLoader().getResourceAsStream(RELAXNG_SCHEMA_NAME);
 			if(xSDresource == null) xSDresource = SyntaxParser.class.getResourceAsStream(RELAXNG_SCHEMA_NAME);
+			if(xSDresource == null){
+				LOG.info("Could not get Hamake RelaxNG schema");
+				return false;
+			}
 			schema = factory.newSchema(new StreamSource(xSDresource));
 		}
 		catch(IllegalArgumentException e){
-			LOG.warn("Could not locate RELAX NG validator, using XSD validator");
+			LOG.warn("Could not locate RELAX NG schema factory. Using XSD validator");
 			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 			InputStream xSDresource = SyntaxParser.class.getClassLoader().getResourceAsStream(XSD_SCHEMA_NAME);
 			if(xSDresource == null) xSDresource = SyntaxParser.class.getResourceAsStream(XSD_SCHEMA_NAME);
