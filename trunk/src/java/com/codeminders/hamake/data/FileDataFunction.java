@@ -118,16 +118,7 @@ public class FileDataFunction extends DataFunction {
 		if (!fs.exists(p))
 			return 0;
 
-		FileStatus stat = fs.getFileStatus(p);
-		//on S3 or Native S3 FS modification time of folders is always 0 
-		if(stat.getModificationTime() <= 0){
-			Path firstPartFile = new Path(p, "part-00000");
-			if(fs.exists(firstPartFile)){
-				stat = fs.getFileStatus(firstPartFile);
-			}
-		}
-
-		return stat.getModificationTime();
+		return Utils.recursiveGetModificationTime(fs, p);
 	}
 	
 	@Override
