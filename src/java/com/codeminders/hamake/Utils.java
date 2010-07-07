@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.*;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.util.RunJar;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.conf.Configuration;
@@ -403,6 +404,26 @@ public class Utils {
 			return false;
 		}
 		return true;
+	}
+	
+	public static long recursiveGetModificationTime(FileSystem fs, Path p) throws IOException{
+		FileStatus stat = fs.getFileStatus(p);
+		long modificationTime = stat.getModificationTime();
+		while(modificationTime == 0 && stat.isDir()){
+			LOG.info("modification time is 0");
+			FileStatus[] statuses = fs.listStatus(stat.getPath());
+			LOG.info("path is " + stat.getPath().toString() + " statuses length is " + statuses.length);
+			if(statuses.length > 0){
+				for(FileStatus status : statuses){
+					if(status.getModificationTime() > modificationTime){
+						modificationTime = status.getModificationTime();
+					}
+					stat = status;
+				}
+			}
+			else return 0;
+		}
+		return modificationTime;
 	}
 
 }

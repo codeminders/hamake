@@ -2,12 +2,14 @@ package com.codeminders.hamake.dtr;
 
 import com.codeminders.hamake.CommandThread;
 import com.codeminders.hamake.InvalidContextStateException;
+import com.codeminders.hamake.Utils;
 import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.data.DataFunction;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.s3.S3FileSystem;
@@ -104,14 +106,7 @@ public class Foreach extends DataTransformationRule {
 			command.getContext().setForbidden(PARENT_FOLDER_VAR, ipath.getParent().toString());
 			command.getContext().setForbidden(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
 			command.getContext().setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
-			long inputTimeStamp = inputfs.getFileStatus(ipath).getModificationTime();
-			//on S3 or Native S3 FS modification time of folders is always 0
-			if(inputTimeStamp <= 0){
-				Path firstPartFile = new Path(ipath, "part-00000");
-				if(inputfs.exists(firstPartFile)){
-					inputTimeStamp = inputfs.getFileStatus(firstPartFile).getModificationTime();
-				}
-			}
+			long inputTimeStamp = Utils.recursiveGetModificationTime(inputfs, ipath);
 			for (DataFunction outputFunc : output) {
 				long outputTimeStamp = outputFunc.getMaxTimeStamp(command.getContext());
 				outputTimeStamp = (outputTimeStamp == 0)? -1 : outputTimeStamp;
