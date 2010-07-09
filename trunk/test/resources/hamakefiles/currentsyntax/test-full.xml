@@ -33,6 +33,9 @@
 				<reference idref="relatedOne" />
 			</parameter>
 		</mapreduce>
+		<refused>
+			<file path="${tmpdir}/referrers" />
+		</refused>
 	</foreach>
 	<foreach name="foreach2">
 		<description>second foreach</description>
@@ -54,6 +57,9 @@
 				<reference idref="imageDomains1" />
 			</parameter>
 		</exec>
+		<refused keep="false">
+			<file path="${tmpdir}/referrers" />
+		</refused>
 	</foreach>
 	<fold name="reduce">
 		<description>reducer</description>

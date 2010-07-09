@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	
+<project name="test-refused-files">
+
+	<!-- properties:
+		tmpdir, test.jar
+		are set by unit test
+	-->
+
+	<foreach name="test-refuse-foreach">
+		<input>
+			<fileset path="${tmpdir}/input" />
+		</input>
+		<output>
+			<file path="${tmpdir}/output/${foreach:filename}" />
+		</output>
+		<mapreduce jar="${test.jar}" main="com.codeminders.hamake.testjar.DummyJobThatThrowsIOException">
+			<parameter>
+				<literal value="does_not_matter" />
+			</parameter>
+		</mapreduce>
+		<refused>
+			<file path="${tmpdir}/refused" />
+		</refused>
+	</foreach>
+
+</project>

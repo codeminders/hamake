@@ -6,12 +6,16 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FalseFileFilter;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.NotFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
@@ -67,8 +71,8 @@ public class TestHamake {
 				localHamakeFile));
 		make.setNumJobs(2);
 		make.run();
-		int map1OutSize = FileUtils.listFiles(map1Dir, TrueFileFilter.INSTANCE,
-				TrueFileFilter.INSTANCE).size();
+		int map1OutSize = FileUtils.listFiles(map1Dir, FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".crc")),
+				null).size();
 		Assert.assertEquals(10, map1OutSize);
 		Assert.assertTrue(outputFile.exists());
 		Assert.assertTrue("File size of output is 0 ", outputFile.length() > 0);
@@ -101,8 +105,8 @@ public class TestHamake {
 		make.setNumJobs(2);
 		make.run();
 		Thread.sleep(1000);
-		int map1OutSize = FileUtils.listFiles(map1Dir, TrueFileFilter.INSTANCE,
-				TrueFileFilter.INSTANCE).size();
+		int map1OutSize = FileUtils.listFiles(map1Dir, FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".crc")),
+				null).size();
 		Assert.assertEquals(10, map1OutSize);
 		PrintWriter writer = new PrintWriter(files[0]);
 		writer.println("someInfo");
@@ -152,10 +156,10 @@ public class TestHamake {
 		make.setNumJobs(2);
 		make.run();
 		int map21OutSize = FileUtils.listFiles(map21Dir,
-				TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
+				FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".crc")), null).size();
 		Assert.assertEquals(10, map21OutSize);
 		int map22OutSize = FileUtils.listFiles(map22Dir,
-				TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
+				FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".crc")), null).size();
 		Assert.assertEquals(10, map22OutSize);
 		Assert.assertTrue(output1File.exists());
 		Assert
@@ -218,15 +222,40 @@ public class TestHamake {
 		th.start();
 		Thread.sleep(2000);
 		Assert.assertNull(runner.getException());
-		int map1OutSize = FileUtils.listFiles(outputDir, TrueFileFilter.INSTANCE,
-				TrueFileFilter.INSTANCE).size();
+		int map1OutSize = FileUtils.listFiles(outputDir, FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".crc")),
+				null).size();
 		Assert.assertEquals(0, map1OutSize);
 		Assert.assertTrue(dependencyFile.createNewFile());
 		Thread.sleep(2000);
 		Assert.assertNull(runner.getException());
-		map1OutSize = FileUtils.listFiles(outputDir, TrueFileFilter.INSTANCE,
-				TrueFileFilter.INSTANCE).size();
+		map1OutSize = FileUtils.listFiles(outputDir, FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".crc")),
+				null).size();
 		Assert.assertEquals(1, map1OutSize);
+	}
+	
+	@Test
+	public void testRefusedFiles() throws IOException, InvalidContextStateException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InterruptedException{
+		File inputDir = new File(tempDir, "input");
+		inputDir.mkdirs();
+		HelperUtils.generateTemporaryFiles(inputDir.getCanonicalPath(), 10);
+		File outputDir = new File(tempDir, "output");
+		File refusedDir = new File(tempDir, "refused");
+		outputDir.mkdirs();
+		String tempDirPath = tempDir.getCanonicalPath();
+		Context context = new Context(new Configuration(), null, true, false, false);
+		context.set("tmpdir", tempDirPath);
+		context.set("test.jar", HelperUtils.getTestJar().getCanonicalPath());
+
+		File localHamakeFile = HelperUtils.getHamakeTestResource("test-refused-files.xml");
+		final Hamake make = BaseSyntaxParser.parse(context, new FileInputStream(
+				localHamakeFile));
+		make.setNumJobs(2);
+		make.run();
+		Assert.assertTrue(refusedDir.exists());
+		Assert.assertTrue(refusedDir.isDirectory());
+		Collection<File> refusedFiles1 = FileUtils.listFiles(refusedDir, FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".crc")),
+				null);
+		Assert.assertEquals("Amount of refused files", 5, refusedFiles1.size());
 	}
 
 }

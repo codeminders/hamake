@@ -9,16 +9,23 @@ import com.codeminders.hamake.data.DataFunction;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.s3.S3FileSystem;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Data transformation rule that maps a file to one or more files.
@@ -29,10 +36,12 @@ public class Foreach extends DataTransformationRule {
 	private class ExecQueueItem{
 		private CommandThread command;
 		private Thread thread;
+		private Path inputPath;
 		
-		public ExecQueueItem(CommandThread command, Thread thread){
+		public ExecQueueItem(CommandThread command, Thread thread, Path inputPath){
 			this.thread = thread;
 			this.command = command;
+			this.inputPath = inputPath;
 		}
 
 		public CommandThread getCommand() {
@@ -41,6 +50,10 @@ public class Foreach extends DataTransformationRule {
 
 		public Thread getThread() {
 			return thread;
+		}
+
+		public Path getInputPath() {
+			return inputPath;
 		}
 		
 	}
@@ -85,74 +98,147 @@ public class Foreach extends DataTransformationRule {
 	public int execute(Semaphore semaphore)
 			throws IOException {
 		
+		LOG.info(getName() + ": Listing input data");
 		List<Path> inputlist = input.getPath(getContext());
-		List<ExecQueueItem> queue = new ArrayList<ExecQueueItem>();
 		if (inputlist == null || inputlist.isEmpty()){
 			LOG.error("Input folder of DTR " + getName()
 					+ " is empty");
 			return -1;
 		}
-		
+		LOG.info(getName() + ": Has " + inputlist.size() + " files to process");
+		QueueFetcher fetcher = new QueueFetcher();
+		fetcher.start();
 		for(Path ipath : inputlist){
 			CommandThread command = new CommandThread(getTask(), getContext(), semaphore);
-			FileSystem inputfs = input.getFileSystem(getContext(), ipath);
-			if(!inputfs.exists(ipath)){
-				LOG.error(ipath.toString() + " from input of DTR " + getName()
-						+ " does not exist. Ignoring");
-				continue;
-			}
+			FileSystem inputfs = ipath.getFileSystem((Configuration)getContext().get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
 			command.getContext().setForbidden(FULL_FILENAME_VAR, ipath.toString());
 			command.getContext().setForbidden(SHORT_FILENAME_VAR, FilenameUtils.getName(ipath.toString()));
 			command.getContext().setForbidden(PARENT_FOLDER_VAR, ipath.getParent().toString());
 			command.getContext().setForbidden(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
 			command.getContext().setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
 			long inputTimeStamp = Utils.recursiveGetModificationTime(inputfs, ipath);
-			for (DataFunction outputFunc : output) {
-				long outputTimeStamp = outputFunc.getMaxTimeStamp(command.getContext());
-				outputTimeStamp = (outputTimeStamp == 0)? -1 : outputTimeStamp;
-				if (outputTimeStamp < inputTimeStamp || outputTimeStamp == -1) {					
-					outputFunc.clear(command.getContext());
-					queue.add(new ExecQueueItem(command, new Thread(command, getTask().toString())));
-				} 
+			boolean inTrash = false;
+			if(getTrashBucket() != null){
+				for(Path trashBucketPath : getTrashBucket().getPath(command.getContext())){
+					FileSystem trashBucketFS = trashBucketPath.getFileSystem((Configuration)command.getContext().get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
+					FileStatus[] statuses = trashBucketFS.listStatus(trashBucketPath);
+					for(FileStatus status : statuses){
+						if(status.getPath().getName().equals(ipath.getName())){
+							if(Utils.recursiveGetModificationTime(trashBucketFS, trashBucketPath) >= inputTimeStamp){
+								LOG.info(getName() + ": Passing " + ipath.toString() + ". This file is in the trash bucket " + trashBucketPath.toString());
+								inTrash = true;
+							}
+						}
+					}
+				}
+			}
+			if(!inTrash){
+				for (DataFunction outputFunc : output) {
+					long outputTimeStamp = outputFunc.getMaxTimeStamp(command.getContext());
+					outputTimeStamp = (outputTimeStamp == 0)? -1 : outputTimeStamp;
+					if (outputTimeStamp < inputTimeStamp || outputTimeStamp == -1) {
+						outputFunc.clear(command.getContext());
+						try {
+							semaphore.acquire();
+						} catch (InterruptedException e) {
+							LOG.error(getName() + ": Error running " + getName(), e);
+							break;
+						}
+						ExecQueueItem item = new ExecQueueItem(command, new Thread(command, getTask().toString()), ipath);
+						item.getThread().setDaemon(true);
+						item.getThread().start();
+						if(fetcher.isAlive()) fetcher.pushQueue(item);
+					} 
+				}
 			}
 		}
-		if(queue.size() > 0) return execQueue(queue, semaphore);		
-		else{
-			LOG.info("all output data of DTR "+ getName() + " is fresh enough");
-			return 0;
+		fetcher.terminate();
+		try {
+			fetcher.join();
+		} catch (InterruptedException e) {
+			LOG.info(getName() + ": Error running " + getName(), e);
+		}
+		LOG.info(getName() + ": Processed " + fetcher.getCounter() + " files, " + fetcher.getErrors() + " files with errors" );
+		return fetcher.getResult();		
+	}
+	
+	protected class QueueFetcher extends Thread{
+		
+		private int result = 0;
+		private long counter = 0;
+		private long errors = 0;
+		private AtomicBoolean terminated = new AtomicBoolean(false);
+		private Queue<ExecQueueItem> queue = new ConcurrentLinkedQueue<ExecQueueItem>();
+		
+		public void pushQueue(ExecQueueItem queue) {
+			this.queue.add(queue);
+		}
+
+		public int getResult() {
+			return result;
+		}
+		
+		public long getCounter() {
+			return counter;
+		}
+
+		public long getErrors() {
+			return errors;
+		}
+
+		public void terminate(){
+			terminated.set(true);
+		}
+
+		@Override
+		public void run(){
+			while(!terminated.get() || !queue.isEmpty()){
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					LOG.error("Error in QueueFetcher", e);
+					result = -1000;
+					return;
+				}
+				ExecQueueItem item = null;
+				while ((item = queue.poll()) != null) {
+					try {
+						item.getThread().join();
+					} catch (InterruptedException ex) {
+						LOG.error("Error in QueueFetcher", ex);
+						result = -1000;
+						return;
+					}
+					int t_rc = item.getCommand().getReturnCode();
+					if (t_rc != 0){
+						errors++;
+						result = t_rc;
+						try {
+							throwInTrashBucket(item.getInputPath(), item.getCommand().getContext(), isRemoveIncorrectFile());
+						} catch (IOException e) {
+							LOG.error("Error moving file to trash", e);
+						}
+					}
+					else counter++;
+				}
+			}
 		}
 	}
 
-	protected int execQueue(List<ExecQueueItem> queue, Semaphore jobSemaphore) {
-		for (ExecQueueItem item : queue) {
-			try {
-				jobSemaphore.acquire();
-			} catch (InterruptedException ex) {
-				LOG.error(ex);
-				return -1000;
-			}
-			try {
-				item.getThread().setDaemon(true);
-				item.getThread().start();
-			} catch (Exception ex) {
-				LOG.error(ex);
-				jobSemaphore.release();
+	protected void throwInTrashBucket(Path file, Context context, boolean removeSource) throws IOException{
+		if(getTrashBucket() != null){
+			FileSystem fileFs = file.getFileSystem((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
+			for(Path trashBucketPath : getTrashBucket().getPath(context)){
+				FileSystem trashBucketFS = trashBucketPath.getFileSystem((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
+				if(!trashBucketFS.exists(trashBucketPath)){
+					trashBucketFS.mkdirs(trashBucketPath);
+				}
+				if(!trashBucketFS.getFileStatus(trashBucketPath).isDir()){
+					throw new IOException("Could not put file " + file.getName() + " to trash " + trashBucketPath.toString() + " because is is not a folder");
+				}
+				FileUtil.copy(fileFs, file, trashBucketFS, trashBucketPath, removeSource, (Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
 			}
 		}
-		int rc = 0;
-		for (ExecQueueItem item : queue) {
-			try {
-				item.getThread().join();
-			} catch (InterruptedException ex) {
-				LOG.error(ex);
-				return -1000;
-			}
-			int t_rc = item.getCommand().getReturnCode();
-			if (t_rc != 0)
-				rc = t_rc;
-		}
-		return rc;
-
 	}
 
 }

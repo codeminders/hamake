@@ -215,12 +215,22 @@ public class SyntaxParser extends BaseSyntaxParser {
 		Element dependencies = getOneSubElement(root, "dependencies");
 		List<DataFunction> deps = null;
 		deps = parseDTRData(dependencies, Arrays.asList("fileset", "file", "set", "include"), 0, Integer.MAX_VALUE);
+		
+		Element refused = getOneSubElement(root, "refused");
+		DataFunction refusedDF = null;
+		boolean keep = true;
+		if(refused != null){
+			refusedDF = parseDTRData(refused, Arrays.asList("fileset", "file", "set", "include"), 1, Integer.MAX_VALUE).get(0);
+			keep = Boolean.parseBoolean(getOptionalAttribute(refused, "keep", "true"));
+		}
 
 		Task task = parseTask(root, (String)rootContext.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER));
 
 		Foreach foreach = new Foreach(rootContext, inputFunc, outputFuncs, deps);
 		foreach.setName(name);
 		foreach.setTask(task);
+		foreach.setRemoveIncorrectFile(!keep);
+		foreach.setTrashBucket(refusedDF);
 		return foreach;
 	}
 

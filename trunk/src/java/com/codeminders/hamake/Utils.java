@@ -409,21 +409,25 @@ public class Utils {
 	public static long recursiveGetModificationTime(FileSystem fs, Path p) throws IOException{
 		FileStatus stat = fs.getFileStatus(p);
 		long modificationTime = stat.getModificationTime();
-		while(modificationTime == 0 && stat.isDir()){
-			LOG.info("modification time is 0");
-			FileStatus[] statuses = fs.listStatus(stat.getPath());
-			LOG.info("path is " + stat.getPath().toString() + " statuses length is " + statuses.length);
-			if(statuses.length > 0){
-				for(FileStatus status : statuses){
-					if(status.getModificationTime() > modificationTime){
-						modificationTime = status.getModificationTime();
-					}
-					stat = status;
-				}
-			}
-			else return 0;
+		if(modificationTime == 0 && stat.isDir()){
+			modificationTime = getDirMaxModificationTime(fs, modificationTime, stat);
 		}
 		return modificationTime;
 	}
-
+	
+	private static long getDirMaxModificationTime(FileSystem fs, long modificationTime, FileStatus stat) throws IOException{
+		FileStatus[] stats = fs.listStatus(stat.getPath());
+		if(stats.length > 0){
+			for(FileStatus s : stats){
+				if(s.isDir()){
+					long m = getDirMaxModificationTime(fs, modificationTime, s);
+					if(m > modificationTime) modificationTime = m;
+				}
+				else if(s.getModificationTime() > modificationTime){
+					modificationTime = s.getModificationTime();
+				}
+			}
+		}
+		return modificationTime;
+	}
 }
