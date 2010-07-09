@@ -84,6 +84,8 @@ public class TestSyntaxParser {
 		Assert.assertEquals(60*60*24*2, mdtr1.getOutputs().get(0).getValidityPeriod());
 		Assert.assertEquals(1, mdtr1.getDeps().size());
 		Assert.assertTrue(mdtr1.getTask() instanceof MapReduce);
+		Assert.assertEquals(1, mdtr1.getTrashBucket().getPath(context).size());
+		Assert.assertEquals(false, mdtr1.isRemoveIncorrectFile());
 		MapReduce mr = (MapReduce)mdtr1.getTask();
 		Assert.assertEquals(new File(tempDir.getAbsoluteFile().toString() + "/datamining.jar"), new File(mr.getJar()));
 		Assert.assertEquals("us.imageshack.datamining.Access2Referrers", mr.getMain());
@@ -97,6 +99,8 @@ public class TestSyntaxParser {
 		Assert.assertEquals(6, mdtr2.getInputs().get(0).getPath(context).size());
 		Assert.assertEquals(2, mdtr2.getOutputs().size());
 		Assert.assertEquals(0, mdtr2.getDeps().size());
+		Assert.assertEquals(1, mdtr2.getTrashBucket().getPath(context).size());
+		Assert.assertEquals(true, mdtr2.isRemoveIncorrectFile());
 		Assert.assertTrue(mdtr2.getTask() instanceof Exec);
 		Exec ex = (Exec)mdtr2.getTask();
 		Assert.assertEquals("cat", ex.getBinary().toString());
@@ -155,6 +159,8 @@ public class TestSyntaxParser {
 		Assert.assertEquals(0, mdtr1.getOutputs().get(0).getGeneration());
 		Assert.assertEquals(Long.MAX_VALUE, mdtr1.getOutputs().get(0).getValidityPeriod());
 		Assert.assertEquals(0, mdtr1.getDeps().size());
+		Assert.assertEquals(null, mdtr1.getTrashBucket());
+		Assert.assertEquals(false, mdtr1.isRemoveIncorrectFile());
 		Assert.assertTrue(mdtr1.getTask() instanceof MapReduce);
 		MapReduce mr = (MapReduce)mdtr1.getTask();
 		Assert.assertEquals(

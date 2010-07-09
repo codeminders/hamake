@@ -1,6 +1,7 @@
 package com.codeminders.hamake.dtr;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -20,6 +21,8 @@ public abstract class DataTransformationRule extends ContextAware{
 
 	private String name;
 	private Task task;
+	private DataFunction trashBucket;
+	private boolean removeIncorrectFile = false;
 	
 	public DataTransformationRule(Context parentContext){
 		super(parentContext);
@@ -62,6 +65,22 @@ public abstract class DataTransformationRule extends ContextAware{
 
 	public void setTask(Task task) {
 		this.task = task;
+	}
+	
+	public boolean isRemoveIncorrectFile() {
+		return removeIncorrectFile;
+	}
+
+	public void setRemoveIncorrectFile(boolean removeIncorrectFile) {
+		this.removeIncorrectFile = removeIncorrectFile;
+	}
+
+	public DataFunction getTrashBucket() {
+		return trashBucket;
+	}
+
+	public void setTrashBucket(DataFunction trashBucket) {
+		this.trashBucket = trashBucket;
 	}
 
 	@Override
