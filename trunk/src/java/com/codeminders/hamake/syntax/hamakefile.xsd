@@ -165,7 +165,7 @@
       <xs:choice>
         <xs:element ref="datafunction"/>
       </xs:choice>
-      <xs:attribute name="keep" type="xs:boolean"/>
+      <xs:attribute name="copy" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
   <xs:element abstract="true" name="datafunction"/>

@@ -57,7 +57,7 @@
 				<reference idref="imageDomains1" />
 			</parameter>
 		</exec>
-		<refused keep="false">
+		<refused copy="true">
 			<file path="${tmpdir}/referrers" />
 		</refused>
 	</foreach>

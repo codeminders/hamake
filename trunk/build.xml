@@ -243,7 +243,8 @@
   	<exec executable="hadoop">
   		<arg value="jar" />
   		<arg value="${stress.tests.dir}/stressTests.jar" />
-  		<arg value="${stress.tests.load.factor}" />
+  		<arg value="-l ${stress.tests.load.factor}"  />
+  		<arg value="${run.only.stress.test}"/>
   	</exec>
   </target>
 

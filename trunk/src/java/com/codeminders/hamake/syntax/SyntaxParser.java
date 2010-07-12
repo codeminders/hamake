@@ -218,10 +218,10 @@ public class SyntaxParser extends BaseSyntaxParser {
 		
 		Element refused = getOneSubElement(root, "refused");
 		DataFunction refusedDF = null;
-		boolean keep = true;
+		boolean copy = false;
 		if(refused != null){
 			refusedDF = parseDTRData(refused, Arrays.asList("fileset", "file", "set", "include"), 1, Integer.MAX_VALUE).get(0);
-			keep = Boolean.parseBoolean(getOptionalAttribute(refused, "keep", "true"));
+			copy = Boolean.parseBoolean(getOptionalAttribute(refused, "copy", "false"));
 		}
 
 		Task task = parseTask(root, (String)rootContext.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER));
@@ -229,7 +229,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 		Foreach foreach = new Foreach(rootContext, inputFunc, outputFuncs, deps);
 		foreach.setName(name);
 		foreach.setTask(task);
-		foreach.setRemoveIncorrectFile(!keep);
+		foreach.setCopyIncorrectFile(copy);
 		foreach.setTrashBucket(refusedDF);
 		return foreach;
 	}

@@ -73,7 +73,7 @@
                 <optional>
                     <element name="refused">
                         <optional>
-                            <attribute name="keep">
+                            <attribute name="copy">
                                 <data type="boolean"/>
                             </attribute>
                         </optional>
@@ -122,16 +122,6 @@
                         </oneOrMore>
                 </element>
                 <ref name="task_group"/>
-                <optional>
-                    <element name="refused">
-                        <optional>
-                            <attribute name="keep">
-                                <data type="boolean"/>
-                            </attribute>
-                        </optional>
-                        <ref name="file_group" />                    
-                    </element>
-                </optional>
             </interleave>
         </element>
     </define>    
