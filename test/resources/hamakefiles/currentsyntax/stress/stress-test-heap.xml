@@ -1,0 +1,22 @@
+<project name="stress-test-heap">
+
+	<!-- properties
+		input, output, test.jar
+		are set by unit test
+	-->	
+	
+	<foreach name="stress-test-foreach">
+		<input>
+			<fileset path="${input}"/>
+		</input>
+		<output>
+			<file path="${output}/${foreach:filename}"/>
+		</output>
+		<mapreduce jar="${test.jar}" main="com.codeminders.hamake.testjar.DummyVoidJob">
+			<parameter>
+				<literal value="does_not_matter" />
+			</parameter>
+		</mapreduce>
+	</foreach>
+
+</project>

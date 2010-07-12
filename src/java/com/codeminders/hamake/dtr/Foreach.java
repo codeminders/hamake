@@ -122,11 +122,14 @@ public class Foreach extends DataTransformationRule {
 				for(Path trashBucketPath : getTrashBucket().getPath(command.getContext())){
 					FileSystem trashBucketFS = trashBucketPath.getFileSystem((Configuration)command.getContext().get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
 					FileStatus[] statuses = trashBucketFS.listStatus(trashBucketPath);
-					for(FileStatus status : statuses){
-						if(status.getPath().getName().equals(ipath.getName())){
-							if(Utils.recursiveGetModificationTime(trashBucketFS, trashBucketPath) >= inputTimeStamp){
-								LOG.info(getName() + ": Passing " + ipath.toString() + ". This file is in the trash bucket " + trashBucketPath.toString());
-								inTrash = true;
+					if(statuses != null){
+						for(FileStatus status : statuses){
+							if(status.getPath().getName().equals(ipath.getName())){
+								if(Utils.recursiveGetModificationTime(trashBucketFS, trashBucketPath) >= inputTimeStamp){
+									LOG.info(getName() + ": Passing " + ipath.toString() + ". This file is in the trash bucket " + trashBucketPath.toString());
+									inTrash = true;
+									break;
+								}
 							}
 						}
 					}
@@ -214,7 +217,7 @@ public class Foreach extends DataTransformationRule {
 						errors++;
 						result = t_rc;
 						try {
-							throwInTrashBucket(item.getInputPath(), item.getCommand().getContext(), isRemoveIncorrectFile());
+							throwInTrashBucket(item.getInputPath(), item.getCommand().getContext(), isCopyIncorrectFile());
 						} catch (IOException e) {
 							LOG.error("Error moving file to trash", e);
 						}
@@ -225,7 +228,7 @@ public class Foreach extends DataTransformationRule {
 		}
 	}
 
-	protected void throwInTrashBucket(Path file, Context context, boolean removeSource) throws IOException{
+	protected void throwInTrashBucket(Path file, Context context, boolean copySource) throws IOException{
 		if(getTrashBucket() != null){
 			FileSystem fileFs = file.getFileSystem((Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
 			for(Path trashBucketPath : getTrashBucket().getPath(context)){
@@ -236,7 +239,10 @@ public class Foreach extends DataTransformationRule {
 				if(!trashBucketFS.getFileStatus(trashBucketPath).isDir()){
 					throw new IOException("Could not put file " + file.getName() + " to trash " + trashBucketPath.toString() + " because is is not a folder");
 				}
-				FileUtil.copy(fileFs, file, trashBucketFS, trashBucketPath, removeSource, (Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
+				if(copySource) FileUtil.copy(fileFs, file, trashBucketFS, trashBucketPath, false, (Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
+				else{
+					trashBucketFS.create(new Path(trashBucketPath, file.getName()));
+				}
 			}
 		}
 	}

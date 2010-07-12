@@ -22,7 +22,7 @@ public abstract class DataTransformationRule extends ContextAware{
 	private String name;
 	private Task task;
 	private DataFunction trashBucket;
-	private boolean removeIncorrectFile = false;
+	private boolean copyIncorrectFile = false;
 	
 	public DataTransformationRule(Context parentContext){
 		super(parentContext);
@@ -67,12 +67,12 @@ public abstract class DataTransformationRule extends ContextAware{
 		this.task = task;
 	}
 	
-	public boolean isRemoveIncorrectFile() {
-		return removeIncorrectFile;
+	public boolean isCopyIncorrectFile() {
+		return copyIncorrectFile;
 	}
 
-	public void setRemoveIncorrectFile(boolean removeIncorrectFile) {
-		this.removeIncorrectFile = removeIncorrectFile;
+	public void setCopyIncorrectFile(boolean removeIncorrectFile) {
+		this.copyIncorrectFile = removeIncorrectFile;
 	}
 
 	public DataFunction getTrashBucket() {
