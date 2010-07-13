@@ -26,37 +26,33 @@
   </xs:element>
   <xs:element name="foreach">
     <xs:complexType>
-      <xs:sequence>
-        <xs:element maxOccurs="6" minOccurs="3" ref="dtr_element"/>
-      </xs:sequence>
+      <xs:group ref="dtrElement"/>
       <xs:attribute name="name" type="xs:ID"/>
       <xs:attribute name="disabled" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="fold">
     <xs:complexType>
-      <xs:sequence>
-        <xs:element maxOccurs="6" minOccurs="3" ref="dtr_element"/>
-      </xs:sequence>
+      <xs:group ref="dtrElement"/>
       <xs:attribute name="name" use="required" type="xs:ID"/>
       <xs:attribute name="disabled" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="input" substitutionGroup="dtr_element">
+  <xs:element name="input">
     <xs:complexType>
       <xs:choice maxOccurs="unbounded" minOccurs="0">
         <xs:element ref="datafunction"/>
       </xs:choice>
     </xs:complexType>
   </xs:element>
-  <xs:element name="dependencies" substitutionGroup="dtr_element">
+  <xs:element name="dependencies">
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
         <xs:element ref="datafunction"/>
       </xs:choice>
     </xs:complexType>
   </xs:element>
-  <xs:element name="output" substitutionGroup="dtr_element">
+  <xs:element name="output">
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
         <xs:element ref="datafunction"/>
@@ -160,7 +156,7 @@
       </xs:choice>
     </xs:complexType>
   </xs:element>
-  <xs:element name="refused" substitutionGroup="dtr_element">
+  <xs:element name="refused">
     <xs:complexType>
       <xs:choice>
         <xs:element ref="datafunction"/>
@@ -169,8 +165,7 @@
     </xs:complexType>
   </xs:element>
   <xs:element abstract="true" name="datafunction"/>
-  <xs:element abstract="true" name="dtr_element"/>
-  <xs:element abstract="true" name="task" substitutionGroup="dtr_element"/>
+  <xs:element abstract="true" name="task"/>
   <xs:simpleType name="expiration">
     <xs:restriction base="xs:token">
       <xs:minLength value="1"/>
@@ -192,5 +187,15 @@
       <xs:enumeration value="normalizePath"/>
     </xs:restriction>
   </xs:simpleType>
-  <xs:element name="description" type="xs:string" substitutionGroup="dtr_element"/>
+  <xs:element name="description" type="xs:string"/>
+  <xs:group name="dtrElement">
+    <xs:sequence>
+      <xs:element minOccurs="0" ref="dependencies"/>
+      <xs:element minOccurs="0" ref="description"/>
+      <xs:element ref="input"/>
+      <xs:element ref="output"/>
+      <xs:element minOccurs="0" ref="refused"/>
+      <xs:element ref="task"/>
+    </xs:sequence>
+  </xs:group>
 </xs:schema>

@@ -35,7 +35,7 @@ public class CommandThread extends ContextAware implements Runnable{
             try {
                 rc = task.execute(getContext());
             } catch (Exception ex) {
-            	LOG.error("Execution of command is " + task + " failed", ex);
+            	LOG.error("Execution of command " + task + " failed", ex);
                 rc = -1;
             }
             if (rc != 0)

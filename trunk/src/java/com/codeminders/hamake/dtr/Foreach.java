@@ -17,6 +17,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.s3.S3FileSystem;
 
 import java.io.IOException;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +27,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Data transformation rule that maps a file to one or more files.
@@ -37,11 +39,13 @@ public class Foreach extends DataTransformationRule {
 		private CommandThread command;
 		private Thread thread;
 		private Path inputPath;
+		private long startTimeStamp;
 		
-		public ExecQueueItem(CommandThread command, Thread thread, Path inputPath){
+		public ExecQueueItem(CommandThread command, Thread thread, Path inputPath, Long startTimeStamp){
 			this.thread = thread;
 			this.command = command;
 			this.inputPath = inputPath;
+			this.startTimeStamp = startTimeStamp;
 		}
 
 		public CommandThread getCommand() {
@@ -54,6 +58,10 @@ public class Foreach extends DataTransformationRule {
 
 		public Path getInputPath() {
 			return inputPath;
+		}
+
+		public long getStartTimeStamp() {
+			return startTimeStamp;
 		}
 		
 	}
@@ -147,7 +155,7 @@ public class Foreach extends DataTransformationRule {
 							LOG.error(getName() + ": Error running " + getName(), e);
 							break;
 						}
-						ExecQueueItem item = new ExecQueueItem(command, new Thread(command, getTask().toString()), ipath);
+						ExecQueueItem item = new ExecQueueItem(command, new Thread(command, getTask().toString()), ipath, System.currentTimeMillis());
 						item.getThread().setDaemon(true);
 						item.getThread().start();
 						if(fetcher.isAlive()) fetcher.pushQueue(item);
@@ -161,7 +169,7 @@ public class Foreach extends DataTransformationRule {
 		} catch (InterruptedException e) {
 			LOG.info(getName() + ": Error running " + getName(), e);
 		}
-		LOG.info(getName() + ": Processed " + fetcher.getCounter() + " files, " + fetcher.getErrors() + " files with errors" );
+		LOG.info(getName() + ": Processed " + fetcher.getCounter() + " files, " + fetcher.getErrors() + " files with errors, run time: " + fetcher.getTotalRunTime() / inputlist.size() + " ms");
 		return fetcher.getResult();		
 	}
 	
@@ -172,6 +180,7 @@ public class Foreach extends DataTransformationRule {
 		private long errors = 0;
 		private AtomicBoolean terminated = new AtomicBoolean(false);
 		private Queue<ExecQueueItem> queue = new ConcurrentLinkedQueue<ExecQueueItem>();
+		private AtomicLong totalRunTime = new AtomicLong(0);
 		
 		public void pushQueue(ExecQueueItem queue) {
 			this.queue.add(queue);
@@ -187,6 +196,10 @@ public class Foreach extends DataTransformationRule {
 
 		public long getErrors() {
 			return errors;
+		}
+
+		public long getTotalRunTime() {
+			return totalRunTime.get();
 		}
 
 		public void terminate(){
@@ -207,6 +220,7 @@ public class Foreach extends DataTransformationRule {
 				while ((item = queue.poll()) != null) {
 					try {
 						item.getThread().join();
+						totalRunTime.getAndAdd(System.currentTimeMillis() - item.getStartTimeStamp());
 					} catch (InterruptedException ex) {
 						LOG.error("Error in QueueFetcher", ex);
 						result = -1000;

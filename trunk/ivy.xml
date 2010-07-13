@@ -47,5 +47,9 @@
       name="junit"
       rev="${junit.version}"
       conf="common->master"/>
+    <dependency org="net.sf.ehcache"
+     name="ehcache-core"
+      rev="${ehcache.version}"
+      conf="common->default"/>  
   </dependencies>
 </ivy-module>

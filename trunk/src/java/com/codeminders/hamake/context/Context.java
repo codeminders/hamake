@@ -3,6 +3,8 @@ package com.codeminders.hamake.context;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.ehcache.CacheManager;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 
@@ -10,6 +12,8 @@ import com.codeminders.hamake.Hamake;
 import com.codeminders.hamake.InvalidContextStateException;
 
 public class Context {
+	
+	public static CacheManager cacheManager = CacheManager.create();
 	
 	public Context parent;
 

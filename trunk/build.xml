@@ -9,6 +9,7 @@
   <property name="compiler.generate.no.warnings" value="off" />
   <property name="compiler.max.memory" value="128m" />
   <property name="src.dir" value="${basedir}/src/java" />
+  <property name="resources.dir" value="${basedir}/src/resources" />
   <property name="lib.dir" value="${basedir}/lib" />
   <property name="build.dir" value="${basedir}/build" />
   <property name="rpmroot" value="${build.dir}/rpmroot"/>
@@ -94,8 +95,7 @@
       <src path="${src.dir}" />
     </javac>
     <copy todir="${build.dir}/classes">
-      <fileset dir="${src.dir}" includes="**/*.xsd"/>
-      <fileset dir="${src.dir}" includes="**/*.rng"/>
+      <fileset dir="${resources.dir}"/>
     </copy>
   </target>
 
@@ -124,7 +124,7 @@
                              value="${hamake.version}-${release.number}"/>
         <attribute name="Built-Date" value="${TODAY}"/> 
       </manifest>
-      <fileset dir="${build.dir}/classes" includes="**/*.class, **/*.xsd" excludes="com/codeminders/hamake/examples/**" />
+      <fileset dir="${build.dir}/classes" excludes="com/codeminders/hamake/examples/**" />
       <fileset dir="${build.dir}" includes="lib/*.jar" />
       <zipfileset dir="lib/hadoop-0.18" includes="pig-0.4.0-core.jar" prefix="lib" />
     </jar>

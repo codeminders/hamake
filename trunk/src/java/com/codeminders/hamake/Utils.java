@@ -112,11 +112,8 @@ public class Utils {
 						JarEntry entry = (JarEntry) entries.nextElement();
 						if (entry.getName().equalsIgnoreCase(
 								JarFile.MANIFEST_NAME)) {
-							File tempManifest = new File(jarFile
-									.getParentFile()
-									+ File.separator
-									+ jarFile.getName()
-									+ "-unpacked", JarFile.MANIFEST_NAME);
+							File manifestParent = new File(jarFile.getParentFile() + File.separator + jarFile.getName() + "-unpacked");
+							File tempManifest = new File(manifestParent, JarFile.MANIFEST_NAME);
 							FileUtils.deleteQuietly(tempManifest);
 							tempManifest.getParentFile().mkdirs();
 							tempManifest.createNewFile();
@@ -154,6 +151,7 @@ public class Utils {
 							jarOutputStream.write(FileUtils
 									.readFileToByteArray(tempManifest));
 							jarOutputStream.closeArchiveEntry();
+							FileUtils.deleteDirectory(manifestParent);
 						} else {
 							jarOutputStream
 									.putArchiveEntry(new JarArchiveEntry(entry));
@@ -239,7 +237,6 @@ public class Utils {
 			throw new IOException("can not create folder "
 					+ jarDir.getAbsolutePath());
 		}
-		jarDir.deleteOnExit();
 		// unpack
 		RunJar.unJar(mainJar, jarDir);
 		File libdir = new File(jarDir.getAbsolutePath(), "lib");
@@ -282,6 +279,7 @@ public class Utils {
 		} finally {
 			if (jarOutputStream != null)
 				jarOutputStream.close();
+			FileUtils.deleteDirectory(jarDir);
 		}
 		return jarFile;
 	}

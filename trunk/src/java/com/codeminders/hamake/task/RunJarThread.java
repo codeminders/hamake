@@ -234,7 +234,6 @@ public class RunJarThread extends Thread {
                     }
                     catch (Throwable e) {
                     }
-                    FileUtils.deleteQuietly(file);
             }
             
         }
