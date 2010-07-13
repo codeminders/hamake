@@ -89,7 +89,7 @@ public class StressTestHamake {
 						fs.mkdirs(testTempDir);
 						fs.deleteOnExit(testTempDir);
 						stressTest.setConf(conf);
-						stressTest.setTempDir(tempDir);
+						stressTest.setTempDir(testTempDir);
 						stressTest.setLoadFactor(loadFactor);
 						LOG.info("Launching stress test " + stressTestClass.getName() + ", temporary directory is " + testTempDir.toString());
 						Thread th = new Thread(stressTest);

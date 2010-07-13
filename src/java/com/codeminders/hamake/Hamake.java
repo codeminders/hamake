@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.Manifest;
 
+import net.sf.ehcache.CacheManager;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

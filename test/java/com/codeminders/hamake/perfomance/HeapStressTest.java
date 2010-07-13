@@ -39,7 +39,7 @@ public class HeapStressTest extends StressTest {
 		final Hamake make = BaseSyntaxParser.parse(context,
 				new FileInputStream(localHamakeFile));
 		if(!(fs instanceof LocalFileSystem)){
-			make.setNumJobs(10);
+			make.setNumJobs(1000);
 		}
 		else{
 			make.setNumJobs(1);

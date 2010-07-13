@@ -8,6 +8,14 @@ import com.codeminders.hamake.params.Parameter;
 import com.codeminders.hamake.params.SystemProperty;
 import com.codeminders.hamake.params.JobConfParam;
 
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheException;
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
+import net.sf.ehcache.config.CacheConfiguration.CacheEventListenerFactoryConfiguration;
+import net.sf.ehcache.event.CacheEventListener;
+import net.sf.ehcache.event.CacheEventListenerFactory;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
@@ -25,9 +33,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public class MapReduce extends Task {
-    
+	
 	public static final Log LOG = LogFactory.getLog(MapReduce.class);
     private String jar;
     private String main;
@@ -43,7 +52,7 @@ public class MapReduce extends Task {
             Path jarPath = new Path(getJar()); 
             Configuration conf = (Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION);
             fs = FileSystem.get(conf);
-            jarFile = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(getJar(), jarPath.getFileSystem(conf)), Arrays.asList(new String[] {"Main-Class"}));
+            jarFile = getCachedJar(jarPath.getFileSystem(conf), getJar());
         } catch (IOException ex) {
         	LOG.error("Can't download JAR file: " + getJar(), ex);
             return -1000;
@@ -178,5 +187,15 @@ public class MapReduce extends Task {
         return new ToStringBuilder(this).append("jar", jar).
                 append("main", main).appendSuper(super.toString()).toString();
     }
+	
+	private File getCachedJar(FileSystem fs, String path) throws IOException{
+		Cache cache = Context.cacheManager.getCache("mapReduceJarCache");
+		if(cache.get(path) == null){
+			File jar = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(path, fs), Arrays.asList(new String[] {"Main-Class"}));
+			Element element = new Element(path, jar);
+			cache.put(element);
+		}
+		return (File)cache.get(path).getValue();
+	}
 
 }
