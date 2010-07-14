@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -54,8 +53,10 @@ public class StressTestHamake {
         List<Class> stressTestsToRun = new ArrayList<Class>();
         if(!line.getArgList().isEmpty()){
         	for(String tests : line.getArgs()){
-        		for(String test : tests.split("[,]|[\\s]")){
-        			runOnlyStressTests.put(StressTestHamake.class.getPackage().getName() + "." + test, new Boolean(true));
+        		if(!StringUtils.isEmpty(tests)){
+	        		for(String test : tests.trim().split("[,]|[\\s]")){
+	        			runOnlyStressTests.put(StressTestHamake.class.getPackage().getName() + "." + test, new Boolean(true));
+	        		}
         		}
         	}
         }
