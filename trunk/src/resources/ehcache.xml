@@ -6,8 +6,14 @@
 		diskPersistent="false" diskExpiryThreadIntervalSeconds="120"
 		memoryStoreEvictionPolicy="LRU" statistics="false" copyOnRead="true"
 		copyOnWrite="true" />
-	<cache name="mapReduceJarCache" maxElementsInMemory="10" eternal="false"
+	<cache name="mapReduceJarCache" maxElementsInMemory="1" eternal="false"
 		timeToIdleSeconds="0" timeToLiveSeconds="0" overflowToDisk="false"
 		copyOnRead="true" copyOnWrite="true">
+		<cacheEventListenerFactory class="com.codeminders.hamake.EhCacheListenerFactory"/>
 	</cache>
+	<cache name="MapReduceUnpackedJarCache" maxElementsInMemory="1" eternal="false"
+		timeToIdleSeconds="0" timeToLiveSeconds="0" overflowToDisk="false"
+		copyOnRead="true" copyOnWrite="true">
+		<cacheEventListenerFactory class="com.codeminders.hamake.EhCacheListenerFactory"/>
+	</cache>	
 </ehcache>

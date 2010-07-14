@@ -108,6 +108,8 @@ public class Hamake extends ContextAware{
         	LOG.error("An error occured", e);
         	return ExitCode.FAILED;
         } finally{
+        	EhCacheListener.removeAll(Context.cacheManager.getCache("mapReduceJarCache"));
+        	EhCacheListener.removeAll(Context.cacheManager.getCache("MapReduceUnpackedJarCache"));
         	System.setSecurityManager(securityManager);
         }
         return ExitCode.OK;

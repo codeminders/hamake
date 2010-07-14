@@ -89,7 +89,7 @@ public class Utils {
 			fs.copyToLocalFile(srcPath, new Path(dstFile.getAbsolutePath()));
 		} else
 			throw new IOException("Path not found: " + path);
-		dstFile.deleteOnExit();
+//		dstFile.deleteOnExit();
 		return dstFile;
 
 	}
@@ -175,7 +175,7 @@ public class Utils {
 					}
 					FileUtils.deleteQuietly(jarFile);
 					jarFile = outputFile;
-					jarFile.deleteOnExit();
+//					jarFile.deleteOnExit();
 				}
 			}
 		} finally {

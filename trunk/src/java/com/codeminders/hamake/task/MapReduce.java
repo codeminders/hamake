@@ -9,12 +9,7 @@ import com.codeminders.hamake.params.SystemProperty;
 import com.codeminders.hamake.params.JobConfParam;
 
 import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheException;
-import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration.CacheEventListenerFactoryConfiguration;
-import net.sf.ehcache.event.CacheEventListener;
-import net.sf.ehcache.event.CacheEventListenerFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -33,7 +28,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 public class MapReduce extends Task {
 	

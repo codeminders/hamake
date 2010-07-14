@@ -1,15 +1,18 @@
 package com.codeminders.hamake.task;
 
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.Element;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobClient;
 
 import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.context.Context;
 
 import java.io.*;
 import java.util.jar.JarFile;
@@ -27,7 +30,7 @@ public class RunJarThread extends Thread {
 
     protected String[] args;
     protected Throwable[] tt = new Throwable[1];
-    protected File workDir, file;
+    protected File unpackedJar, jar;
     protected String mainClassName = null;
     protected int firstArg = 0;
     protected File[] additionalJars;
@@ -88,81 +91,57 @@ public class RunJarThread extends Thread {
         }
     }
 
-    public void start(String[] args) throws Throwable {
-        this.args = args;
-        try {
-            String usage = "RunJar jarFile [mainClass] args...";
+	public void start(String[] args) throws Throwable {
+		this.args = args;
+		String usage = "RunJar jarFile [mainClass] args...";
 
-            if (args.length < 1) {
-                System.err.println(usage);
-                System.exit(-1);
-            }
+		if (args.length < 1) {
+			throw new Exception("first argument of " + RunJarThread.class.getName() + ".start should be a jar file");
+		}
 
-            String fileName = args[firstArg++];
-            file = new File(fileName);
+		String fileName = args[firstArg++];
+		jar = new File(fileName);
 
-            JarFile jarFile;
-            try {
-                jarFile = new JarFile(fileName);
-            } catch (IOException io) {
-                throw new IOException("Error opening job jar: " + fileName);
-            }
+		JarFile jarFile;
+		try {
+			jarFile = new JarFile(fileName);
+		} catch (IOException io) {
+			throw new IOException("Error opening job jar: " + fileName);
+		}
 
-            Manifest manifest = jarFile.getManifest();
-            if (manifest != null) {
-                mainClassName = manifest.getMainAttributes().getValue("Main-Class");
-            }
-            jarFile.close();
+		Manifest manifest = jarFile.getManifest();
+		if (manifest != null) {
+			mainClassName = manifest.getMainAttributes().getValue("Main-Class");
+		}
+		jarFile.close();
 
-            if (mainClassName == null) {
-                if (args.length < 2) {
-                    System.err.println(usage);
-                    System.exit(-1);
-                }
-                mainClassName = args[firstArg++];
-            }
-            mainClassName = mainClassName.replaceAll("/", ".");
+		if (mainClassName == null) {
+			if (args.length < 2) {
+				throw new Exception("second argument of " + RunJarThread.class.getName() + ".start should be a main method");
+			}
+			mainClassName = args[firstArg++];
+		}
+		mainClassName = mainClassName.replaceAll("/", ".");
 
-            File tmpDir = new File(new Configuration().get("hadoop.tmp.dir"));
-            tmpDir.mkdirs();
-            if (!tmpDir.isDirectory()) {
-                System.err.println("Mkdirs failed to create " + tmpDir);
-                System.exit(-1);
-            }
-            workDir = File.createTempFile("hadoop-unjar", "", tmpDir);
-            workDir.delete();
-            workDir.mkdirs();
-            if (!workDir.isDirectory()) {
-                System.err.println("Mkdirs failed to create " + workDir);
-                System.exit(-1);
-            }
+		unpackedJar = getCachedUnpackedJarFolder(jar);
 
-            unJar(file, workDir);
+		tt[0] = null;
+		start();
+		join();
 
-            tt[0] = null;
-            start();
-            join();
-        }
-        finally {
-            try {
-                FileUtil.fullyDelete(workDir);
-            } catch (IOException e) {
-            }
-        }
-
-        if (tt[0] != null)
-            throw tt[0];
-    }
+		if (tt[0] != null)
+			throw tt[0];
+	}
 
     @Override
     public void run() {
         try {
             ArrayList<URL> classPath = new ArrayList<URL>();
-            classPath.add(new File(workDir + "/").toURL());
+            classPath.add(new File(unpackedJar + "/").toURL());
             final ArrayList<JarURLConnection> jarConnections = new ArrayList<JarURLConnection>();
             {
         		final URL jarURL = new URL(
-                        "jar", "", -1, (new StringBuilder()).append(file.toURL()).append("!/").toString()
+                        "jar", "", -1, (new StringBuilder()).append(jar.toURL()).append("!/").toString()
                 );
                 // cache all the connections to JAR files
                 JarURLConnection jarConnection = (JarURLConnection) jarURL.openConnection();
@@ -171,8 +150,8 @@ public class RunJarThread extends Thread {
                 jarConnections.add(jarConnection);
                 classPath.add(jarURL);
         	}
-            classPath.add(new File(workDir, "classes/").toURL());
-            File[] libs = new File(workDir, "lib").listFiles();
+            classPath.add(new File(unpackedJar, "classes/").toURL());
+            File[] libs = new File(unpackedJar, "lib").listFiles();
             URLClassLoader loader;
 
             try {
@@ -190,6 +169,7 @@ public class RunJarThread extends Thread {
                         classPath.add(jarURL);
                     }
                 }
+                File tempConfigurationFile = null;
                 if (additionalJars.length > 0) {
                     for (int i = 0; i < additionalJars.length; i++) {
                         final URL jarURL = new URL(
@@ -205,7 +185,7 @@ public class RunJarThread extends Thread {
                         classPath.add(jarURL);
                     }
 
-                    setDefaultConfiguration(classPath);
+                    tempConfigurationFile = setDefaultConfiguration(classPath);
                 }
 
                 loader = new URLClassLoader(classPath.toArray(new URL[0]));
@@ -220,9 +200,10 @@ public class RunJarThread extends Thread {
                         .subList(firstArg, args.length).toArray(new String[0]);
                 try {
                     main.invoke(null, new Object[]{newArgs});
-                }
-                catch (InvocationTargetException e) {
+                } catch (InvocationTargetException e) {
                     throw e.getTargetException();
+                } finally{
+                	FileUtils.deleteQuietly(tempConfigurationFile);
                 }
             }
             finally {
@@ -242,7 +223,7 @@ public class RunJarThread extends Thread {
         }
     }
 
-    public boolean setDefaultConfiguration(ArrayList<URL> classPath)
+    public File setDefaultConfiguration(ArrayList<URL> classPath)
     {
         try
         {
@@ -261,6 +242,7 @@ public class RunJarThread extends Thread {
                 classPath.add(tempConfigurationFile.getParentFile().toURI().toURL());
                 Method addDefaultResourceMethod = Configuration.class.getDeclaredMethod("addDefaultResource", String.class);
                 addDefaultResourceMethod.invoke(null, tempConfigurationFile.getName());
+                return tempConfigurationFile;
 
             } else {
                 List<String> tmpJars = new ArrayList<String>();
@@ -272,13 +254,27 @@ public class RunJarThread extends Thread {
                 Method setCommandLineConfigMethod = JobClient.class.getDeclaredMethod("setCommandLineConfig", Configuration.class);
                 setCommandLineConfigMethod.setAccessible(true);
                 setCommandLineConfigMethod.invoke(null, customHadoopConf);
+                return null;
             }
         } catch (Exception e) {
             LOG.error("Failed to set default configuration of Hadoop job");
-            return false;
+            return null;
         }
-
-        return true;
+    }
+    
+    private File getCachedUnpackedJarFolder(File jar) throws IOException{
+    	Cache cache = Context.cacheManager.getCache("MapReduceUnpackedJarCache");
+    	if(cache.get(jar.hashCode()) == null){
+            File unpackedJar = File.createTempFile(jar.getName(), "-unpacked");
+            unpackedJar.delete();
+            unpackedJar.mkdirs();
+            if (!unpackedJar.isDirectory()) {
+                throw new IOException("Mkdirs failed to create " + unpackedJar);
+            }
+            unJar(jar, unpackedJar);
+            cache.put(new Element(jar.hashCode(), unpackedJar));
+    	}
+    	return (File)cache.get(jar.hashCode()).getValue();
     }
 }
 
