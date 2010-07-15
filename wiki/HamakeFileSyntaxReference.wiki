@@ -80,6 +80,7 @@ Nested elements:
 || [#mapreduce mapreduce] || one of _mapreduce_, _pig_ or _exec_ is required ||
 || [#pig pig] || one of _mapreduce_, _pig_ or _exec_ is required ||
 || [#exec exec] || one of _mapreduce_, _pig_ or _exec_ is required ||
+|| [#refused refused] || 1 ||
 
 Example:
 
@@ -437,6 +438,27 @@ Example:
 <dependencies>
     <file path="${libdir}/somefile.txt" />
 </dependencies>
+}}}
+
+= Exception Handlig =
+Sometimes you need to mark incorrect files and do not process them on next run. For this purpose you can use `<refused>` element
+
+== refused ==
+
+Marks incorrect files for which exception occurred by creating a file with the same name in a trash directory or copying a file to a trash folder. Whether file will be copied or an empty file will be created depends on _copy_ attribute
+
+Nested elements:
+|| *Element name* || *Number of times it can occur* ||
+|| [#fileset fileset] || 0 or more ||
+|| [#file file] || 0 or more ||
+|| [#set set] || 0 or more ||
+|| [#include include] || 0 or more ||
+
+Example:
+{{{
+<refused copy="true">
+     <file path="${data}/refused/FB2MetaExtractorRefused" />
+</refused>
 }}}
 
 = Hamakefile Complete Example =
