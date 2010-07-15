@@ -109,7 +109,7 @@ public class MapReduce extends Task {
             	for(Path cp : func.getPath(context)){
             		FileSystem cpFs = func.getFileSystem(context, cp);
             		if(cpFs.exists(cp)){
-            			File localJar = Utils.copyToTemporaryLocal(cp.toString(), cp.getFileSystem(conf));
+            			File localJar = getCachedJar(cp.getFileSystem(conf), cp.toString());
             			localJar.deleteOnExit();
             			localClasspath.add(localJar);
             			Path jar = copyRemoteFiles(conf, fs, new Path(conf.get("hadoop.tmp.dir")), cp);
@@ -185,7 +185,7 @@ public class MapReduce extends Task {
 	private File getCachedJar(FileSystem fs, String path) throws IOException{
 		Cache cache = Context.cacheManager.getCache("mapReduceJarCache");
 		if(cache.get(path) == null){
-			File jar = Utils.removeManifestAttributes(Utils.copyToTemporaryLocal(path, fs), Arrays.asList(new String[] {"Main-Class"}));
+			File jar = Utils.copyToTemporaryLocal(path, fs);
 			Element element = new Element(path, jar);
 			cache.put(element);
 		}
