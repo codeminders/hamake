@@ -194,8 +194,8 @@
       <xs:element minOccurs="0" ref="description"/>
       <xs:element ref="input"/>
       <xs:element ref="output"/>
-      <xs:element minOccurs="0" ref="refused"/>
       <xs:element ref="task"/>
+      <xs:element minOccurs="0" ref="refused"/>
     </xs:sequence>
   </xs:group>
 </xs:schema>
