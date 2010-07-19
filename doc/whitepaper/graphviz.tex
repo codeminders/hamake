@@ -1,0 +1,33 @@
+% graphviz.tex
+% originally written by Derek Rayside, November 2003
+% following an idea that Daniel Jackson implemented in his Tagger program
+%
+% parameters to \digraph:
+% 1 - parameters for \includegraphics (optional; default value is "scale=1")
+% 2 - name of the digraph
+% 3 - body of the digraph
+
+\newcommand{\digraph}[3][scale=1]{
+    \newwrite\dotfile
+    \immediate\openout\dotfile=#2.dot
+    \immediate\write\dotfile{digraph #2 {\string#3}}
+    \immediate\closeout\dotfile
+    \IfFileExists{#2.ps}
+        % the postscript exists: include it
+        { \includegraphics[#1]{#2} }
+        % the postscript doesn't exist: tell the user how to create it
+        { \fbox{ \begin{tabular}{l}
+            The file \texttt{#2.ps} hasn't been created from
+            \texttt{#2.dot} yet. \\
+            Run `\texttt{dot -Tps -o #2.ps #2.dot}' to create it. \\
+            Here is a \textsf{bash} loop to process all \textsf{dot} files
+            in the current directory: \\
+            \texttt{
+            for f in *.dot do ; 
+            dot -Tps -o \$\{f\%dot\}ps \$f ; 
+            done
+            }
+            \end{tabular}}
+        }
+}
+
