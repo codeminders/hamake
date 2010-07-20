@@ -77,7 +77,9 @@
                                 <data type="boolean"/>
                             </attribute>
                         </optional>
-                        <ref name="file_group"/>
+                        <oneOrMore>
+                            <ref name="file"/>
+                        </oneOrMore>
                     </element>
                 </optional>
             </interleave>
@@ -135,58 +137,70 @@
             </attribute>
         </element>
     </define>
+    <define name="file" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+        <element name="file">
+            <optional>
+                <attribute name="generation">
+                    <data type="positiveInteger"/>
+                </attribute>
+            </optional>
+            <optional>
+                <attribute name="id">
+                    <data type="ID"/>
+                </attribute>
+            </optional>
+            <attribute name="path">
+                <data type="normalizedString"/>
+            </attribute>
+        </element>
+    </define>
+    <define name="fileset" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+        <element name="fileset">
+            <optional>
+                <attribute name="generation">
+                    <data type="positiveInteger"/>
+                </attribute>
+            </optional>
+            <optional>
+                <attribute name="id">
+                    <data type="ID"/>
+                </attribute>
+            </optional>
+            <optional>
+                <attribute name="mask">
+                    <data type="normalizedString"/>
+                </attribute>
+            </optional>
+            <attribute name="path">
+                <data type="normalizedString"/>
+            </attribute>
+        </element>
+    </define>
+    <define name="set" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+        <element name="set">
+            <optional>
+                <attribute name="id">
+                    <data type="ID"/>
+                </attribute>
+            </optional>
+            <oneOrMore>
+                <ref name="file_group"/>
+            </oneOrMore>
+        </element>       
+    </define>
+    <define name="include" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+        <element name="include">
+            <attribute name="idref">
+                <data type="IDREF"/>
+            </attribute>
+        </element>
+    </define>
     <define name="file_group">
             <choice>
-                <element name="file">
-                    <optional>
-                        <attribute name="generation">
-                            <data type="positiveInteger"/>
-                        </attribute>
-                    </optional>
-                    <optional>
-                    <attribute name="id">
-                        <data type="ID"/>
-                    </attribute>
-                    </optional>
-                    <attribute name="path">
-                        <data type="normalizedString"/>
-                    </attribute>
-                </element>
-                <element name="fileset">
-                    <optional>
-                        <attribute name="generation">
-                            <data type="positiveInteger"/>
-                        </attribute>
-                    </optional>
-                    <optional>
-                        <attribute name="id">
-                            <data type="ID"/>
-                        </attribute>
-                    </optional>
-                    <optional>
-                        <attribute name="mask">
-                            <data type="normalizedString"/>
-                        </attribute>
-                    </optional>
-                    <attribute name="path">
-                        <data type="normalizedString"/>
-                    </attribute>
-                </element>
-                <element name="set">
-                    <optional>
-                        <attribute name="id">
-                            <data type="ID"/>
-                        </attribute>
-                    </optional>
-                    <oneOrMore>
-                        <ref name="file_group"/>
-                    </oneOrMore>
-                </element>
-                <element name="include">
-                    <attribute name="idref">
-                        <data type="IDREF"/>
-                    </attribute>
-                </element>
+                <ref name="file" />                    
+                <ref name="fileset" />               
+                <ref name="set" />
+                <ref name="include" />
             </choice>
     </define>
     <define name="task_group">

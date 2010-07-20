@@ -159,7 +159,7 @@
   <xs:element name="refused">
     <xs:complexType>
       <xs:choice>
-        <xs:element ref="datafunction"/>
+        <xs:element maxOccurs="unbounded" ref="file"/>
       </xs:choice>
       <xs:attribute name="copy" type="xs:boolean"/>
     </xs:complexType>
@@ -190,8 +190,8 @@
   <xs:element name="description" type="xs:string"/>
   <xs:group name="dtrElement">
     <xs:sequence>
-      <xs:element minOccurs="0" ref="dependencies"/>
       <xs:element minOccurs="0" ref="description"/>
+      <xs:element minOccurs="0" ref="dependencies"/>
       <xs:element ref="input"/>
       <xs:element ref="output"/>
       <xs:element ref="task"/>
