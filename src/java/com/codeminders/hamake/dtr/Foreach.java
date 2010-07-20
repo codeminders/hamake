@@ -10,6 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -253,9 +254,12 @@ public class Foreach extends DataTransformationRule {
 				if(!trashBucketFS.getFileStatus(trashBucketPath).isDir()){
 					throw new IOException("Could not put file " + file.getName() + " to trash " + trashBucketPath.toString() + " because is is not a folder");
 				}
+				Path dstFile = new Path(trashBucketPath, file.getName());
+				if(trashBucketFS.exists(dstFile))trashBucketFS.delete(dstFile, false);
 				if(copySource) FileUtil.copy(fileFs, file, trashBucketFS, trashBucketPath, false, (Configuration)context.get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
 				else{
-					trashBucketFS.create(new Path(trashBucketPath, file.getName()));
+					FSDataOutputStream fileStream = trashBucketFS.create(dstFile);
+					if(fileStream != null) fileStream.close();
 				}
 			}
 		}

@@ -117,7 +117,7 @@ public class TaskRunner {
 							+ " is failed with code " + tt.getReturnCode());
 					failed.add(tt.getTaskName());
 					graph.removeTask(tt.getTaskName());
-
+					
 				}
 			}
 			running = stillRunning;
