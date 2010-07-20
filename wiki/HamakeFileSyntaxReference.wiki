@@ -449,10 +449,7 @@ Marks incorrect files for which exception occurred by creating a file with the s
 
 Nested elements:
 || *Element name* || *Number of times it can occur* ||
-|| [#fileset fileset] || 0 or more ||
-|| [#file file] || 0 or more ||
-|| [#set set] || 0 or more ||
-|| [#include include] || 0 or more ||
+|| [#file file] || 1 or more ||
 
 Example:
 {{{
