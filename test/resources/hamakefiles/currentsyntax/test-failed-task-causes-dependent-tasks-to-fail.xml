@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	
+<project name="local-cp">
+
+	<!-- properties:
+		test.jar, tmpdir, cp, ls 
+		are set by unit test
+	-->
+
+	<foreach name="task-that-fails">
+		<input>
+			<fileset path="${tmpdir}/input" />
+		</input>
+		<output>
+			<file path="${tmpdir}/output/${foreach:filename}" />
+		</output>
+		<mapreduce jar="${test.jar}" main="com.codeminders.hamake.testjar.DummyJobThatThrowsIOException">
+			<parameter>
+				<literal value="does_not_matter" />
+			</parameter>
+		</mapreduce>
+		<refused>
+			<file path="${tmpdir}/refused" />
+		</refused>
+	</foreach>
+	<foreach name="dependent-map">
+		<description>first map</description>
+		<dependencies>
+			<file id="input" path="${tmpdir}/output/somefile"/>
+		</dependencies>
+		<input>
+			<fileset path="${tmpdir}/input" />
+		</input>
+		<output>
+			<file id="mapOut" path="${tmpdir}/map1/${foreach:filename}" />
+		</output>
+		<exec binary="${cp}">
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
+				<literal value="${foreach:path}" />
+				<literal value="&quot;" />
+			</parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
+				<reference idref="mapOut" />
+				<literal value="&quot;" />
+			</parameter>
+		</exec>
+	</foreach>
+	<fold name="dependent-reduce">
+		<description>first reduce</description>
+		<input>
+			<file id="reduceIn" path="${tmpdir}/map1/" />
+		</input>
+		<output>
+			<file id="output" path="${tmpdir}/output.txt" />
+		</output>
+		<exec binary="${ls}">
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
+				<reference idref="reduceIn" />
+				<literal value="&quot;" />
+			</parameter>
+			<parameter>
+				<literal value=">" />
+			</parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
+				<reference idref="output" />
+				<literal value="&quot;" />
+			</parameter>
+		</exec>
+	</fold>
+
+</project>
