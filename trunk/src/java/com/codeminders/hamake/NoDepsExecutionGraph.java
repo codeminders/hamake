@@ -102,6 +102,16 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 		}
 	}
 	
+	public List<String> getDependentTasks(String task){
+		List<String> dependentTasks = new ArrayList<String>();
+		if(hash.containsKey(task)){
+			for(GraphNode childTask : hash.get(task).getChildren()){
+				dependentTasks.add(childTask.getTask().getName());
+			}
+		}
+		return dependentTasks;
+	}
+	
 	/**
 	 * Get all tasks that are ready 
 	 */

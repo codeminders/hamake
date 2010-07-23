@@ -257,5 +257,37 @@ public class TestHamake {
 				null);
 		Assert.assertEquals("Amount of refused files", 5, refusedFiles1.size());
 	}
+	
+	@Test
+	public void testFailedTaskCausesDependentTasksToFail() throws IOException, InvalidContextStateException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException{
+		File inputDir = new File(tempDir, "input");
+		inputDir.mkdirs();
+		HelperUtils.generateTemporaryFiles(inputDir.getAbsolutePath(), 4);
+		File map1Dir = new File(tempDir, "map1");
+		map1Dir.mkdirs();
+		File outputFile = new File(tempDir, "output.txt");
+		String tempDirPath = tempDir.getAbsolutePath().toString();
+		Context context = new Context(new Configuration(), null, false, false, false);
+		context.set("tmpdir", tempDirPath);
+		context.set("test.jar", HelperUtils.getTestJar().getCanonicalPath());
+		if (OS.isLinux()) {
+			context.set("cp", "cp");
+			context.set("ls", "ls");
+		} else if (OS.isWindows()) {
+			context.set("cp", "copy");
+			context.set("ls", "dir");
+		}
+
+		Hamake make = null;
+		File localHamakeFile = HelperUtils.getHamakeTestResource("test-failed-task-causes-dependent-tasks-to-fail.xml");
+		make = BaseSyntaxParser.parse(context, new FileInputStream(
+				localHamakeFile));
+		make.setNumJobs(2);
+		make.run();
+		int map1OutSize = FileUtils.listFiles(map1Dir, FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".crc")),
+				null).size();
+		Assert.assertEquals(0, map1OutSize);
+		Assert.assertFalse(outputFile.exists());
+	}
 
 }

@@ -6,8 +6,8 @@
 	<classpathentry kind="lib" path="lib/hadoop-0.20/pig-0.6.0-core.jar"/>
 	<classpathentry kind="lib" path="test/resources/testUtils.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="org.apache.ivyde.eclipse.cpcontainer.IVYDE_CONTAINER/?ivyXmlPath=ivy.xml&amp;confs=*&amp;ivySettingsPath=&amp;loadSettingsOnDemand=false&amp;propertyFiles=%2Fhome%2Fproject%2FHaMake%2Fsrc%2Fhamake%2Fivy%2Flibraries.properties"/>
 	<classpathentry kind="lib" path="test/resources/testMapReduceLib/helper.jar"/>
 	<classpathentry kind="lib" path="test/resources/testMapReduceLib/problem.jar"/>
+	<classpathentry kind="con" path="org.apache.ivyde.eclipse.cpcontainer.IVYDE_CONTAINER/?ivyXmlPath=ivy.xml&amp;confs=*&amp;ivySettingsPath=&amp;loadSettingsOnDemand=true&amp;propertyFiles=%2Fhome%2Fproject%2FHaMake%2Fsrc%2Fhamake%2Fivy%2Flibraries.properties"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

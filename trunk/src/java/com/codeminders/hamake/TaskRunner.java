@@ -20,8 +20,8 @@ public class TaskRunner {
 	private Map<String, DataTransformationRule> tasks;
 	private List<String> targets;
 
-	private Collection<String> failed;
-	private Collection<TaskThread> running;
+	private Set<String> failed;
+	private Set<TaskThread> running;
 
 	private Semaphore job_semaphore;
 	private Lock lock;
@@ -98,7 +98,7 @@ public class TaskRunner {
 			}
 
 			Collection<TaskThread> justFinished = new ArrayList<TaskThread>();
-			Collection<TaskThread> stillRunning = new ArrayList<TaskThread>();
+			Set<TaskThread> stillRunning = new HashSet<TaskThread>();
 
 			for (TaskThread t : running) {
 				if (t.isFinished()) {
@@ -115,6 +115,7 @@ public class TaskRunner {
 				} else {
 					LOG.error("Execution of " + tt.getTaskName()
 							+ " is failed with code " + tt.getReturnCode());
+					removeDependentTasks(graph, failed, tt.getTaskName());
 					failed.add(tt.getTaskName());
 					graph.removeTask(tt.getTaskName());
 					
@@ -122,6 +123,15 @@ public class TaskRunner {
 			}
 			running = stillRunning;
 			lock.unlock();
+		}
+	}
+	
+	private void removeDependentTasks(ExecutionGraph graph, Set<String> failed, String task){
+		for(String dependentTask : graph.getDependentTasks(task)){
+			LOG.warn("Removing dependent task " + dependentTask + " from execution graph");
+			failed.add(dependentTask);
+			graph.removeTask(dependentTask);
+			removeDependentTasks(graph, failed, dependentTask);
 		}
 	}
 }
