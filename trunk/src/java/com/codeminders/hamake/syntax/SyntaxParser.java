@@ -238,9 +238,6 @@ public class SyntaxParser extends BaseSyntaxParser {
         String name = getOptionalAttribute(root, "name", "fold" + Math.abs(random.nextInt() % 1000));
 
         Element input = getOneSubElement(root, "input");
-        if(input == null){
-			throw new InvalidMakefileException(getPath(root) + " should have one input sub-element");
-		}
         List<DataFunction> inputFuncs = parseDTRData(input, Arrays.asList("fileset", "file", "set", "include"), 0, Integer.MAX_VALUE);
         Element output = getOneSubElement(root, "output");
         if(output == null){
