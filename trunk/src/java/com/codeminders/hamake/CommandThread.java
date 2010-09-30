@@ -16,7 +16,7 @@ public class CommandThread extends ContextAware implements Runnable{
 
     private Task task;
     private Semaphore jobSemaphore;
-    private int rc;
+    private int rc = -200;
 
     public CommandThread(Task task,
                          Context parentContext,
