@@ -192,7 +192,7 @@
     <xs:sequence>
       <xs:element minOccurs="0" ref="description"/>
       <xs:element minOccurs="0" ref="dependencies"/>
-      <xs:element ref="input"/>
+      <xs:element ref="input" minOccurs="0"/>
       <xs:element ref="output"/>
       <xs:element ref="task"/>
       <xs:element minOccurs="0" ref="refused"/>

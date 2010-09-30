@@ -68,11 +68,18 @@
 			<patternset refid="library.patterns" />
 		</fileset>
 		<path refid="ivy-classpath" />
-	</path>	
+	</path>
+
+	<path id="test.classpath">
+		<path refid="library.commons.classpath" />
+	    <pathelement location="${build.dir}/classes" />
+	    <fileset file="${test.resources.dir}/testMapReduceLib/*.jar" />
+	</path>
 
 	<path id="test.runtime.classpath">
 		<path refid="test.classpath" />
 		<pathelement location="${test.build.dir}/classes" />
+		<pathelement location="${resources.dir}" />
 		<pathelement location="${basedir}/test/resources/hamakefiles/currentsyntax" />
 	</path>
 
@@ -117,7 +124,6 @@
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Implementation-Version" value="${hamake.version}-${release.number}" />
 				<attribute name="Built-Date" value="${TODAY}" />
-				<attribute name="Class-Path" value="${pj.classpath.flattened}" />
 			</manifest>
 			<fileset dir="${build.dir}/classes" excludes="com/codeminders/hamake/examples/**" />
 			<fileset dir="${build.dir}" includes="lib/*.jar" />
