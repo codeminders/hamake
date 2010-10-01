@@ -140,8 +140,8 @@ public class Main {
         } finally {
             IOUtils.closeQuietly(is);
         }
-
-        make.setNumJobs(njobs);        
+        if("local".equals(hadoopCfg.get("mapred.job.tracker", "local"))) make.setNumJobs(1);
+        else make.setNumJobs(njobs);        
 
         int status;
         try {
