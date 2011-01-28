@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="testFoldDoesNotClearsOutputFolderBeforeStart">
+	<fold name="testFoldDoesNotClearsOutputFolderBeforeStart-fold">
+		<input>
+			<file id="in" path="${tmpdir}/input" />
+		</input>
+		<output>
+			<file id="out" path="${tmpdir}/output/" />
+		</output>
+		<exec binary="${cp}">
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
+				<reference idref="in" />
+				<literal value="&quot;" />
+			</parameter>
+			<parameter processing_function="normalizePath">
+				<literal value="&quot;" />
+				<reference idref="out" />
+				<literal value="&quot;" />
+			</parameter>
+		</exec>
+	</fold>
+</project>
+	
