@@ -2,12 +2,8 @@ package com.codeminders.hamake.params;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Pattern;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.codeminders.hamake.context.Context;

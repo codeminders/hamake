@@ -84,9 +84,6 @@ public class Fold extends DataTransformationRule {
 					LOG.error(e);
 				}
 			}
-			for (DataFunction output : outputs)
-				output.clear(getContext());
-
 			return getTask().execute(getContext());
 		}
 		else{

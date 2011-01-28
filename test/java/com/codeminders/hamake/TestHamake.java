@@ -13,10 +13,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.NotFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -288,6 +285,39 @@ public class TestHamake {
 				null).size();
 		Assert.assertEquals(0, map1OutSize);
 		Assert.assertFalse(outputFile.exists());
+	}
+	
+	@Test
+	public void testFoldDoesNotClearsOutputFolderBeforeStart() throws IOException, InvalidContextStateException, ParserConfigurationException, SAXException, InvalidMakefileException, PigNotFoundException, InterruptedException{
+		File outputDir = new File(tempDir, "output");
+		outputDir.mkdirs();
+		File someFileInOutputDir = new File(outputDir, "afile");
+		someFileInOutputDir.createNewFile();
+		Thread.sleep(1000);
+		File inputFile = new File(tempDir, "input");
+		inputFile.createNewFile();
+		Assert.assertTrue(someFileInOutputDir.exists());
+		Context context = new Context(new Configuration(), null, false, false, false);
+		context.set("tmpdir", tempDir.getAbsolutePath().toString());
+		if (OS.isLinux()) {
+			context.set("cp", "cp");
+			context.set("ls", "ls");
+		} else if (OS.isWindows()) {
+			context.set("cp", "copy");
+			context.set("ls", "dir");
+		}
+
+		Hamake make = null;
+		File localHamakeFile = HelperUtils.getHamakeTestResource("test_fold_does_not_clears_output_folder_before_start.xml");
+		make = BaseSyntaxParser.parse(context, new FileInputStream(
+				localHamakeFile));
+		make.setNumJobs(2);
+		make.run();
+		Assert.assertTrue(outputDir.isDirectory());
+		int amountOfFilesInOutputDir = FileUtils.listFiles(outputDir, FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".crc")),
+				null).size();
+		Assert.assertEquals(2, amountOfFilesInOutputDir);
+		Assert.assertTrue(someFileInOutputDir.exists());
 	}
 
 }
