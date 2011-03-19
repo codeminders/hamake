@@ -105,6 +105,11 @@ executed for each discovered DTR in parallel.
 
 TODO: error handling in step 4?
 
+Essentially, this a version of Kahn's
+algorithm\cite{kahn1962topological}, implementing topological
+ordering\cite{wiki:topsort}.
+
+
 \subsubsection{Cycles}
 
 Cyclic dependences has to be avoided, because workflow contaning them
