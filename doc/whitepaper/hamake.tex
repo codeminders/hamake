@@ -107,18 +107,18 @@ TODO: error handling in step 4?
 
 \subsubsection{Cycles}
 
-Cyclic dependences has to be avoided, because such workflow is not
-guaranteed to terminate. Implicit checks are perfomed during reading
-hamakefile and building dependency graph. If cycle is detected, it is
-reported as error. So the dependency graph used by hamake is
-\textit{directed acyclic graph}.
+Cyclic dependences has to be avoided, because workflow contaning them
+is not guaranteed to terminate. Implicit checks are perfomed during
+reading hamakefile and building dependency graph. If a cycle is
+detected, it is reported as an error. So the dependency graph used by
+hamake is \textit{directed acyclic graph}.
 
 However hamake supports a scenario of interative processing, where
 some output of one iteration are used as an input in the next one. We
 do not support more general case of \textit{fixed point} iterative
-calculations: each run of hamake is a signle iteration. This mechanism
+calculations: each run of hamake is a signle pass. This mechanism
 is implemented via hamake feature called \textit{generations}. Each
-input or output file could be optionally marked with generation
+input or output file could be optionally marked with \emph{generation}
 attribute. Same file with with different generation numbers is treated
 as different vertex is dependency graph. (TODO: elaborate)
 
@@ -201,8 +201,9 @@ about data files and spawned Hadoop jobs.
 
 \section{Related Work}
 
-Table~\ref{table:1} below attempts to compare Hamake and similar workflow
-engines for Hadoop (\href{http://github.com/tucu00/oozie1}{Oozie},
+Table~\ref{table:1} below attempts to compare Hamake and similar
+workflow engines for Hadoop
+(\href{http://github.com/tucu00/oozie1}{Oozie},
 \href{http://sna-projects.com/azkaban/}{Azkaban},
 \href{http://www.cascading.org/}{Cascading}) based on some key
 features. Although all of these systems could be used to solve similar
@@ -236,7 +237,8 @@ for your problem.
   \label{table:1}
 \end{sidewaystable}
 
-Below are some notes, discussing some key differences between hamake and some other popular products:
+Below are some notes, discussing some key differences between hamake
+and some other popular products:
 
 \subsection{Cascading}
 
