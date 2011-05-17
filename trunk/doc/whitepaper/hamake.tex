@@ -7,7 +7,7 @@
 \usepackage{appendix}
 \author{Vadim Zaliva, lord@codeminders.com}
 \date{2010}
-\title{Dataflow Approach to Data Processing in Hadoop with HAMAKE}
+\title{Dataflow Approach to Data Processing in Hadoop with \textbf{hamake}}
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{rotating}
@@ -39,7 +39,7 @@
   cycles, leading to dependency loops which could be resolved using
   dataset versioning.
 
-  These ideas inspired the creation of HAMAKE utility. We tried
+  These ideas inspired the creation of \textbf{hamake} utility. We tried
   emphasizing data and allowing the developer to express one's goals
   in terms of dataflow (versus workflow). Data dependency graph is
   expressed using just two data flow instructions: fold and foreach
@@ -51,8 +51,6 @@
   successfully used in real-life large scale Hadoop data processing
   projects. 
 \end{abstract}
-
-TODO: review typesetting conventions to make sure HAMAKE is typeset uniformly
 
 \section{Introduction}
 
@@ -67,7 +65,7 @@ emphasis on incremental processing.
 
 \section{Processing Model}
 
-Hamake operates on \textit{filesets} which consists of indvidual
+\textbf{hamake} operates on \textit{filesets} which consists of indvidual
 \textit{files}. Fileset defines group of files, residing on filesystem
 accessible from Hadoop task (usually DFS). \textit{Dataflow
   transformation rules (DTR)} specify operations which could take some
@@ -78,14 +76,14 @@ other filesets as output.
 
 If file \textit{A} is listed as input of a DTR, and file \textit{B}
 listed as output of the same DTR, it is said that \textit{``B depends
-  on A''}. Hamake is using file time stamps for dependency
+  on A''}. \textbf{hamake} is using file time stamps for dependency
 calculation. A time stamp of a file is date and time when it was last
 modified.  In hamke world, file system directory or folder is also a
 file, and has its own time stamp. DTR outputs said to be \textit{up to
   date} if minimal time stamp on all outputs is greater or equal than
 maximum timestamp on all inputs (and dependency inputs).
 
-hamake attempts to ensure that all DTR outputs are up to
+\textbf{hamake} attempts to ensure that all DTR outputs are up to
 date\footnote{we do not try to ensure that files which are not listed
   as DTR outputs are up to date, becase we have no way to update
   them}. To do so it builds a \textit{dependency graph}. This graph
@@ -99,7 +97,7 @@ is performed.
 \begin{figure}[htp]
 \centering
 \includegraphics[width=10cm]{GraphReduction.png}
-\caption{hamake dependency graph reduction algorithm}
+\caption{\textbf{hamake} dependency graph reduction algorithm}
 \label{fig:grred}
 \end{figure}
 
@@ -110,7 +108,7 @@ executed for each discovered DTR in parallel.
 It should be noted that if DTR exectuion has failed, we still can and
 will process other DTRs which do not depend directly or indirectly on
 results of this DTR. This allow us to fix the problem and re-run
-hamake, without need to re-process all data.
+\textbf{hamake}, without need to re-process all data.
 
 Essentially, this a version of Kahn's
 algorithm\cite{kahn1962topological}, implementing topological
@@ -123,13 +121,13 @@ Cyclic dependences has to be avoided, because workflow contaning them
 is not guaranteed to terminate. Implicit checks are perfomed during
 reading hamakefile and building dependency graph. If a cycle is
 detected, it is reported as an error. So the dependency graph used by
-hamake is \textit{directed acyclic graph}.
+\textbf{hamake} is \textit{directed acyclic graph}.
 
-However hamake supports a limited scenario of interative processing,
+However \textbf{hamake} supports a limited scenario of interative processing,
 where some output of one iteration are used as an input in the next
 one. We do not support more general case of \textit{fixed point}
-iterative calculations: each run of hamake is a signle pass. This
-mechanism is implemented via hamake feature called
+iterative calculations: each run of \textbf{hamake} is a signle pass. This
+mechanism is implemented via \textbf{hamake} feature called
 \textit{generations}. Each input or output file could be optionally
 marked with \emph{generation} attribute. Same file with with different
 generation numbers is treated as different vertex is dependency
@@ -141,20 +139,20 @@ TODO:
 
 \section{Implementation}
 
-A Python-language prototype of \textit{hamake} was developed in late
+A Python-language prototype of \textbf{hamake} was developed in late
 2008 and has been used on a daily basis ever since. Based on our
 experience with the prototype, we built a new version of the
 product. Re-written from scratch in Java, the new version has many
 improvements like streamlined syntax of a dataflow definition file,
 Amazon EMR support and others.
 
-Hamake is open source, disributed under Apache License v2.0. The
+\textbf{hamake} is open source, disributed under Apache License v2.0. The
 project is hosted at google code at the following URL:
 \url{http://code.google.com/p/hamake/}.
 
 \section{Scheduler}
 
-The design goal of hamake scheduler to perform all required
+The design goal of \textbf{hamake} scheduler to perform all required
 calculations in shortest possible time. Obviously to achive this it
 should aim for maximal cluster utilization, performing as many
 calculations in parallel as possible.
@@ -210,8 +208,8 @@ PIG script, single job will spawn one or more \emph{mapper} and
 \emph{reducer} tasks, each taking one respecive slot. Number of
 mappers and reducers lauched depends on many factors: size of DFS
 block, Hadoop general settings, \emph{JobConf} settings for particular
-job are among them. In general, hamake does not have an neither
-visibility nor control over most of these factors, so the hamake
+job are among them. In general, \textbf{hamake} does not have an neither
+visibility nor control over most of these factors, so the \textbf{hamake}
 scheduler currently does not deal with invidual tasks. It knows only
 about data files and spawned Hadoop jobs.
 
@@ -221,7 +219,7 @@ TODO: bookstore from presentation
 
 \section{Related Work}
 
-Table~\ref{table:1} below attempts to compare Hamake and similar
+Table~\ref{table:1} below attempts to compare \textbf{hamake} and similar
 workflow engines for Hadoop
 (\href{http://github.com/tucu00/oozie1}{Oozie},
 \href{http://sna-projects.com/azkaban/}{Azkaban},
@@ -257,23 +255,23 @@ for your problem.
   \label{table:1}
 \end{sidewaystable}
 
-Below are some notes, discussing some key differences between hamake
+Below are some notes, discussing some key differences between \textbf{hamake}
 and some other popular products:
 
 \subsection{Cascading}
 
-In short: Cascading is an API, while hamake is an utility. Some differences:
+In short: Cascading is an API, while \textbf{hamake} is an utility. Some differences:
 \begin{itemize}
-\item hamake does not require any custom programming. It helps to automate running your existing Hadoop tasks and PIG scripts
-\item You can use hamake to automate tasks written in other languages, for example using \textit{Hadoop streaming}
+\item \textbf{hamake} does not require any custom programming. It helps to automate running your existing Hadoop tasks and PIG scripts
+\item You can use \textbf{hamake} to automate tasks written in other languages, for example using \textit{Hadoop streaming}
 \end{itemize}
 
 \subsection{Oozie and Azkaban}
 
 Oozie and Azkaban are server-side systems that have to be installed
-and run as a service. Hamake is a lightweight client-side utility that
+and run as a service. \textbf{hamake} is a lightweight client-side utility that
 does not require installation and has very simple syntax for workflow
-definition.  Most importantly, Hamake is built based on dataflow
+definition.  Most importantly, \textbf{hamake} is built based on dataflow
 programming principles - your Hadoop tasks execution sequence is
 controlled by the data.
  
