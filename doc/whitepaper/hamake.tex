@@ -63,6 +63,20 @@ consequence of this is that even trivial tasks are generally I/O-bound
 \cite{hadoopattwitter},\cite{hs2010hadoopbench} which put special
 emphasis on incremental processing.
 
+To address the problem of incremental processing of big data sets in
+collaborative filtering system Python-language prototype of
+\textbf{hamake} was developed in late 2008. Based on our experience
+with the prototype, we built a new version of the product which was
+used in several subsequent projects for such tasks as processing of
+web crawling results (text analysis) and Hadoop peformance
+testing. Re-written from scratch in Java, the new version has many
+improvements like streamlined syntax of a dataflow definition file,
+Amazon EMR support and others.
+
+\textbf{hamake} is open source, disributed under Apache License
+v2.0. The project is hosted at google code at the following URL:
+\url{http://code.google.com/p/hamake/}.
+
 \section{Processing Model}
 
 \textbf{hamake} operates on \textit{filesets} which consists of indvidual
@@ -71,8 +85,6 @@ accessible from Hadoop task (usually DFS). \textit{Dataflow
   transformation rules (DTR)} specify operations which could take some
 files or filesets as inputs (or dependecies) and possibly produce
 other filesets as output.
-
-\subsection{Dependecy Resolution}
 
 If file \textit{A} is listed as input of a DTR, and file \textit{B}
 listed as output of the same DTR, it is said that \textit{``B depends
@@ -125,8 +137,6 @@ will process other DTRs which do not depend directly or indirectly on
 results of this DTR. This allow us to fix the problem and re-run
 \textbf{hamake}, without need to re-process all data.
 
-\subsubsection{Cyclic Dependences}
-
 Cyclic dependences has to be avoided, because workflow contaning them
 is not guaranteed to terminate. Implicit checks are perfomed during
 reading hamakefile and building dependency graph. If a cycle is
@@ -142,23 +152,6 @@ mechanism is implemented via \textbf{hamake} feature called
 marked with \emph{generation} attribute. Same file with with different
 generation numbers is treated as different vertex is dependency
 graph. (TODO: elaborate)
-
-\subsection{Path Transformation Operations}
-
-TODO:
-
-\section{Implementation}
-
-A Python-language prototype of \textbf{hamake} was developed in late
-2008 and has been used on a daily basis ever since. Based on our
-experience with the prototype, we built a new version of the
-product. Re-written from scratch in Java, the new version has many
-improvements like streamlined syntax of a dataflow definition file,
-Amazon EMR support and others.
-
-\textbf{hamake} is open source, disributed under Apache License v2.0. The
-project is hosted at google code at the following URL:
-\url{http://code.google.com/p/hamake/}.
 
 \section{Scheduler}
 
@@ -268,7 +261,7 @@ for your problem.
 Below are some notes, discussing some key differences between \textbf{hamake}
 and some other popular products:
 
-\subsection{Cascading}
+\subsection*{Cascading}
 
 In short: Cascading is an API, while \textbf{hamake} is an utility. Some differences:
 \begin{itemize}
@@ -276,7 +269,7 @@ In short: Cascading is an API, while \textbf{hamake} is an utility. Some differe
 \item You can use \textbf{hamake} to automate tasks written in other languages, for example using \textit{Hadoop streaming}
 \end{itemize}
 
-\subsection{Oozie and Azkaban}
+\subsection*{Oozie and Azkaban}
 
 Oozie and Azkaban are server-side systems that have to be installed
 and run as a service. \textbf{hamake} is a lightweight client-side utility that
