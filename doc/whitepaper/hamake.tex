@@ -83,6 +83,14 @@ file, and has its own time stamp. DTR outputs said to be \textit{up to
   date} if minimal time stamp on all outputs is greater or equal than
 maximum timestamp on all inputs (and dependency inputs).
 
+A notion of \textit{fuzzy timestamp}\footnote{\textit{fuzzy timestamp}
+  support is not included in current version of \textbf{hamake}.}
+allows us to compare two time stamps allowing certain margin or
+error. The ``fuzziness'' is controlled by tolerance
+$\sigma$. Timestamp $a$ is considered to be older than timestamp $b$
+if $a<b$ and $b-a>\sigma$. Setting $\sigma=0$ gives us non-fuzzy,
+strict timestamp comparison.
+
 \textbf{hamake} attempts to ensure that all DTR outputs are up to
 date\footnote{we do not try to ensure that files which are not listed
   as DTR outputs are up to date, becase we have no way to update
