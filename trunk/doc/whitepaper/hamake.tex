@@ -5,13 +5,13 @@
 \usepackage{amsmath}
 \usepackage{color}
 \usepackage{appendix}
-\author{Vadim Zaliva, lord@codeminders.com}
+\author{Vadim Zaliva lord@crocodile.org, Vladimir Orlov vorl@codeminders.com}
 \date{2010}
-\title{Dataflow Approach to Data Processing in Hadoop with \textbf{hamake}}
+\title{Dataflow Approach to Data Processing in Hadoop with HAMAKE}
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{rotating}
-\usepackage[colorlinks=true,bookmarks=true,pdfauthor={Vadim Zaliva lord@crocodile.org},
+\usepackage[colorlinks=true,bookmarks=true,pdfauthor={Vadim Zaliva lord@crocodile.org Vladimir Orlov vorl@codeminders.com},
             pdftitle={Dataflow Approach to Data Processing in Hadoop with HAMAK},
             pdftex]{hyperref}
 
@@ -81,7 +81,10 @@ calculation. A time stamp of a file is date and time when it was last
 modified.  In hamke world, file system directory or folder is also a
 file, and has its own time stamp. DTR outputs said to be \textit{up to
   date} if minimal time stamp on all outputs is greater or equal than
-maximum timestamp on all inputs (and dependency inputs).
+maximum timestamp on all inputs (and dependency inputs). Groups of
+files and folders could be also organized into the \emph{sets} which
+could be also used as dependencies. See hamake syntax
+refererence\cite{hamakesyntax} for full syntax.
 
 A notion of \textit{fuzzy timestamp}\footnote{\textit{fuzzy timestamp}
   support is not included in current version of \textbf{hamake}.}
