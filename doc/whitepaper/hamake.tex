@@ -87,7 +87,7 @@ hamake attempts to ensure that all DTR outputs are up to
 date\footnote{we do not try to ensure that files which are not listed
   as DTR outputs are up to date, becase we have no way to update
   them}. To do so it builds a \textit{dependency graph}. This graph
-have files or filesets as vertices and DTRs as edges.
+have files or filesets as vertices and DTRs as edges. (TODO: is it DAG?)
 
 Then, the graph reduction algorithms shown on Figure~\ref{fig:grred}
 is performed.
@@ -110,15 +110,16 @@ algorithm\cite{kahn1962topological}, implementing topological
 ordering\cite{wiki:topsort}.
 
 
-\subsubsection{Cycles}
+\subsubsection{Cyclic Dependences}
 
 Cyclic dependences has to be avoided, because workflow contaning them
-is not guaranteed to terminate. Implicit checks are perfomed during
-reading hamakefile and building dependency graph. If a cycle is
-detected, it is reported as an error. So the dependency graph used by
-hamake is \textit{directed acyclic graph}.
+is not guaranteed to terminate. (TODO: could not be presented as DAG?)
+Implicit checks are perfomed during reading hamakefile and building
+dependency graph. If a cycle is detected, it is reported as an
+error. So the dependency graph used by hamake is \textit{directed
+  acyclic graph}.
 
-However hamake supports a scenario of interative processing, where
+However hamake supports a limited scenario of interative processing, where
 some output of one iteration are used as an input in the next one. We
 do not support more general case of \textit{fixed point} iterative
 calculations: each run of hamake is a signle pass. This mechanism
@@ -135,10 +136,12 @@ TBD
 
 A Python-language prototype of \textit{hamake} was developed in late
 2008 and has been used on a daily basis ever since. Based on our
-experience with HAMAKE, we prepared a new version of the
+experience with the prototype, we built a new version of the
 product. Re-written from scratch in Java, the new version has many
 improvements like streamlined syntax of a dataflow definition file,
 Amazon EMR support and others.
+
+TODO: mention open source
 
 
 \section{Scheduler}
@@ -200,8 +203,8 @@ PIG script, single job will spawn one or more \emph{mapper} and
 mappers and reducers lauched depends on many factors: size of DFS
 block, Hadoop general settings, \emph{JobConf} settings for particular
 job are among them. In general, hamake does not have an neither
-visibility nor control over most of these factors, so it hamake
-schedule currently does not deal with invidual tasks. It knows only
+visibility nor control over most of these factors, so the hamake
+scheduler currently does not deal with invidual tasks. It knows only
 about data files and spawned Hadoop jobs.
 
 \section{Related Work}
@@ -250,7 +253,6 @@ and some other popular products:
 In short: Cascading is an API, while hamake is an utility. Some differences:
 \begin{itemize}
 \item hamake does not require any custom programming. It helps to automate running your existing Hadoop tasks and PIG scripts
-\item We found hamake especially suitable for incremental processing of datasets
 \item You can use hamake to automate tasks written in other languages, for example using \textit{Hadoop streaming}
 \end{itemize}
 
