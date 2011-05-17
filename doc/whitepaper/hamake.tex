@@ -88,8 +88,8 @@ A notion of \textit{fuzzy timestamp}\footnote{\textit{fuzzy timestamp}
 allows us to compare two time stamps allowing certain margin or
 error. The ``fuzziness'' is controlled by tolerance
 $\sigma$. Timestamp $a$ is considered to be older than timestamp $b$
-if $a<b$ and $b-a>\sigma$. Setting $\sigma=0$ gives us non-fuzzy,
-strict timestamp comparison.
+if $b-a>\sigma$. Setting $\sigma=0$ gives us non-fuzzy, strict
+timestamp comparison.
 
 \textbf{hamake} attempts to ensure that all DTR outputs are up to
 date\footnote{we do not try to ensure that files which are not listed
