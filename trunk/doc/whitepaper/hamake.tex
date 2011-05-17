@@ -52,6 +52,8 @@
   projects. 
 \end{abstract}
 
+TODO: review typesetting conventions to make sure HAMAKE is typeset uniformly
+
 \section{Introduction}
 
 MapReduce model introduced by Google\cite{dean2008map} allows
@@ -87,7 +89,9 @@ hamake attempts to ensure that all DTR outputs are up to
 date\footnote{we do not try to ensure that files which are not listed
   as DTR outputs are up to date, becase we have no way to update
   them}. To do so it builds a \textit{dependency graph}. This graph
-have files or filesets as vertices and DTRs as edges. (TODO: is it DAG?)
+have files or filesets as vertices and DTRs as edges. We will see
+below that this is guaranteed to be a \textit{direct acyclic graph}
+(DAG).
 
 Then, the graph reduction algorithms shown on Figure~\ref{fig:grred}
 is performed.
@@ -103,7 +107,10 @@ Some steps could be executed in parallel: if more than one DTR without
 input dependencies is found on step 1, subsequent steps 2-5 could be
 executed for each discovered DTR in parallel.
 
-TODO: error handling in step 4?
+It should be noted that if DTR exectuion has failed, we still can and
+will process other DTRs which do not depend directly or indirectly on
+results of this DTR. This allow us to fix the problem and re-run
+hamake, without need to re-process all data.
 
 Essentially, this a version of Kahn's
 algorithm\cite{kahn1962topological}, implementing topological
@@ -113,24 +120,24 @@ ordering\cite{wiki:topsort}.
 \subsubsection{Cyclic Dependences}
 
 Cyclic dependences has to be avoided, because workflow contaning them
-is not guaranteed to terminate. (TODO: could not be presented as DAG?)
-Implicit checks are perfomed during reading hamakefile and building
-dependency graph. If a cycle is detected, it is reported as an
-error. So the dependency graph used by hamake is \textit{directed
-  acyclic graph}.
+is not guaranteed to terminate. Implicit checks are perfomed during
+reading hamakefile and building dependency graph. If a cycle is
+detected, it is reported as an error. So the dependency graph used by
+hamake is \textit{directed acyclic graph}.
 
-However hamake supports a limited scenario of interative processing, where
-some output of one iteration are used as an input in the next one. We
-do not support more general case of \textit{fixed point} iterative
-calculations: each run of hamake is a signle pass. This mechanism
-is implemented via hamake feature called \textit{generations}. Each
-input or output file could be optionally marked with \emph{generation}
-attribute. Same file with with different generation numbers is treated
-as different vertex is dependency graph. (TODO: elaborate)
+However hamake supports a limited scenario of interative processing,
+where some output of one iteration are used as an input in the next
+one. We do not support more general case of \textit{fixed point}
+iterative calculations: each run of hamake is a signle pass. This
+mechanism is implemented via hamake feature called
+\textit{generations}. Each input or output file could be optionally
+marked with \emph{generation} attribute. Same file with with different
+generation numbers is treated as different vertex is dependency
+graph. (TODO: elaborate)
 
 \subsection{Path Transformation Operations}
 
-TBD
+TODO:
 
 \section{Implementation}
 
@@ -141,8 +148,9 @@ product. Re-written from scratch in Java, the new version has many
 improvements like streamlined syntax of a dataflow definition file,
 Amazon EMR support and others.
 
-TODO: mention open source
-
+Hamake is open source, disributed under Apache License v2.0. The
+project is hosted at google code at the following URL:
+\url{http://code.google.com/p/hamake/}.
 
 \section{Scheduler}
 
@@ -206,6 +214,10 @@ job are among them. In general, hamake does not have an neither
 visibility nor control over most of these factors, so the hamake
 scheduler currently does not deal with invidual tasks. It knows only
 about data files and spawned Hadoop jobs.
+
+\section{Example}
+
+TODO: bookstore from presentation
 
 \section{Related Work}
 
