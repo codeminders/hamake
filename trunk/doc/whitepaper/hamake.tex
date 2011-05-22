@@ -218,7 +218,46 @@ about data files and spawned Hadoop jobs.
 
 \section{Example}
 
-TODO: bookstore from presentation
+Imagine an online library service, that allows to add, search and preview millions
+of books from libraries and users worldwide. Looking at the size of a library, it's hardly 
+surprising that there's a lot of similar books circulating as well. Until recently, to find
+out similar book we limited ourselfs to the tedious business of reading the back 
+of every book on the shelves. Now, almost all online libraries can automatically detect similar books. 
+
+Design and implementation of an engine that will be able to detect similar books is not an 
+easy task for even a small number of data, but how would you find them in over million of books?
+One way to measure similarity between two books is by measuring the cosine of the angle between their vectors\cite{wiki:cosinesimilarity}.
+The result of the cosine function is equal to 1 when the angle is 0, and it is less than 1 when the angle is 
+of any other value. On Figure~\ref{fig:SimilarityAlg1} and Figure~\ref{fig:SimilarityAlg2} you can see high-level scheme of
+the algorithm, that can be used to mark similar books from bookstore. TODO: alg description
+
+To be able to process thouthands of books, implementation of this algorithm should be scalable and fast.
+Today, to reach true scalability and save your time you won't probably implement this algorithm by yourself and 
+use Hadoop together with Mahout\cite{Mahout} library. 
+Mahout is a scalable machine learning library, that mainly four use cases: \textit{recommendation mining}, \textit{clustering},
+\textit{classification} and \textit{frequent itemset mining}. For our particular task, we can reuse classes
+for creation of sparce vectors from keywords frequency of books and class for computation of cosine distance between two vectors. 
+As a result, you will end up with 6 Map Reduce jobs:
+
+Despite the fact that Mahout together with Hadoop simplifies a lot your job, you still should design and implement a code, that will
+combine Map Reduce jobs in a single process, which will be triggered on incoming of new books. Also, you should implement a logic,
+that will detect incorrect data, and exclude it on next run of the process. This is where Hamake can be used. Hamake helps you to organize 
+your Hadoop map-reduce jobs or Pig scripts in a workflow, that will be launched and controlled from a single machine. The order 
+of execution of Hadoop map-reduce jobs or Pig scripts in hamake is based on dataflow programming model and is controlled by data, not by tasks themselfs.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=10cm]{SimilarityAlgPart1.png}
+\caption{Algorithm for detecting similar books, part 1}
+\label{fig:SimilarityAlg1}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=10cm]{SimilarityAlgPart2.png}
+\caption{Algorithm for detecting similar books, part 2}
+\label{fig:SimilarityAlg2}
+\end{figure}
 
 \section{Related Work}
 
