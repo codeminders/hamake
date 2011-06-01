@@ -226,7 +226,7 @@ of every book on the shelves. Now, almost all online libraries can automatically
 
 Design and implementation of an engine that will be able to detect similar books is not an 
 easy task for even a small number of data, but how would you find them in over million of books?
-One way to measure similarity between two books is by measuring the cosine of the angle between their vectors\cite{wiki:cosinesimilarity}.
+One way to measure similarity between two books is by measuring the cosine of the angle between their feature vectors\cite{wiki:cosinesimilarity}.
 The result of the cosine function is equal to 1 when the angle is 0, and it is less than 1 when the angle is 
 of any other value. On Figure~\ref{fig:SimilarityAlg1} and Figure~\ref{fig:SimilarityAlg2} you can see high-level scheme of
 the algorithm, that can be used to mark similar books from bookstore. TODO: alg description
@@ -237,13 +237,204 @@ use Hadoop together with Mahout\cite{Mahout} library.
 Mahout is a scalable machine learning library, that mainly four use cases: \textit{recommendation mining}, \textit{clustering},
 \textit{classification} and \textit{frequent itemset mining}. For our particular task, we can reuse classes
 for creation of sparce vectors from keywords frequency of books and class for computation of cosine distance between two vectors. 
-As a result, you will end up with 6 Map Reduce jobs:
+As a result, you will end up with 6 Map Reduce jobs, that could be combined in a direct acyclic graph, the same as on Figure~\ref{fig:SimilarityAlgDAG}
 
-Despite the fact that Mahout together with Hadoop simplifies a lot your job, you still should design and implement a code, that will
-combine Map Reduce jobs in a single process, which will be triggered on incoming of new books. Also, you should implement a logic,
+Despite the fact that Mahout together with Hadoop simplifies a lot your job, you still should design and implement a code, that
+will trigger execution of a flow of your direct acyclic graph, consisting of Map Reduce jobs on incoming of new books. Also, you should implement a logic,
 that will detect incorrect data, and exclude it on next run of the process. This is where Hamake can be used. Hamake helps you to organize 
-your Hadoop map-reduce jobs or Pig scripts in a workflow, that will be launched and controlled from a single machine. The order 
-of execution of Hadoop map-reduce jobs or Pig scripts in hamake is based on dataflow programming model and is controlled by data, not by tasks themselfs.
+your Hadoop map-reduce jobs or Pig scripts in a workflow, that will be launched and controlled from a single machine. 
+All you should do is to write an XML descriptor of your flow, and launch Hamake, with descriptor file, passed to it as a first argument. The order
+in which your Map-Reduce jobs will run, will be controlled by data, not by tasks themselfs. 
+To give you an example of how an XML descriptor will look like, lets look at a descriptor of process of finding similar books in Listing~\ref{hamakeFile}
+First, for convinience, in 5-6 I've defined properties, that will be used by all data transformation rules. Also, in lines 8-11 I defined
+an input directory with books, an output file where list of similar books will be produced and a file with stop-words.
+Now, I will add a first step - a job that converts a book from native format to plain text. In Hamake, Hadoop jobs, Pig scripts or external process should be
+defined as data transformation rule. A data transformation rule can be of two tipes: \textit{foreach} or \textit{fold}. For each data transformation rule you should 
+specify its input and output data. My first job (lines 13-28) takes two parameters - an input a path to a book, and a path to a file, where converted book should be written. 
+As you can see from input data location is specified within \textit{input} tag and output data location within \textit{output} tag. With help of attributes \textit{jar} and \textit{main} of tag 
+\textit{mapreduce} I specified location of a jar file with Hadoop job and main class name.
+Next, I will add all five Hadoop Map-Reduce jobs that are left job, As you can see, these jobs takes as an input files, produced by the previous task. When you launch Hamake,
+with XML descriptor from Listing~\ref{hamakeFile}, it will first loads all tasks into memory and searche for tasks that has no input or input data that does not intercept with other tasks output. This is tasks \textit{extractPlainText} -it becomes root task. As soon as Hamake has finished execution of the first task, the child task will be launched, and so on, while no tasks are left.
+As a result, you will get a file \textit{results.txt} with list of similar books.
+
+\begin{lstlisting}[caption={Hamake file, that describes process for detecting similar books},label=hamakeFile]
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="cluster books">
+
+  <property name="lib" value="./lib/" />
+  <property name="cosine.distance" value="0.02" />
+
+  <fileset id="input" path="/data/" mask="*.fb2" />
+  <file id="output" path="./result.txt" />
+  <file id="stopwords" path="./stopwords.txt" />
+  <file id="temporaryFolder" path="/tmp/" />
+
+  <foreach name="extractPlainText">
+    <input>
+      <include idref="input" />
+    </input>
+    <output>
+      <file id="extractPlainTextOut" path="${temporaryFolder}/extractPlainTextOut" />
+    </output>
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.ConvertFb2Text">
+      <parameter>
+        <literal value="${foreach:path}" />
+      </parameter>
+      <parameter>
+        <reference idref="extractPlainTextOut" />
+      </parameter>
+    </mapreduce>
+  </foreach>
+
+  <foreach name="KeywordsExtractor">
+    <input>
+      <file id="extractPlainTextOut" path="${temporaryFolder}/extractPlainTextOut" />
+    </input>
+    <output>
+      <file id="KeywordsExtractorOut" path="${temporaryFolder}/KeywordsExtractorOut/${foreach:filename}" />
+    </output>
+    <mapreduce jar="${lib}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.FB2KeywordsExtractor">
+      <parameter>
+        <literal value="${foreach:path}" />
+      </parameter>
+      <parameter>
+        <reference idref="KeywordsExtractorOut" />
+      </parameter>
+    </mapreduce>
+  </foreach>
+
+  <foreach name="StopwordsExcluder">
+    <input>
+      <fileset path="${temporaryFolder}/KeywordsExtractorOut/" />
+    </input>
+    <output>
+      <file id="FB2StopwordsExcluderOut" path="${temporaryFolder}/KeywordsFilteredOut/${foreach:filename}" />
+    </output>
+    <mapreduce jar="${lib}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.FB2StopwordsExcluder">
+      <parameter>
+        <literal value="${foreach:path}" />
+      </parameter>
+      <parameter>
+        <reference idref="StopwordsExcluderOut" />
+      </parameter>
+      <parameter>
+        <reference idref="stopwords" />
+      </parameter>
+      <parameter>
+        <reference idref="MetaExtractorOut"/>
+      </parameter>
+    </mapreduce>
+  </foreach>
+
+  <fold name="SequenceFilesFromDirectory">
+    <input>
+      <file id="SequenceFilesFromDirectoryIn" path="${temporaryFolder}/KeywordsFilteredOut/" />
+    </input>
+    <output>
+      <file id="SequenceFilesFromDirectoryOut" path="${temporaryFolder}/SequenceFilesFromDirectoryOutput" />
+    </output>
+    <mapreduce jar="${lib}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.SequenceFilesFromDirectory">
+      <parameter>
+        <reference idref="SequenceFilesFromDirectoryIn" />
+      </parameter>
+      <parameter>
+        <reference idref="SequenceFilesFromDirectoryOut" />
+      </parameter>
+      <parameter>
+        <literal value="part-" />
+      </parameter>
+    </mapreduce>
+  </fold>
+
+  <foreach name="SparseVectorsFromSequenceFiles">
+    <input>
+      <file id="SparseVectorsFromSequenceFilesIn" path="${temporaryFolder}/SequenceFilesFromDirectoryOutput/" />
+    </input>
+    <output>
+      <file id="SparseVectorsFromSequenceFilesOut" path="${temporaryFolder}/SparseVectorsFromSequenceFilesOutput/" />
+    </output>
+    <mapreduce jar="${lib}/mahout-utils-0.3.jar" main="org.apache.mahout.text.SparseVectorsFromSequenceFiles">
+      <classpath>
+        <fileset path="lib" mask="*.jar" />
+      </classpath>
+      <parameter>
+        <literal value="-i" />
+      </parameter>
+      <parameter>
+        <reference idref="SparseVectorsFromSequenceFilesIn" />
+      </parameter>
+      <parameter>
+        <literal value="-o" />
+      </parameter>
+      <parameter>
+        <reference idref="SparseVectorsFromSequenceFilesOut" />
+      </parameter>
+      <parameter>
+        <literal value="-chunk" />
+      </parameter>
+      <parameter>
+        <literal value="64" />
+      </parameter>
+      <parameter>
+        <literal value="-wt" />
+      </parameter>
+      <parameter>
+        <literal value="tf" />
+      </parameter>
+    </mapreduce>
+  </foreach>
+
+  <foreach name="MeanShiftCanopy">
+    <input>
+      <include idref="vectors" />
+    </input>
+    <output>
+      <file id="MeanShiftCanopyOut" path="${temporaryFolder}/MeanShiftCanopyOutput/" />
+    </output>
+    <mapreduce jar="${lib}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.MeanShiftCanopyDriver">
+      <classpath>
+        <fileset path="lib" mask="*.jar" />
+      </classpath>
+      <parameter>
+        <literal value="${cosine.distance}" />
+      </parameter>
+      <parameter>
+        <reference idref="vectors" />
+      </parameter>
+      <parameter>
+        <reference idref="MeanShiftCanopyOut" />
+      </parameter>
+    </mapreduce>
+  </foreach>
+
+  <foreach name="OutputResults">
+    <input>
+      <file id="OutputResultsIn" path="${temporaryFolder}/MeanShiftCanopyOutput/" />
+    </input>
+    <output>
+      <include idref="output" />
+    </output>
+    <mapreduce jar="${lib}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.OutputClusterResults">
+      <classpath>
+        <fileset path="lib" mask="*.jar" />
+      </classpath>
+      <parameter>
+        <literal value="${cosine.distance}" />
+      </parameter>
+      <parameter>
+        <reference idref="OutputResultsIn" />
+      </parameter>
+      <parameter>
+        <reference idref="vectors" />
+      </parameter>
+      <parameter>
+        <reference idref="output" />
+      </parameter>
+    </mapreduce>
+  </foreach>
+</project>
+\end{lstlisting}
 
 \begin{figure}[htp]
 \centering
@@ -257,6 +448,13 @@ of execution of Hadoop map-reduce jobs or Pig scripts in hamake is based on data
 \includegraphics[width=10cm]{SimilarityAlgPart2.png}
 \caption{Algorithm for detecting similar books, part 2}
 \label{fig:SimilarityAlg2}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=10cm]{SimilarityAlgDAG.png}
+\caption{Directed Acyclic Graph of a Hamake Process for detecting similar books}
+\label{fig:SimilarityAlgDAG}
 \end{figure}
 
 \section{Related Work}
