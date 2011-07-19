@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <ivy-module version="1.0">
-  <info organisation="com.codeminders" module="${ant.project.name}">
+  <info organisation="com.codeminders" module="hamake">
     <description>
-        Hamake tool
+        Hamake utility
     </description>
   </info>
   <configurations defaultconfmapping="default">
