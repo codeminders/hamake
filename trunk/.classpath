@@ -7,7 +7,7 @@
 	<classpathentry kind="lib" path="test/resources/testUtils.jar"/>
 	<classpathentry kind="lib" path="test/resources/testMapReduceLib/helper.jar"/>
 	<classpathentry kind="lib" path="test/resources/testMapReduceLib/problem.jar"/>
-	<classpathentry kind="con" path="org.apache.ivyde.eclipse.cpcontainer.IVYDE_CONTAINER/?ivyXmlPath=ivy.xml&amp;confs=*&amp;ivySettingsPath=&amp;loadSettingsOnDemand=true&amp;propertyFiles=%2Fhome%2Fproject%2FHaMake%2Fsrc%2Fhamake%2Fivy%2Flibraries.properties"/>
+	<classpathentry kind="con" path="org.apache.ivyde.eclipse.cpcontainer.IVYDE_CONTAINER/?ivyXmlPath=ivy.xml&amp;confs=*&amp;ivySettingsPath=&amp;loadSettingsOnDemand=true&amp;propertyFiles=%24%7Bworkspace_loc%3Ahamake%2Fivy%2Flibraries.properties%7D"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
