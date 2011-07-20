@@ -430,7 +430,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 	protected Task parseExecTask(Element root)
 			throws InvalidMakefileException, IOException {
 		Exec res = new Exec();
-		res.setBinary(Utils.resolvePath(Utils.replaceVariables(rootContext, getRequiredAttribute(root, "binary")), (String)rootContext.get(Context.HAMAKE_PROPERTY_WORKING_FOLDER)));
+		res.setBinary(Utils.replaceVariables(rootContext, getRequiredAttribute(root, "binary")));
 		res.setParameters(parseParametersList(root));
 		return res;
 	}

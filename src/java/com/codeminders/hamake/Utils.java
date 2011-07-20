@@ -12,6 +12,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.RunJar;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.conf.Configuration;
@@ -48,7 +49,7 @@ public class Utils {
 		return !StringUtils.isEmpty(ret) ? ret : defaultValue;
 	}
 
-	public static int execute(Context context, String command) {
+	public static int execute(Context context, final String command) {
 		if (context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
 			LOG.info("Executing " + command);
 		try {
@@ -63,7 +64,61 @@ public class Utils {
 				} else {
 					cmd = new String[] { command };
 				}
-				return Runtime.getRuntime().exec(cmd).waitFor();
+
+                final Process process = Runtime.getRuntime().exec(cmd);
+
+                IOUtils.closeStream(process.getOutputStream());
+
+                final Thread stdoutReader = new Thread()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            final InputStream inputStream = process.getInputStream();
+                            try
+                            {
+                                IOUtils.copyBytes(inputStream, System.out, 8192, false);
+                            }
+                            catch (final IOException ex)
+                            {
+                                LOG.error(command + ": I/O error reading standard output", ex);
+                            }
+                            finally
+                            {
+                                IOUtils.closeStream(inputStream);
+                            }
+                        }
+                    };
+                stdoutReader.start();
+
+                final Thread stderrReader = new Thread()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            final InputStream errorStream = process.getErrorStream();
+                            try
+                            {
+                                IOUtils.copyBytes(errorStream, System.err, 8192, false);
+                            }
+                            catch (final IOException ex)
+                            {
+                                LOG.error(command + ": I/O error reading standard error", ex);
+                            }
+                            finally
+                            {
+                                IOUtils.closeStream(errorStream);
+                            }
+                        }
+                    };
+                stderrReader.start();
+
+                final int exitCode = process.waitFor();
+
+                stdoutReader.join();
+                stderrReader.join();
+
+                return exitCode;
 			}
 		} catch (IOException ex) {
 			LOG.error(command + " execution failed, I/O error", ex);

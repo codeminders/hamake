@@ -11,13 +11,7 @@ import org.junit.Test;
 
 import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.data.FileDataFunction;
-import com.codeminders.hamake.params.AppendConcatFunction;
-import com.codeminders.hamake.params.HamakeParameter;
-import com.codeminders.hamake.params.IdentityProcessingFunction;
-import com.codeminders.hamake.params.Literal;
-import com.codeminders.hamake.params.NormalizePathProcessingFunction;
-import com.codeminders.hamake.params.Reference;
-import com.sun.org.apache.bcel.internal.generic.NEW;
+import com.codeminders.hamake.params.*;
 
 public class TestHamakeParameter {
 	
