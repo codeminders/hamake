@@ -1,10 +1,6 @@
 package com.codeminders.hamake.dtr;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Arrays;
+import java.io.*;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -14,21 +10,15 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.xml.sax.SAXException;
 
 import com.codeminders.hamake.*;
 import com.codeminders.hamake.context.Context;
-import com.codeminders.hamake.dtr.Fold;
-import com.codeminders.hamake.dtr.Foreach;
 import com.codeminders.hamake.params.HamakeParameter;
 import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
-import com.codeminders.hamake.task.Exec;
-import com.codeminders.hamake.task.MapReduce;
-import com.codeminders.hamake.task.Pig;
+import com.codeminders.hamake.task.*;
 
 public class TestSyntaxParser {
 	

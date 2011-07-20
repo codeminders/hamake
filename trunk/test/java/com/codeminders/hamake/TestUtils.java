@@ -2,8 +2,6 @@ package com.codeminders.hamake;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -11,10 +9,7 @@ import java.util.jar.Manifest;
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 public class TestUtils {
 	

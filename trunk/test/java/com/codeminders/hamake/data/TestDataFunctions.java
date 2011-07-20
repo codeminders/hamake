@@ -2,7 +2,6 @@ package com.codeminders.hamake.data;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 
 import junit.framework.Assert;
@@ -11,13 +10,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalFileSystem;
-import org.apache.hadoop.fs.Path;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
-import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.HelperUtils;
+import com.codeminders.hamake.InvalidContextStateException;
 import com.codeminders.hamake.context.Context;
 
 public class TestDataFunctions {

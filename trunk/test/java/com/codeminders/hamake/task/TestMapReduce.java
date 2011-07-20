@@ -1,11 +1,6 @@
 package com.codeminders.hamake.task;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.*;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -13,14 +8,11 @@ import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.xml.sax.SAXException;
 
 import com.codeminders.hamake.*;
 import com.codeminders.hamake.context.Context;
-import com.codeminders.hamake.data.FileDataFunction;
 import com.codeminders.hamake.syntax.BaseSyntaxParser;
 import com.codeminders.hamake.syntax.InvalidMakefileException;
 

@@ -1,33 +1,30 @@
 package com.codeminders.hamake.task;
 
-import com.codeminders.hamake.Utils;
-import com.codeminders.hamake.context.Context;
-import com.codeminders.hamake.params.Parameter;
-import com.codeminders.hamake.params.SystemProperty;
+import java.io.IOException;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.Path;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import com.codeminders.hamake.Utils;
+import com.codeminders.hamake.context.Context;
+import com.codeminders.hamake.params.Parameter;
+import com.codeminders.hamake.params.SystemProperty;
 
 public class Exec extends Task {
 	
 	public static final Log LOG = LogFactory.getLog(Exec.class);
 
-    private Path binary;
+    private String binary;
 
     public Exec() {
     }
 
     public int execute(Context context) throws IOException {
         Collection<String> args = new ArrayList<String>();
-        args.add(binary.toString());
+        args.add(binary);
         List<Parameter> parameters = getParameters();
         if (parameters != null) {
             for (Parameter p : parameters) {
@@ -45,16 +42,14 @@ public class Exec extends Task {
             }
         }
         String command = StringUtils.join(args, ' ');
-        if (context.getBoolean(Context.HAMAKE_PROPERTY_DRY_RUN))
-            return 0;
         return Utils.execute(context, command);
     }
 
-    public Path getBinary() {
+    public String getBinary() {
         return binary;
     }
 
-    public void setBinary(Path binary) {
+    public void setBinary(String binary) {
         this.binary = binary;
     }
 
