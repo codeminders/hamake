@@ -70,6 +70,8 @@ Dataflow transformation rule which maps a group of files at one location(s) to a
 || *Attribute* || *Description* || *Required* ||
 || name || the name of the DTR. || No ||
 || disabled || whether this task is disabled. Disabled tasks are ignored. || No ||
+|| delete_first || boolean, indicating whenever output files should be removed prior to running the job.
+ Default is True. || No ||
 
 Nested elements:
 || *Element name* || *Number of times it can occur* ||
