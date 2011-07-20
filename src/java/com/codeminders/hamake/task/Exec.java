@@ -51,8 +51,6 @@ public class Exec extends Task
             }
         }
         String command = StringUtils.join(args, ' ');
-        if(context.getBoolean(Context.HAMAKE_PROPERTY_DRY_RUN))
-            return 0;
         return Utils.execute(context, command);
     }
 
