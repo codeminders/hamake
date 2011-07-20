@@ -1,3 +1,4 @@
+
 package com.codeminders.hamake.task;
 
 import java.io.IOException;
@@ -13,49 +14,62 @@ import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.params.Parameter;
 import com.codeminders.hamake.params.SystemProperty;
 
-public class Exec extends Task {
-	
-	public static final Log LOG = LogFactory.getLog(Exec.class);
+public class Exec extends Task
+{
 
-    private String binary;
+    public static final Log LOG = LogFactory.getLog(Exec.class);
 
-    public Exec() {
+    private String          binary;
+
+    public Exec()
+    {
     }
 
-    public int execute(Context context) throws IOException {
+    public int execute(Context context) throws IOException
+    {
         Collection<String> args = new ArrayList<String>();
         args.add(binary);
         List<Parameter> parameters = getParameters();
-        if (parameters != null) {
-            for (Parameter p : parameters) {
-                try {
-                	if(p instanceof SystemProperty){
-                    	System.setProperty(((SystemProperty)p).getName(), ((SystemProperty)p).getValue());
+        if(parameters != null)
+        {
+            for(Parameter p : parameters)
+            {
+                try
+                {
+                    if(p instanceof SystemProperty)
+                    {
+                        System.setProperty(((SystemProperty) p).getName(), ((SystemProperty) p).getValue());
+                    } else
+                    {
+                        args.add(p.get(context));
                     }
-                	else{
-                		args.add(p.get(context));
-                	}
-                } catch (IOException ex) {
-                	LOG.error("Failed to extract parameter values", ex);
+                } catch(IOException ex)
+                {
+                    LOG.error("Failed to extract parameter values", ex);
                     return -1000;
                 }
             }
         }
         String command = StringUtils.join(args, ' ');
+        if(context.getBoolean(Context.HAMAKE_PROPERTY_DRY_RUN))
+            return 0;
         return Utils.execute(context, command);
     }
 
-    public String getBinary() {
+    public String getBinary()
+    {
         return binary;
     }
 
-    public void setBinary(String binary) {
+    public void setBinary(String binary)
+    {
         this.binary = binary;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return new ToStringBuilder(this).append("binary", binary).appendSuper(super.toString()).toString();
     }
-    
+
 }
