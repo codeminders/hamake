@@ -202,6 +202,9 @@ public class SyntaxParser extends BaseSyntaxParser {
 			throws InvalidMakefileException, IOException, PigNotFoundException, InvalidContextStateException {
 		String name = getOptionalAttribute(root, "name", "foreach" + Math.abs(random.nextInt() % 1000));
 
+		String deleteFirstValue = getOptionalAttribute(root, "delete_first", "true");
+		boolean deleteFirst = "yes".equalsIgnoreCase(deleteFirstValue) || "true".equalsIgnoreCase(deleteFirstValue);
+
 		Element input = getOneSubElement(root, "input");
 		if(input == null){
 			throw new InvalidMakefileException(getPath(root) + " should have one input sub-element");
@@ -228,6 +231,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 
 		Foreach foreach = new Foreach(rootContext, inputFunc, outputFuncs, deps);
 		foreach.setName(name);
+		foreach.setDeleteFirst(deleteFirst);
 		foreach.setTask(task);
 		foreach.setCopyIncorrectFile(copy);
 		foreach.setTrashBucket(refusedDF);

@@ -43,6 +43,11 @@
                     <data type="boolean"/>
                 </attribute>
             </optional>
+            <optional>
+                <attribute name="delete_first">
+                    <data type="boolean"/>
+                </attribute>
+            </optional>
             <interleave>
                 <optional>
                     <element name="description">
