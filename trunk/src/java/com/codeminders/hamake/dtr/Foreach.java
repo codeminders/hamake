@@ -73,6 +73,7 @@ public class Foreach extends DataTransformationRule {
 	private DataFunction input;
 	private List<? extends DataFunction> output;
 	private List<? extends DataFunction> deps;
+	private boolean deleteFirst = true;
 
 
 	public Foreach(Context parentContext, DataFunction input, List<? extends DataFunction> output,
@@ -96,6 +97,14 @@ public class Foreach extends DataTransformationRule {
 	@Override
 	protected List<? extends DataFunction> getOutputs(){
 		return output;
+	}
+	
+	public boolean getDeleteFirst() {
+		return deleteFirst;
+	}
+
+	public void setDeleteFirst(boolean deleteFirst) {
+		this.deleteFirst = deleteFirst;
 	}
 	
 	@Override
@@ -144,7 +153,8 @@ public class Foreach extends DataTransformationRule {
 					long outputTimeStamp = outputFunc.getMaxTimeStamp(command.getContext());
 					outputTimeStamp = (outputTimeStamp == 0)? -1 : outputTimeStamp;
 					if (outputTimeStamp < inputTimeStamp || outputTimeStamp == -1) {
-						outputFunc.clear(command.getContext());
+						if (deleteFirst)
+							outputFunc.clear(command.getContext());
 						try {
 							semaphore.acquire();
 						} catch (InterruptedException e) {

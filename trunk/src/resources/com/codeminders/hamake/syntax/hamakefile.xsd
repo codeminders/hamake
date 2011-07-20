@@ -29,6 +29,7 @@
       <xs:group ref="dtrElement"/>
       <xs:attribute name="name" type="xs:ID"/>
       <xs:attribute name="disabled" type="xs:boolean"/>
+      <xs:attribute name="delete_first" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="fold">
