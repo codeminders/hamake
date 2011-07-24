@@ -48,6 +48,11 @@
                     <data type="boolean"/>
                 </attribute>
             </optional>
+            <optional>
+                <attribute name="batch_size">
+                    <data type="positiveInteger"/>
+                </attribute>
+            </optional>
             <interleave>
                 <optional>
                     <element name="description">

@@ -21,7 +21,9 @@ import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.data.DataFunction;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Attributes;
@@ -362,30 +364,61 @@ public class Utils {
 	}
 
 	public static String replaceVariables(Context context, String value) {
-		Matcher matcher = VARIABLE_PATTERN.matcher(value);
-		StringBuilder outputValue = new StringBuilder();
-		int curPos = 0;
-		while (matcher.find()) {
-			int start = matcher.start();
-			int end = matcher.end();
-			String variable = value.substring(start + 2, end - 1);
-			outputValue.append(value.substring(curPos, start));
-
-			Object var = context.get(variable);
-			if (var instanceof String && !StringUtils.isEmpty((String) var)) {
-				outputValue.append(var);
-			} else if (var instanceof DataFunction) {
-				DataFunction df = (DataFunction) var;
-				outputValue.append(StringUtils.join(df.toString(context), " "));
-			} else {
-				if (context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
-					LOG.warn("Variable or property "
-							+ context.getString(variable) + " is not found.");
-			}
-			curPos = end;
+		String[] values = replaceVariablesMultiValued(context, value);
+		if (values.length != 1) {
+			throw new RuntimeException("not expecting multi-valued variables");
 		}
-		outputValue.append(value.substring(curPos, value.length()));
-		return outputValue.toString();
+		return values[0];
+	}
+
+	public static String[] replaceVariablesMultiValued(Context context, String value) {
+		Matcher matcher = VARIABLE_PATTERN.matcher(value);
+		String[] outputValues = null;
+		StringBuilder outputValue = new StringBuilder();
+		int outputValueCount = 1;
+		boolean outputValueCountFixed = false;
+		for (int outputValueIndex = 0; outputValueIndex < outputValueCount; ++outputValueIndex) {
+			int curPos = 0;
+			while (matcher.find()) {
+				int start = matcher.start();
+				int end = matcher.end();
+				String variable = value.substring(start + 2, end - 1);
+				outputValue.append(value.substring(curPos, start));
+
+				Object var = context.get(variable);
+				if (var instanceof String && !StringUtils.isEmpty((String) var)) {
+					outputValue.append(var);
+				} else if (var instanceof DataFunction) {
+					DataFunction df = (DataFunction) var;
+					outputValue.append(StringUtils.join(df.toString(context), " "));
+				} else if (var instanceof String[]) {
+					String[] a = (String[]) var;
+					if (!outputValueCountFixed) {
+						outputValueCount = a.length;
+						if (outputValueCount == 0) {
+							throw new RuntimeException("zero-length multi-valued variable");
+						}
+						outputValueCountFixed = true;
+					} else if (a.length != outputValueCount) {
+						throw new RuntimeException("multi-valued variables with mismatched lengths");
+					}
+					outputValue.append(a[outputValueIndex]);
+				} else {
+					if (context.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
+						LOG.warn("Variable or property "
+								+ context.getString(variable) + " is not found.");
+				}
+				curPos = end;
+			}
+			outputValue.append(value.substring(curPos, value.length()));
+			if (outputValues == null) {
+				outputValues = new String[outputValueCount];
+			}
+			outputValues[outputValueIndex] = outputValue.toString();
+			outputValue.setLength(0);
+			matcher.reset();
+		}
+		return outputValues;
 	}
 
 	public static Path resolvePath(String pathStr, String workFolder) {

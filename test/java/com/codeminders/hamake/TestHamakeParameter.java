@@ -37,16 +37,16 @@ public class TestHamakeParameter {
 		Context context = new Context(new Configuration(), null, false, false, false);
 		context.set("input", "c:/somefolder/somefile");
 		Literal input = new Literal("${input}");
-		Assert.assertEquals(FilenameUtils.normalize("c:\\somefolder\\somefile"), new NormalizePathProcessingFunction().process(input.getValue(context)));
+		Assert.assertEquals(FilenameUtils.normalize("c:\\somefolder\\somefile"), new NormalizePathProcessingFunction().process(input.getValue(context, new AppendConcatFunction())));
 		context.set("reference", new FileDataFunction("/somefolder/../somefolder/somefile"));
 		Reference reference = new Reference("reference");
 		Assert.assertEquals("/somefolder/somefile", new NormalizePathProcessingFunction().process(reference.getValue(context, new AppendConcatFunction())));
 		context.set("input1", "somekey/../somekey/somevalue");
 		Literal input1 = new Literal("${input1}");
-		Assert.assertEquals("somekey/../somekey/somevalue", new NormalizePathProcessingFunction().process(input1.getValue(context)));
+		Assert.assertEquals("somekey/../somekey/somevalue", new NormalizePathProcessingFunction().process(input1.getValue(context, new AppendConcatFunction())));
 		context.set("input2", "\"c:/somefolder/somefile\"");
 		Literal input2 = new Literal("${input2}");
-		Assert.assertEquals(FilenameUtils.normalize("\"c:\\somefolder\\somefile\""), new NormalizePathProcessingFunction().process(input2.getValue(context)));
+		Assert.assertEquals(FilenameUtils.normalize("\"c:\\somefolder\\somefile\""), new NormalizePathProcessingFunction().process(input2.getValue(context, new AppendConcatFunction())));
 	}
 	
 }

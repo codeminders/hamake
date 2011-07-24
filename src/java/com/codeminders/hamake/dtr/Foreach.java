@@ -17,6 +17,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
@@ -73,6 +74,7 @@ public class Foreach extends DataTransformationRule {
 	private DataFunction input;
 	private List<? extends DataFunction> output;
 	private List<? extends DataFunction> deps;
+	private int batchSize = 1;
 	private boolean deleteFirst = true;
 
 
@@ -107,6 +109,14 @@ public class Foreach extends DataTransformationRule {
 		this.deleteFirst = deleteFirst;
 	}
 	
+	public int getBatchSize() {
+		return batchSize;
+	}
+
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+	}
+	
 	@Override
 	public int execute(Semaphore semaphore)
 			throws IOException {
@@ -121,14 +131,27 @@ public class Foreach extends DataTransformationRule {
 		LOG.info(getName() + ": Has " + inputlist.size() + " files to process");
 		QueueFetcher fetcher = new QueueFetcher();
 		fetcher.start();
+		int effectiveBatchSize = batchSize == 0 ? inputlist.size() : Math.min(inputlist.size(), batchSize);
+		List<String> fullFilenames = new ArrayList<String>(effectiveBatchSize);
+		List<String> shortFilenames = new ArrayList<String>(effectiveBatchSize);
+		List<String> parentFolders = new ArrayList<String>(effectiveBatchSize);
+		List<String> basenames = new ArrayList<String>(effectiveBatchSize);
+		List<String> extensions = new ArrayList<String>(effectiveBatchSize);
+		int inputNumber = 0;
 		for(Path ipath : inputlist){
+			++inputNumber;
 			CommandThread command = new CommandThread(getTask(), getContext(), semaphore);
 			FileSystem inputfs = ipath.getFileSystem((Configuration)getContext().get(Context.HAMAKE_PROPERTY_HADOOP_CONFIGURATION));
-			command.getContext().setForbidden(FULL_FILENAME_VAR, ipath.toString());
-			command.getContext().setForbidden(SHORT_FILENAME_VAR, FilenameUtils.getName(ipath.toString()));
-			command.getContext().setForbidden(PARENT_FOLDER_VAR, ipath.getParent().toString());
-			command.getContext().setForbidden(FILENAME_WO_EXTENTION_VAR, FilenameUtils.getBaseName(ipath.toString()));
-			command.getContext().setForbidden(EXTENTION_VAR, FilenameUtils.getExtension(ipath.toString()));
+			String fullFilename = ipath.toString();
+			String shortFilename = FilenameUtils.getName(ipath.toString());
+			String parentFolder = ipath.getParent().toString();
+			String basename = FilenameUtils.getBaseName(ipath.toString());
+			String extension = FilenameUtils.getExtension(ipath.toString());
+			command.getContext().setForbidden(FULL_FILENAME_VAR, fullFilename);
+			command.getContext().setForbidden(SHORT_FILENAME_VAR, shortFilename);
+			command.getContext().setForbidden(PARENT_FOLDER_VAR, parentFolder);
+			command.getContext().setForbidden(FILENAME_WO_EXTENTION_VAR, basename);
+			command.getContext().setForbidden(EXTENTION_VAR, extension);
 			long inputTimeStamp = Utils.recursiveGetModificationTime(inputfs, ipath);
 			boolean inTrash = false;
 			if(getTrashBucket() != null){
@@ -155,18 +178,38 @@ public class Foreach extends DataTransformationRule {
 					if (outputTimeStamp < inputTimeStamp || outputTimeStamp == -1) {
 						if (deleteFirst)
 							outputFunc.clear(command.getContext());
-						try {
-							semaphore.acquire();
-						} catch (InterruptedException e) {
-							LOG.error(getName() + ": Error running " + getName(), e);
-							break;
-						}
-						ExecQueueItem item = new ExecQueueItem(command, new Thread(command, getTask().toString()), ipath, System.currentTimeMillis());
-						item.getThread().setDaemon(true);
-						item.getThread().start();
-						if(fetcher.isAlive()) fetcher.pushQueue(item);
+						fullFilenames.add(fullFilename);
+						shortFilenames.add(shortFilename);
+						parentFolders.add(parentFolder);
+						basenames.add(basename);
+						extensions.add(extension);
 					} 
 				}
+			}
+			if (!fullFilenames.isEmpty() && (inputNumber == inputlist.size() || fullFilenames.size() == effectiveBatchSize)) {
+				if (effectiveBatchSize > 1) {
+					command = new CommandThread(getTask(), getContext(), semaphore);
+					command.getContext().setForbidden(FULL_FILENAME_VAR, fullFilenames.toArray(new String[0]));
+					command.getContext().setForbidden(SHORT_FILENAME_VAR, shortFilenames.toArray(new String[0]));
+					command.getContext().setForbidden(PARENT_FOLDER_VAR, parentFolders.toArray(new String[0]));
+					command.getContext().setForbidden(FILENAME_WO_EXTENTION_VAR, basenames.toArray(new String[0]));
+					command.getContext().setForbidden(EXTENTION_VAR, extensions.toArray(new String[0]));
+				}
+				fullFilenames.clear();
+				shortFilenames.clear();
+				parentFolders.clear();
+				basenames.clear();
+				extensions.clear();
+				try {
+					semaphore.acquire();
+				} catch (InterruptedException e) {
+					LOG.error(getName() + ": Error running " + getName(), e);
+					break;
+				}
+				ExecQueueItem item = new ExecQueueItem(command, new Thread(command, getTask().toString()), ipath, System.currentTimeMillis());
+				item.getThread().setDaemon(true);
+				item.getThread().start();
+				if(fetcher.isAlive()) fetcher.pushQueue(item);
 			}
 		}
 		fetcher.terminate();
@@ -175,7 +218,7 @@ public class Foreach extends DataTransformationRule {
 		} catch (InterruptedException e) {
 			LOG.info(getName() + ": Error running " + getName(), e);
 		}
-		LOG.info(getName() + ": Processed " + fetcher.getCounter() + " files, " + fetcher.getErrors() + " files with errors, run time: " + fetcher.getTotalRunTime() / inputlist.size() + " ms");
+		LOG.info(getName() + ": Completed " + fetcher.getCounter() + " tasks, " + fetcher.getErrors() + " tasks with errors, average run time: " + fetcher.getTotalRunTime() / inputlist.size() + " ms");
 		return fetcher.getResult();		
 	}
 	
