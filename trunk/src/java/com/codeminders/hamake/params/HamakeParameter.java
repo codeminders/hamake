@@ -36,7 +36,7 @@ public class HamakeParameter implements Parameter{
 			}
 			else if(value instanceof Literal){
 				Literal literal = (Literal)value;
-                String sv = processingFunc.process(literal.getValue(context));
+                String sv = processingFunc.process(literal.getValue(context, concatFunc));
                 if (!StringUtils.isEmpty(sv))
 				    parameters.add(sv);
 			}

@@ -37,6 +37,7 @@
       <xs:group ref="dtrElement"/>
       <xs:attribute name="name" use="required" type="xs:ID"/>
       <xs:attribute name="disabled" type="xs:boolean"/>
+      <xs:attribute name="batch_size" type="xs:positiveInteger"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="input">

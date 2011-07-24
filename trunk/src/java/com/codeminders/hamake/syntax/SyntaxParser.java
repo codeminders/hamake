@@ -205,6 +205,9 @@ public class SyntaxParser extends BaseSyntaxParser {
 		String deleteFirstValue = getOptionalAttribute(root, "delete_first", "true");
 		boolean deleteFirst = "yes".equalsIgnoreCase(deleteFirstValue) || "true".equalsIgnoreCase(deleteFirstValue);
 
+		String batchSizeValue = getOptionalAttribute(root, "batch_size", "1");
+		int batchSize = Integer.parseInt(batchSizeValue);
+
 		Element input = getOneSubElement(root, "input");
 		if(input == null){
 			throw new InvalidMakefileException(getPath(root) + " should have one input sub-element");
@@ -231,6 +234,7 @@ public class SyntaxParser extends BaseSyntaxParser {
 
 		Foreach foreach = new Foreach(rootContext, inputFunc, outputFuncs, deps);
 		foreach.setName(name);
+		foreach.setBatchSize(batchSize);
 		foreach.setDeleteFirst(deleteFirst);
 		foreach.setTask(task);
 		foreach.setCopyIncorrectFile(copy);

@@ -10,8 +10,8 @@ public class Literal extends ParameterItem{
 		this.value = value;
 	}
 	
-	public String getValue(Context context){
-		return Utils.replaceVariables(context, value); 
+	public String getValue(Context context, ConcatFunction concatFunc){
+		return concatFunc.concat(Utils.replaceVariablesMultiValued(context, value));
 	}
 	
 }
