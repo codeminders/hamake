@@ -3,7 +3,7 @@ package com.codeminders.hamake;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -113,11 +113,28 @@ public class TestNoDepsExecutionGraph {
 		graph.removeTask("M2");		
 		//assert that R2 is not ready because R1 is still running
 		Assert.assertEquals(1, graph.getReadyForRunTasks().size());
-	}				
+	}
+	
+	@Test
+	public void testGraphWithDublicatedDependencies() throws IOException, InvalidContextStateException{
+		Context context = new Context(new Configuration(), null, false, false, false);
+		Fold taskA = HelperUtils.createFoldDTR(context, "a", Arrays.asList(new FileDataFunction("inputA")), Arrays.asList(new FileDataFunction("outputA")));
+		Fold taskB = HelperUtils.createFoldDTR(context, "b", Arrays.asList(new FileDataFunction("inputB")), Arrays.asList(new FileDataFunction("outputB")));
+		Fold taskD = HelperUtils.createFoldDTR(context, "d", Arrays.asList(new FileDataFunction("outputA"), new FileDataFunction("outputB")), Arrays.asList(new FileDataFunction("outputD")));
+		Fold taskC = HelperUtils.createFoldDTR(context, "c", Arrays.asList(new FileDataFunction("outputA"), new FileDataFunction("outputB")), Arrays.asList(new FileDataFunction("outputC")));
+		//order in which tasks are added is important here
+		NoDepsExecutionGraph graph = new NoDepsExecutionGraph(new ArrayList<DataTransformationRule>(Arrays.asList(new DataTransformationRule[] {taskA, taskB, taskD, taskC})));
+		Assert.assertEquals(2, graph.getReadyForRunTasks().size());
+		graph.removeTask("a");		
+		Assert.assertEquals(1, graph.getReadyForRunTasks().size());					
+		graph.removeTask("b");		
+		//assert that d and c are now ready
+		Assert.assertEquals(2, graph.getReadyForRunTasks().size());
+	}
 	
 	private void assertGraphHasLevels(ExecutionGraph graph, int expectedSteps){		
 		int actualSteps = 0;
-		List<String> tasks = null;
+		Set<String> tasks = null;
 		do{
 			tasks = graph.getReadyForRunTasks();
 			if(tasks.size() > 0){

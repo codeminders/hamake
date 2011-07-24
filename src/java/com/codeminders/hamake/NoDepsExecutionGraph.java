@@ -85,7 +85,7 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 	 * Get all tasks that are ready and have targets
 	 * @param targets array of targets 
 	 */
-	public List<String> getReadyForRunTasks(String[] targets) {
+	public Set<String> getReadyForRunTasks(String[] targets) {
 		//retrieve all root nodes
 		Map<String, GraphNode> nodes = new HashMap<String, GraphNode>();
 		for(String target : targets){
@@ -115,12 +115,12 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 	/**
 	 * Get all tasks that are ready 
 	 */
-	public List<String> getReadyForRunTasks() {
+	public Set<String> getReadyForRunTasks() {
 		return getReadyForRunTasks(rootNodes);
 	}
 	
-	private List<String> getReadyForRunTasks(List<GraphNode> nodes) {
-		List<String> ret = new ArrayList<String>();		
+	private Set<String> getReadyForRunTasks(List<GraphNode> nodes) {
+		Set<String> ret = new HashSet<String>();
 		for (GraphNode node : nodes) {
 			if (node.isDone()) {
 				for (GraphNode childNode : node.getChildren()) {
@@ -128,25 +128,21 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 				}
 			} else {
 				if (node.isReady()) {
-					if(Collections.binarySearch(ret, node.getTask().getName()) < 0){
-						ret.add(node.getTask().getName());
-					}
+                    ret.add(node.getTask().getName());
 				}
 			}
 		}
 		return ret;
 	}
 
-	private void getReadyForRunTasks(GraphNode node, List<String> ret) {
+	private void getReadyForRunTasks(GraphNode node, Set<String> ret) {
 		if (node.isDone()) {
 			for (GraphNode childNode : node.getChildren()) {
 				getReadyForRunTasks(childNode, ret);
 			}
 		} else {
 			if (node.isReady()) {
-				if(Collections.binarySearch(ret, node.getTask().getName()) < 0){
-					ret.add(node.getTask().getName());
-				}
+                ret.add(node.getTask().getName());
 			}
 		}
 	}
