@@ -157,6 +157,10 @@ Nested elements:
 || [#fileset fileset] || one of _fileset_ or _include_ is required. ||
 || [#include include] || one of _fileset_ or _include_ is required. ||
 
+Attributes:
+|| *Attribute* || *Description* || *Required* ||
+|| batch_size || If the batch_size is set to zero then there will be at most one task execution, and it will include all input files newer than their corresponding output file(s).  If the batch size is set to one (or omitted), one task will be executed for each input file that is newer than its corresponding output file. If the batch size is set to an integer, that is greater than one, then ceil(N/M) tasks will be executed, where N is the number of input files newer than thier corresponding output file(s), and M is the batch size. || No ||
+
 Example:
 {{{
 <input>
