@@ -136,9 +136,9 @@ public class Foreach extends DataTransformationRule {
 		LOG.info(getName() + ": Listing input data");
 		List<Path> inputlist = input.getPath(getContext());
 		if (inputlist == null || inputlist.isEmpty()){
-			LOG.error("Input folder of DTR " + getName()
+			LOG.warn("Input folder of DTR " + getName()
 					+ " is empty");
-			return -1;
+			return 0;
 		}
 		LOG.info(getName() + ": Has " + inputlist.size() + " files to process");
 		QueueFetcher fetcher = new QueueFetcher();
