@@ -41,17 +41,23 @@ public abstract class DataTransformationRule extends ContextAware{
 		this.name = name;
 	}
 
+	public Context getGenericOutputContext()
+	{
+		return getContext();
+	}
+
 	public boolean dependsOn(DataTransformationRule t) throws IOException {		
+		Context context = t.getGenericOutputContext();
 		for (DataFunction i : getInputs()) {
 			for (DataFunction o : t.getOutputs()) {
-				if (i.intersects(getContext(), o))
+				if (i.intersects(context, o))
 					return true;
 			}
 		}
 		if(getDeps() != null){
 			for (DataFunction i : getDeps()) {
 				for (DataFunction o : t.getOutputs()) {
-					if (i.intersects(getContext(), o)) return true;
+					if (i.intersects(context, o)) return true;
 				}
 			} 
 		}
