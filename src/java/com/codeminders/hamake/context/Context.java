@@ -47,7 +47,7 @@ public class Context {
 		setForbidden(HAMAKE_PROPERTY_DRY_RUN, dryRun);
 	}
 	
-	Context(Context parentContext){
+	public Context(Context parentContext){
 		this.parent = parentContext;
 	}
 	

@@ -118,6 +118,18 @@ public class Foreach extends DataTransformationRule {
 	}
 	
 	@Override
+	public Context getGenericOutputContext()
+	{
+		Context context = new Context( getContext());
+		context.setForbidden(FULL_FILENAME_VAR, new String[] { ""});
+		context.setForbidden(SHORT_FILENAME_VAR, new String[] { ""});
+		context.setForbidden(PARENT_FOLDER_VAR, new String[] { ""});
+		context.setForbidden(FILENAME_WO_EXTENTION_VAR, new String[] { ""});
+		context.setForbidden(EXTENTION_VAR, new String[] { ""});
+		return context;
+	}
+
+	@Override
 	public int execute(Semaphore semaphore)
 			throws IOException {
 		
