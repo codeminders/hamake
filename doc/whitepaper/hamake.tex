@@ -263,7 +263,7 @@ As a result, you will get a file \textit{results.txt} with list of similar books
   <property name="lib" value="./lib/" />
   <property name="cosine.distance" value="0.02" />
 
-  <fileset id="input" path="/data/" mask="*.fb2" />
+  <fileset id="input" path="/data/" mask="*.pdf" />
   <file id="output" path="./result.txt" />
   <file id="stopwords" path="./stopwords.txt" />
   <file id="temporaryFolder" path="/tmp/" />
@@ -273,40 +273,86 @@ As a result, you will get a file \textit{results.txt} with list of similar books
       <include idref="input" />
     </input>
     <output>
-      <file id="extractPlainTextOut" path="${temporaryFolder}/extractPlainTextOut" />
+      <file id="bookInPlainTextFormat" path="${temporaryFolder}/plainText/${foreach:filename}" />
     </output>
     <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.ConvertFb2Text">
       <parameter>
         <literal value="${foreach:path}" />
       </parameter>
       <parameter>
-        <reference idref="extractPlainTextOut" />
+        <reference idref="bookInPlainTextFormat" />
       </parameter>
     </mapreduce>
   </foreach>
 
   <foreach name="KeywordsExtractor">
     <input>
-      <file id="extractPlainTextOut" path="${temporaryFolder}/extractPlainTextOut" />
+      <file id="bookInPlainTextFormat" path="${temporaryFolder}/plainText" />
     </input>
     <output>
-      <file id="KeywordsExtractorOut" path="${temporaryFolder}/KeywordsExtractorOut/${foreach:filename}" />
+      <file id="bookKeywords" path="${temporaryFolder}/keywords/${foreach:filename}" />
+      <file id="vacabulary" path="${temporaryFolder}/vacabulary" />
     </output>
-    <mapreduce jar="${lib}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.FB2KeywordsExtractor">
+    <mapreduce jar="${lib}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.KeywordsExtractor">
       <parameter>
         <literal value="${foreach:path}" />
       </parameter>
       <parameter>
-        <reference idref="KeywordsExtractorOut" />
+        <reference idref="bookKeywords" />
+      </parameter>
+      <parameter>
+        <reference idref="vacabulary" />
       </parameter>
     </mapreduce>
   </foreach>
 
-	...
+  <foreach name="ExcludeStopword">
+    <dependencies>
+      <include idref="KeywordsExtractor" />
+    </dependencies>
+    <input>
+      <fileset id="vacabulary" path="${temporaryFolder}/vacabulary" />
+    </input>
+    <output>
+      <file id="vacabularyWithoutStopwords" path="${temporaryFolder}/vacabularyWOStopWords/${foreach:filename}" />
+    </output>
+    <mapreduce jar="${dist}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.StopwordsExcluder">
+      <parameter>
+        <literal value="${foreach:path}" />
+      </parameter>
+      <parameter>
+        <reference idref="vacabularyWithoutStopwords" />
+      </parameter>
+      <parameter>
+        <reference idref="stopwords" />
+      </parameter>
+    </mapreduce>
+  </foreach>
+
+  <fold name="FeatureVectorsFromDirectory">
+    <input>
+      <file id="vacabularyWithoutStopwords" path="${temporaryFolder}/vacabularyWOStopWords" />
+      <file id="keywords" path="${temporaryFolder}/keywords" />
+    </input>
+    <output>
+      <file id="featureVectorsFile" path="${temporaryFolder}/featureVectors" />
+    </output>
+    <mapreduce jar="${dist}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.FeatureVectorsFromDirectory">
+      <parameter>
+        <reference idref="vacabularyWithoutStopwords" />
+      </parameter>
+      <parameter>
+        <reference idref="keywords" />
+      </parameter>
+      <parameter>
+        <reference idref="featureVectorsFile" />
+      </parameter>
+    </mapreduce>
+  </fold>
 
   <foreach name="OutputResults">
     <input>
-      <file id="OutputResultsIn" path="${temporaryFolder}/MeanShiftCanopyOutput/" />
+      <file id="featureVectors" path="${temporaryFolder}/featureVectors" />
     </input>
     <output>
       <include idref="output" />
@@ -319,7 +365,7 @@ As a result, you will get a file \textit{results.txt} with list of similar books
         <literal value="${cosine.distance}" />
       </parameter>
       <parameter>
-        <reference idref="OutputResultsIn" />
+        <reference idref="featureVectors" />
       </parameter>
       <parameter>
         <reference idref="vectors" />
@@ -331,20 +377,6 @@ As a result, you will get a file \textit{results.txt} with list of similar books
   </foreach>
 </project>
 \end{lstlisting}
-
-\begin{figure}[htp]
-\centering
-\includegraphics[width=10cm]{SimilarityAlgPart1.png}
-\caption{Algorithm for detecting similar books, part 1}
-\label{fig:SimilarityAlg1}
-\end{figure}
-
-\begin{figure}[htp]
-\centering
-\includegraphics[width=10cm]{SimilarityAlgPart2.png}
-\caption{Algorithm for detecting similar books, part 2}
-\label{fig:SimilarityAlg2}
-\end{figure}
 
 \begin{figure}[htp]
 \centering
