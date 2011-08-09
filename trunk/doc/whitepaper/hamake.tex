@@ -39,20 +39,20 @@
   cycles, leading to dependency loops which could be resolved using
   dataset versioning.
 
-  These ideas inspired the creation of \textbf{hamake} utility. We tried
-  emphasizing data and allowing the developer to express one's goals
-  in terms of dataflow (versus workflow). Data dependency graph is
-  expressed using just two data flow instructions: fold and foreach
-  providing a clear processing model, similar to MapReduce, but on a
-  dataset level. Another design goal was to create a simple to use
-  utility that developers can start using right away without complex
-  installation or extensive learning. We think we have been able to
-  achieve these goals and the utility we have created has been
-  successfully used in real-life large scale Hadoop data processing
-  projects. 
+  These ideas inspired the creation of \textbf{hamake} utility. We
+  tried emphasizing data and allowing the developer to express one's
+  goals in terms of dataflow (versus workflow). Data dependency graph
+  is expressed using just two data flow instructions: \emph{fold} and
+  \emph{foreach} providing a clear processing model, similar to
+  MapReduce, but on a dataset level. Another design goal was to create
+  a simple to use utility that developers can start using right away
+  without complex installation or extensive learning. We think we have
+  been able to achieve these goals and the utility we have created has
+  been successfully used in real-life large scale Hadoop data
+  processing projects.
 \end{abstract}
 
-\section{Introduction}
+\section{Motivation and History}
 
 MapReduce model introduced by Google\cite{dean2008map} allows
 processing of large data amounts. Hadoop\cite{bialecki2005hadoop} is
@@ -65,13 +65,16 @@ emphasis on incremental processing.
 
 To address the problem of incremental processing of big data sets in
 collaborative filtering system Python-language prototype of
-\textbf{hamake} was developed in late 2008. Based on our experience
-with the prototype, we built a new version of the product which was
-used in several subsequent projects for such tasks as processing of
-web crawling results (text analysis) and Hadoop peformance
-testing. Re-written from scratch in Java, the new version has many
-improvements like streamlined syntax of a dataflow definition file,
-Amazon EMR support and others.
+\textbf{hamake} was developed in late 2008. 
+
+[TODO: mention Unix make influence]
+
+Based on our experience with the prototype, we built a new version of
+the product which was used in several subsequent projects for such
+tasks as processing of web crawling results (text analysis) and Hadoop
+performance testing. Re-written from scratch in Java, the new version
+has many improvements like streamlined syntax of a dataflow definition
+file, Amazon EMR support and others.
 
 \textbf{hamake} is open source, disributed under Apache License
 v2.0. The project is hosted at google code at the following URL:
@@ -79,12 +82,12 @@ v2.0. The project is hosted at google code at the following URL:
 
 \section{Processing Model}
 
-\textbf{hamake} operates on \textit{filesets} which consists of indvidual
-\textit{files}. Fileset defines group of files, residing on filesystem
-accessible from Hadoop task (usually DFS). \textit{Dataflow
-  transformation rules (DTR)} specify operations which could take some
-files or filesets as inputs (or dependecies) and possibly produce
-other filesets as output.
+\textbf{hamake} operates on \textit{filesets} which consists of
+individual \textit{files}. Fileset defines group of files, residing on
+local or distributed filesystem accessible from Hadoop task (usually
+DFS). \textit{Dataflow transformation rules (DTR)} specify operations
+which could take some files or filesets as inputs (or dependecies) and
+possibly produce other filesets as output.
 
 If file \textit{A} is listed as input of a DTR, and file \textit{B}
 listed as output of the same DTR, it is said that \textit{``B depends
@@ -93,7 +96,7 @@ calculation. A time stamp of a file is date and time when it was last
 modified.  In hamke world, file system directory or folder is also a
 file, and has its own time stamp. DTR outputs said to be \textit{up to
   date} if minimal time stamp on all outputs is greater or equal than
-maximum timestamp on all inputs (and dependency inputs). Groups of
+maximum timestamp on all inputs (and dependency inputs[TODO: clarify as dep. inputs are not defined yet]). Groups of
 files and folders could be also organized into the \emph{sets} which
 could be also used as dependencies. See hamake syntax
 refererence\cite{hamakesyntax} for full syntax.
