@@ -220,40 +220,40 @@ about data files and spawned Hadoop jobs.
 
 Imagine an online library service, that allows to add, search and preview millions
 of books from libraries and users worldwide. Looking at the size of a library, it's hardly 
-surprising that there's a lot of similar books circulating as well. Until recently, to find
+surprising that there's a lot of duplicated books circulating as well. Such books may appear as a result
+of incorrect book formatting or errors in title. Until recently, to find
 out similar book we limited ourselfs to the tedious business of reading the back 
 of every book on the shelves. Now, almost all online libraries can automatically detect similar books. 
 
-Design and implementation of an engine that will be able to detect similar books is not an 
+Design and implementation of an engine that will be able to detect books with duplicated contents is not an 
 easy task for even a small number of data, but how would you find them in over million of books?
 One way to measure similarity between two books is by measuring the cosine of the angle between their feature vectors\cite{wiki:cosinesimilarity}.
-The result of the cosine function is equal to 1 when the angle is 0, and it is less than 1 when the angle is 
-of any other value. On Figure~\ref{fig:SimilarityAlg1} and Figure~\ref{fig:SimilarityAlg2} you can see high-level scheme of
-the algorithm, that can be used to mark similar books from bookstore.
 
-To be able to process thouthands of books, implementation of this algorithm should be scalable and fast.
-Today, to reach true scalability and save your time you would probably use Hadoop. For this particular task,
- I would implement several Map Reduce jobs: that would extracts metadata and structured text content from
- various documents using existing parser libraries, create sparce vectors from keywords frequency and select similar books by comparing cosine distance between feature vectors of all books. 
-As a result, I will end up with 6 Map Reduce jobs, that could be combined in a direct acyclic graph, the same as on Figure~\ref{fig:SimilarityAlgDAG}
+To be able to process thouthands of books, implementation of this algorithm should be scalable.
+Today, to reach true scalability you would probably use Hadoop. For this particular task,
+ we would implement several Map Reduce jobs:
 
-Despite the fact that Hadoop simplifies a lot writing of scalable programs, you still should design and implement a code, that
-will trigger execution of a flow of your direct acyclic graph, consisting of Map Reduce jobs on incoming of new books. Also, you should implement a logic,
-that will detect incorrect data, and exclude it on next run of the process. This is where Hamake can be used. 
+\begin{enumerate}
+  \item A job, that would extract plain text from native format (e.g. PDF).
+  \item A job, that would extract keywords from text. Keyword will be used to build book's feature vectors.
+  \item A job, that would filter out from keywords frequently-used words (like \textit{a}, \textit{the}, all unions) from keywords.
+  \item A job, that would build feature-vectors for each book based on book's keywords.
+  \item A job, that would find books with duplicated content by comparing their feature vectors and output result as a list of titles to a text file.
+\end{enumerate}
 
-Hamake helps you to organize your Hadoop map-reduce jobs or Pig scripts in a workflow, that will be launched and controlled from a single machine
-All you should do is to write an XML descriptor of your flow, and launch Hamake, with descriptor file, passed to it as a first argument. The order
-in which your Map-Reduce jobs will run, will be controlled by data, not by tasks themselfs.
+As a result, we will end up with 6 Map Reduce jobs, that could be combined in a direct acyclic graph, the same as on Figure~\ref{fig:SimilarityAlgDAG}
 
-To give you an example of how an XML descriptor will look like, lets look at a descriptor of process of finding similar books in Listing~\ref{hamakeFile}
-First, for convinience, I've defined properties, that will be used by all data transformation rules (lines 5 - 6). In the same way, I've defined
-an input directory with books, an output file where list of similar books will be produced and a file with stop-words (lines 8 - 11).
-Next, I've added a definition of the first Map Reduce job that converts a book from native format to plain text. In Hamake, Hadoop jobs, Pig scripts or external process should be
-defined as data transformation rule. A data transformation rule can be of two tipes: \textit{foreach} or \textit{fold}. For each data transformation rule you should 
-specify its input and output data. My first job (lines 13-28) takes two parameters - an input a path to a book, and a path to a file, where converted book should be written. 
-As you can see from input data location is specified within \textit{input} tag and output data location within \textit{output} tag. With help of attributes \textit{jar} and \textit{main} of tag 
-\textit{mapreduce} I specified location of a jar file with Hadoop job and main class name. Then, in the same way I've added all five Hadoop Map-Reduce jobs that are left. As you can see, these jobs takes as an input files, produced by the previous task. When you launch Hamake, with XML descriptor from Listing~\ref{hamakeFile}, it will first loads all tasks into memory and searche for tasks that has no input or input data that does not intercept with other tasks output. This tasks (\textit{extractPlainText}), becomes root task. As soon as Hamake has finished execution of the first task,the child job will be launched, and so on, while no jobs are left.
-As a result, you will get a file \textit{results.txt} with list of similar books.
+To give you an example of how these Map Reduce jobs could be combined in a Hamake-process, we will describe an XML file, that is used to describe a process in Hamake (Listing~\ref{hamakeFile}).
+
+First, for convinience, we define properties, that will be used by all data transformation rules (lines 5 - 6). In the same way, we define
+an input directory with books, an output file where list of similar books will be produced and a file with list of stop-words (lines 8 - 11).
+Next, we define the first Map Reduce job that converts a book from native format to plain text. In Hamake, Hadoop jobs, Pig scripts or external process should be
+defined as data transformation rule (\textit{foreach} or \textit{fold}). For each data transformation rule you should 
+specify its input and output data. Our first job (lines 13-28) takes two parameters - an input a path to a book, and a path to a file, where converted book should be written. 
+As you can see, an input of the first job is a reference to a file-set of files within \textit{/data} folder, and output is a
+set of files with the same names, but within \textit{/tmp/plainText/} folder. With help of attributes \textit{jar} and \textit{main} of tag 
+\textit{mapreduce} we specified a location of a Java archive with Hadoop Map Reduce jobs and a name of the main class name. Next, in the same way, we add all five
+ Map-Reduce jobs that are left (lines 30-81). Hamake will determine jobs order by comparing their input with output of other jobs.
 
 \begin{lstlisting}[caption={Hamake file, that describes process for detecting similar books},label=hamakeFile]
 <?xml version="1.0" encoding="UTF-8"?>
@@ -293,16 +293,8 @@ As a result, you will get a file \textit{results.txt} with list of similar books
       <file id="bookKeywords" path="${temporaryFolder}/keywords/${foreach:filename}" />
       <file id="vacabulary" path="${temporaryFolder}/vacabulary" />
     </output>
-    <mapreduce jar="${lib}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.KeywordsExtractor">
-      <parameter>
-        <literal value="${foreach:path}" />
-      </parameter>
-      <parameter>
-        <reference idref="bookKeywords" />
-      </parameter>
-      <parameter>
-        <reference idref="vacabulary" />
-      </parameter>
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.KeywordsExtractor">
+      ...
     </mapreduce>
   </foreach>
 
@@ -316,16 +308,8 @@ As a result, you will get a file \textit{results.txt} with list of similar books
     <output>
       <file id="vacabularyWithoutStopwords" path="${temporaryFolder}/vacabularyWOStopWords/${foreach:filename}" />
     </output>
-    <mapreduce jar="${dist}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.StopwordsExcluder">
-      <parameter>
-        <literal value="${foreach:path}" />
-      </parameter>
-      <parameter>
-        <reference idref="vacabularyWithoutStopwords" />
-      </parameter>
-      <parameter>
-        <reference idref="stopwords" />
-      </parameter>
+    <mapreduce jar="${dist}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.StopwordsExcluder">
+      ...
     </mapreduce>
   </foreach>
 
@@ -337,16 +321,8 @@ As a result, you will get a file \textit{results.txt} with list of similar books
     <output>
       <file id="featureVectorsFile" path="${temporaryFolder}/featureVectors" />
     </output>
-    <mapreduce jar="${dist}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.FeatureVectorsFromDirectory">
-      <parameter>
-        <reference idref="vacabularyWithoutStopwords" />
-      </parameter>
-      <parameter>
-        <reference idref="keywords" />
-      </parameter>
-      <parameter>
-        <reference idref="featureVectorsFile" />
-      </parameter>
+    <mapreduce jar="${dist}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.FeatureVectorsFromDirectory">
+      ...
     </mapreduce>
   </fold>
 
@@ -357,26 +333,20 @@ As a result, you will get a file \textit{results.txt} with list of similar books
     <output>
       <include idref="output" />
     </output>
-    <mapreduce jar="${lib}/fb2pdf.job" main="com.fb2pdf.hadoop.cluster.OutputClusterResults">
-      <classpath>
-        <fileset path="lib" mask="*.jar" />
-      </classpath>
-      <parameter>
-        <literal value="${cosine.distance}" />
-      </parameter>
-      <parameter>
-        <reference idref="featureVectors" />
-      </parameter>
-      <parameter>
-        <reference idref="vectors" />
-      </parameter>
-      <parameter>
-        <reference idref="output" />
-      </parameter>
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.OutputClusterResults">
+      ...
     </mapreduce>
   </foreach>
 </project>
 \end{lstlisting}
+
+When you launch Hamake with this XML descriptor it will first load all
+tasks into memory and search for tasks that has no input or input that
+does not intercept with output of other tasks. In our particular case, 
+this is job with id \textit{extractPlainText}. Hamake will launch this tasks and,
+as soon as it will be finished, will execute their children job will be launched, and so on,
+while no jobs are left. At the end of execution of Hamake, you will get 
+a file \textit{results.txt} with list of similar books.
 
 \begin{figure}[htp]
 \centering
