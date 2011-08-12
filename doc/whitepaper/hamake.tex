@@ -373,24 +373,22 @@ systems documentation to understand better which one is more suitable
 for your problem.
 
 \begin{sidewaystable}
-  \begin{tabular}{ | p{3cm} || l | l | l | l |}
-    \hline
-    \textbf{Feature} & \textbf{hamake} & \textbf{Oozie} & \textbf{Azkaban} & \textbf{Cascading} \\
-    \hline
-    Workflow discription language & XML & XML (xPDL based) & text file with key/value pairs & Java API \\
-    Dependencies mechanism & data-driven & explicit & explicit & explicit \\
-    Requires Servlet/JSP container & No & Yes & Yes & No \\
-    Allows to track a workflow progress & console/log messages & web page & web page & Java API \\
-    Ability to schedule a Hadoop job execution at given time & no & yes & yes & yes \\
-    Execution model & command line utility & daemon & daemon & API \\
-    Allows to run Pig Latin scripts & yes & yes & yes & yes \\
-    Event notification & no & no & no & yes \\
-    Requires installation & no & yes & yes & no \\
-    Supported Hadoop version & 0.18+ & 0.20+ & currently unknown & 0.18+ \\
-    Retries & no & at workflow node level & yes & yes \\
-    Ability to run arbitrary commands & yes & yes & yes & yes \\
-    Can be run on  Amazon EMR & yes & no & currently unknown & yes \\
-    \hline
+  \begin{tabular}{ | p{3cm} | l | l | l | l |}
+   \hline
+    \textbf{Feature} & \textbf{hamake} & \textbf{Oozie} & \textbf{Azkaban} & \textbf{Cascading} \\ \hline
+    Workflow discription language & XML & XML (xPDL based) & text file with key/value pairs & Java API \\ \hline
+    Dependencies mechanism & data-driven & explicit & explicit & explicit \\ \hline
+    Requires Servlet/JSP container & No & Yes & Yes & No \\ \hline
+    Allows to track a workflow progress & console/log messages & web page & web page & Java API \\ \hline
+    Ability to schedule a Hadoop job execution at given time & no & yes & yes & yes \\ \hline
+    Execution model & command line utility & daemon & daemon & API \\ \hline
+    Allows to run Pig Latin scripts & yes & yes & yes & yes \\ \hline
+    Event notification & no & no & no & yes \\ \hline
+    Requires installation & no & yes & yes & no \\ \hline
+    Supported Hadoop version & 0.18+ & 0.20+ & currently unknown & 0.18+ \\ \hline
+    Retries & no & at workflow node level & yes & yes \\ \hline
+    Ability to run arbitrary commands & yes & yes & yes & yes \\ \hline
+    Can be run on  Amazon EMR & yes & no & currently unknown & yes \\ \hline
   \end{tabular}
   \caption{Feature comparison of popular Hadoop workflow engines }
   \label{table:1}
