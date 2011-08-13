@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[11pt,twocolumn]{article}
 \usepackage{verbatim}
 \usepackage{moreverb}
 \usepackage{url}
@@ -27,9 +27,9 @@
   data-driven, with the data funneled through a sequence of jobs. The
   processing model could be presented in terms of dataflow
   programming. It could be expressed as a directed graph, with
-  datasets as nodes. Each edge indicates a dependency between two or
-  more datasets and is associated with a processing instruction
-  (Hadoop MapReduce job, PIG Latin script or an external command),
+  datasets as vertices. Each edge indicates a dependency between two or
+  more datasets and is associated with a processing instruction:
+  a MapReduce job, PIG Latin script, or an external command,
   which produces one dataset from the others. Using fuzzy timestamps
   as a way to detect when a dataset needs to be updated, we can
   calculate a sequence in which the jobs need to be executed to bring
@@ -54,30 +54,21 @@
 
 \section{Motivation and History}
 
-MapReduce model introduced by Google\cite{dean2008map} allows
-processing of large data amounts. Hadoop\cite{bialecki2005hadoop} is
-popular open-source implementation of MapReduce.
+MapReduce data processing model have been introduced by
+Google\cite{dean2008map}. Hadoop\cite{bialecki2005hadoop} is popular
+open-source implementation of MapReduce.
 
-Hadoop is usually used to proccess big amounts of data. The
-consequence of this is that even trivial tasks are generally I/O-bound
-\cite{hadoopattwitter},\cite{hs2010hadoopbench} which put special
-emphasis on incremental processing.
+Hadoop is typically used to process big amounts of data via series of
+relatively simple operations. Usually Hadoop jobs are I/O-bound
+\cite{hadoopattwitter},\cite{hs2010hadoopbench}. 
+
+[TODO: more]
 
 To address the problem of incremental processing of big data sets in
 collaborative filtering system Python-language prototype of
-\textbf{hamake} was developed in late 2008. 
-
-[TODO: mention Unix make influence]
-
-Based on our experience with the prototype, we built a new version of
-the product which was used in several subsequent projects for such
-tasks as processing of web crawling results (text analysis) and Hadoop
-performance testing. Re-written from scratch in Java, the new version
-has many improvements like streamlined syntax of a dataflow definition
-file, Amazon EMR support and others.
-
-\textbf{hamake} is open source, disributed under Apache License
-v2.0. The project is hosted at google code at the following URL:
+\textbf{hamake} was developed in late 2008. \textbf{hamake} is open
+source, distributed under Apache License v2.0. The project is hosted
+at google code at the following URL:
 \url{http://code.google.com/p/hamake/}.
 
 \section{Processing Model}
@@ -221,135 +212,77 @@ about data files and spawned Hadoop jobs.
 
 \section{Example}
 
-Imagine an online library service, that allows to add, search and preview millions
-of books from libraries and users worldwide. Looking at the size of a library, it's hardly 
-surprising that there's a lot of duplicated books circulating as well. Such books may appear as a result
-of incorrect book formatting or errors in title. Until recently, to find
-out similar book we limited ourselfs to the tedious business of reading the back 
-of every book on the shelves. Now, almost all online libraries can automatically detect similar books. 
+Imagine an online library service, that allows to add, search and
+preview millions of books from libraries and users worldwide. Looking
+at the size of a library, it's hardly surprising that there's a lot of
+duplicated titles circulating as well. Such duplicates may be caused
+by OCR errors, typos, differences in formatting, or added material such as
+foreword or publisher information.
 
-Design and implementation of an engine that will be able to detect books with duplicated contents is not an 
-easy task for even a small number of data, but how would you find them in over million of books?
-One way to measure similarity between two books is by measuring the cosine of the angle between their feature vectors\cite{wiki:cosinesimilarity}.
+There are know approaches for estimating degree of similarity between
+two text documents, but scaling them to work with corpus of millions
+of books poses a formidable technical challenge.
 
-To be able to process thouthands of books, implementation of this algorithm should be scalable.
-Today, to reach true scalability you would probably use Hadoop. For this particular task,
- we would implement several Map Reduce jobs:
+This problem is a good match for implementation using Hadoop
+framework. It would efficiently distribute computations across cluster
+of machines. The problem could be split into series of steps, each of
+them represented by a \textit{MapReduce job}:
 
 \begin{enumerate}
-  \item A job, that would extract plain text from native format (e.g. PDF).
-  \item A job, that would extract keywords from text. Keyword will be used to build book's feature vectors.
-  \item A job, that would filter out from keywords frequently-used words (like \textit{a}, \textit{the}, all unions) from keywords.
-  \item A job, that would build feature-vectors for each book based on book's keywords.
-  \item A job, that would find books with duplicated content by comparing their feature vectors and output result as a list of titles to a text file.
+\item Extract a plain text from native document format (e.g. PDF).
+\item Split plain text into a keywords. Stemming and taking care of
+  case differences, inflections, punctuation, accented characters,
+  etc.
+\item Filtering out \textit{stopwords} (e.g. words like \textit{a},
+  \textit{the}, \textit{are}) from list of keywords.
+\item For each text calculate a feature vector: a vector of
+  frequencies of keywords.
+\item Find books similar content by comparing their feature vectors
+  using cosine distance\cite{wiki:cosinesimilarity}.
 \end{enumerate}
 
-As a result, we will end up with 6 Map Reduce jobs, that could be combined in a direct acyclic graph, the same as on Figure~\ref{fig:SimilarityAlgDAG}
+Each of resulting six MapReduce jobs produces and output file which
+depends on input. The have to be invoked sequentially, as outputs of
+one tasks are used as inputs of the next one. If one of source files
+has been updated, all dependent files have to be re-calculated. These
+dependencies could be naturally represented by direct acyclic graph,
+show on Figure~\ref{fig:SimilarityAlgDAG}, with vertices representing
+data files, and jobs assigned to edges.
 
-To give you an example of how these Map Reduce jobs could be combined in a Hamake-process, we will describe an XML file, that is used to describe a process in Hamake (Listing~\ref{hamakeFile}).
+Analyzing dependencies and launching required MapReduce jobs could be
+automated using hamake. The XML file describing the dataflow is show
+as Listing~\ref{hamakeFile}.
 
-First, for convinience, we define properties, that will be used by all data transformation rules (lines 5 - 6). In the same way, we define
-an input directory with books, an output file where list of similar books will be produced and a file with list of stop-words (lines 8 - 11).
-Next, we define the first Map Reduce job that converts a book from native format to plain text. In Hamake, Hadoop jobs, Pig scripts or external process should be
-defined as data transformation rule (\textit{foreach} or \textit{fold}). For each data transformation rule you should 
-specify its input and output data. Our first job (lines 13-28) takes two parameters - an input a path to a book, and a path to a file, where converted book should be written. 
-As you can see, an input of the first job is a reference to a file-set of files within \textit{/data} folder, and output is a
-set of files with the same names, but within \textit{/tmp/plainText/} folder. With help of attributes \textit{jar} and \textit{main} of tag 
-\textit{mapreduce} we specified a location of a Java archive with Hadoop Map Reduce jobs and a name of the main class name. Next, in the same way, we add all five
- Map-Reduce jobs that are left (lines 30-81). Hamake will determine jobs order by comparing their input with output of other jobs.
+First, for convinience, we define properties, that will be used by all
+data transformation rules (lines 5 - 6). In the same way, we define an
+input directory with books, an output file where list of similar books
+will be produced and a file with list of stop-words (lines 8 - 11).
+Next, we define the first Map Reduce job that converts a book from
+native format to plain text. In Hamake, Hadoop jobs, Pig scripts or
+external process should be defined as data transformation rule
+(\textit{foreach} or \textit{fold}). For each data transformation rule
+you should specify its input and output data. Our first job (lines
+13-28) takes two parameters - an input a path to a book, and a path to
+a file, where converted book should be written.  As you can see, an
+input of the first job is a reference to a file-set of files within
+\textit{/data} folder, and output is a set of files with the same
+names, but within \textit{/tmp/plainText/} folder. With help of
+attributes \textit{jar} and \textit{main} of tag \textit{mapreduce} we
+specified a location of a Java archive with Hadoop Map Reduce jobs and
+a name of the main class name. Next, in the same way, we add all five
+Map-Reduce jobs that are left (lines 30-81). Hamake will determine
+jobs order by comparing their input with output of other jobs.
 
-\begin{lstlisting}[caption={Hamake file, that describes process for detecting similar books},label=hamakeFile]
-<?xml version="1.0" encoding="UTF-8"?>
+\lstinputlisting[caption={Hamake file, that describes process for detecting similar books}, label=hamakeFile]{sample.xml}
 
-<project name="cluster books">
-
-  <property name="lib" value="./lib/" />
-  <property name="cosine.distance" value="0.02" />
-
-  <fileset id="input" path="/data/" mask="*.pdf" />
-  <file id="output" path="./result.txt" />
-  <file id="stopwords" path="./stopwords.txt" />
-  <file id="temporaryFolder" path="/tmp/" />
-
-  <foreach name="extractPlainText">
-    <input>
-      <include idref="input" />
-    </input>
-    <output>
-      <file id="bookInPlainTextFormat" path="${temporaryFolder}/plainText/${foreach:filename}" />
-    </output>
-    <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.ConvertFb2Text">
-      <parameter>
-        <literal value="${foreach:path}" />
-      </parameter>
-      <parameter>
-        <reference idref="bookInPlainTextFormat" />
-      </parameter>
-    </mapreduce>
-  </foreach>
-
-  <foreach name="KeywordsExtractor">
-    <input>
-      <file id="bookInPlainTextFormat" path="${temporaryFolder}/plainText" />
-    </input>
-    <output>
-      <file id="bookKeywords" path="${temporaryFolder}/keywords/${foreach:filename}" />
-      <file id="vacabulary" path="${temporaryFolder}/vacabulary" />
-    </output>
-    <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.KeywordsExtractor">
-      ...
-    </mapreduce>
-  </foreach>
-
-  <foreach name="ExcludeStopword">
-    <dependencies>
-      <include idref="KeywordsExtractor" />
-    </dependencies>
-    <input>
-      <fileset id="vacabulary" path="${temporaryFolder}/vacabulary" />
-    </input>
-    <output>
-      <file id="vacabularyWithoutStopwords" path="${temporaryFolder}/vacabularyWOStopWords/${foreach:filename}" />
-    </output>
-    <mapreduce jar="${dist}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.StopwordsExcluder">
-      ...
-    </mapreduce>
-  </foreach>
-
-  <fold name="FeatureVectorsFromDirectory">
-    <input>
-      <file id="vacabularyWithoutStopwords" path="${temporaryFolder}/vacabularyWOStopWords" />
-      <file id="keywords" path="${temporaryFolder}/keywords" />
-    </input>
-    <output>
-      <file id="featureVectorsFile" path="${temporaryFolder}/featureVectors" />
-    </output>
-    <mapreduce jar="${dist}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.FeatureVectorsFromDirectory">
-      ...
-    </mapreduce>
-  </fold>
-
-  <foreach name="OutputResults">
-    <input>
-      <file id="featureVectors" path="${temporaryFolder}/featureVectors" />
-    </input>
-    <output>
-      <include idref="output" />
-    </output>
-    <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.OutputClusterResults">
-      ...
-    </mapreduce>
-  </foreach>
-</project>
-\end{lstlisting}
-
-When you launch Hamake with this XML descriptor it will first load all
-tasks into memory and search for tasks that has no input or input that
-does not intercept with output of other tasks. In our particular case, 
-this is job with id \textit{extractPlainText}. Hamake will launch this tasks and,
-as soon as it will be finished, will execute their children job will be launched, and so on,
-while no jobs are left. At the end of execution of Hamake, you will get 
-a file \textit{results.txt} with list of similar books.
+Hamake, when launched with this XML descriptor it will first search
+for tasks that has no inputs or which inputs are not outputs of other
+tasks. In our particular example, this is job with id
+\textit{extractPlainText}. Hamake will launch this job first, an as
+soon as it will be finished, will execute jobs which depend on outputs
+of this task, and so on while all files are up to date. As a result of
+this data flow, you will get a file \textit{results.txt} with list of
+similar books.
 
 \begin{figure}[htp]
 \centering
@@ -360,17 +293,17 @@ a file \textit{results.txt} with list of similar books.
 
 \section{Related Work}
 
-Table~\ref{table:1} below attempts to compare \textbf{hamake} and similar
-workflow engines for Hadoop
+Table~\ref{table:1} below attempts to compare \textbf{hamake} and
+similar workflow engines for Hadoop
 (\href{http://github.com/tucu00/oozie1}{Oozie},
 \href{http://sna-projects.com/azkaban/}{Azkaban},
-\href{http://www.cascading.org/}{Cascading}) based on some key
+\href{http://www.cascading.org/}{Cascading}) based on key
 features. Although all of these systems could be used to solve similar
 problems, they differ significantly in design, philosophy, target user
-profile, usage scenarios, etc.  So our feature-wise comparison is in
-no way conclusive. Please use it as a guideline, but read respective
-systems documentation to understand better which one is more suitable
-for your problem.
+profile, usage scenarios, etc., limiting usefulness of simple
+feature-wise comparison. Please use it as a guideline, but read
+respective systems documentation to understand better which one is
+more suitable for your problem.
 
 \begin{sidewaystable}
   \begin{tabular}{ | p{3cm} | l | l | l | l |}
@@ -408,17 +341,22 @@ In short: Cascading is an API, while \textbf{hamake} is an utility. Some differe
 \subsection*{Oozie and Azkaban}
 
 Oozie and Azkaban are server-side systems that have to be installed
-and run as a service. \textbf{hamake} is a lightweight client-side utility that
-does not require installation and has very simple syntax for workflow
-definition.  Most importantly, \textbf{hamake} is built based on dataflow
-programming principles - your Hadoop tasks execution sequence is
-controlled by the data.
+and run as a service. \textbf{hamake} is a lightweight client-side
+utility that does not require installation and has very simple syntax
+for workflow definition.  Most importantly, \textbf{hamake} is built
+based on dataflow programming principles - your Hadoop tasks execution
+sequence is controlled by the data.
  
 
 \section{Future Work}
 
 Better integration with Hadoop schedulers (Fair Scheduler, Capacity
 Scheduler, etc.).
+
+Support for fixed-point computations.
+
+Extending notion of dependency checks beyond timestamp comparison,
+with external dependency check scripts.
 
 \nocite{*}
 \bibliography{hamake}
