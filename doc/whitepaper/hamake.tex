@@ -23,21 +23,21 @@
 
 \begin{abstract}
   Most non-trivial data processing scenarios with Hadoop typically
-  require more than one MapReduce job. Usually such processing is
-  data-driven, with the data funneled through a sequence of jobs. The
-  processing model could be presented in terms of dataflow
-  programming. It could be expressed as a directed graph, with
-  datasets as vertices. Each edge indicates a dependency between two or
-  more datasets and is associated with a processing instruction:
-  a MapReduce job, PIG Latin script, or an external command,
-  which produces one dataset from the others. Using fuzzy timestamps
-  as a way to detect when a dataset needs to be updated, we can
-  calculate a sequence in which the jobs need to be executed to bring
-  all datasets up to date. Jobs for updating independent datasets
-  could be executed concurrently, taking advantage of your Hadoop
-  cluster's full capacity. The dependency graph may even contain
-  cycles, leading to dependency loops which could be resolved using
-  dataset versioning.
+  involve launching more than one MapReduce job. Usually such
+  processing is data-driven, with the data funneled through a sequence
+  of jobs. The processing model could be presented in terms of
+  dataflow programming. It could be expressed as a directed graph,
+  with datasets as vertices. Each edge indicates a dependency between
+  two or more datasets and is associated with a processing
+  instruction: a MapReduce job, PIG Latin script, or an external
+  command, which produces one dataset from the others. Using fuzzy
+  timestamps as a way to detect when a dataset needs to be updated, we
+  can calculate a sequence in which the jobs need to be executed to
+  bring all datasets up to date. Jobs for updating independent
+  datasets could be executed concurrently, taking advantage of your
+  Hadoop cluster's full capacity. The dependency graph may even
+  contain cycles, leading to dependency loops which could be resolved
+  using dataset versioning.
 
   These ideas inspired the creation of \textbf{hamake} utility. We
   tried emphasizing data and allowing the developer to express one's
@@ -60,15 +60,17 @@ open-source implementation of MapReduce.
 
 Hadoop is typically used to process big amounts of data via series of
 relatively simple operations. Usually Hadoop jobs are I/O-bound
-\cite{hadoopattwitter},\cite{hs2010hadoopbench}. 
+\cite{hadoopattwitter},\cite{hs2010hadoopbench}, and execution of even
+trivial operation on large dataset could take significant system
+resources. This makes incremental processing important. Or initial
+inspiration was Unix \emph{make} utility. While applying some of ideas
+implemented in it to Hadoop, we took an opportunity to generalise
+processing model in terms of dataflow programming.
 
-[TODO: more]
-
-To address the problem of incremental processing of big data sets in
-collaborative filtering system Python-language prototype of
-\textbf{hamake} was developed in late 2008. \textbf{hamake} is open
-source, distributed under Apache License v2.0. The project is hosted
-at google code at the following URL:
+\textbf{hamake} was developed in late 2008 to address the problem of
+incremental processing of big data sets in collaborative filtering.
+\textbf{hamake} is open source, distributed under Apache License
+v2.0. The project is hosted at google code at the following URL:
 \url{http://code.google.com/p/hamake/}.
 
 \section{Processing Model}
@@ -87,10 +89,11 @@ calculation. A time stamp of a file is date and time when it was last
 modified.  In hamke world, file system directory or folder is also a
 file, and has its own time stamp. DTR outputs said to be \textit{up to
   date} if minimal time stamp on all outputs is greater or equal than
-maximum timestamp on all inputs (and dependency inputs[TODO: clarify as dep. inputs are not defined yet]). Groups of
-files and folders could be also organized into the \emph{sets} which
-could be also used as dependencies. See hamake syntax
-refererence\cite{hamakesyntax} for full syntax.
+maximum timestamp on all inputs (and dependency inputs[TODO: clarify
+as dep. inputs are not defined yet]). Groups of files and folders
+could be also organized into the \emph{sets} which could be also used
+as dependencies. See hamake syntax refererence\cite{hamakesyntax} for
+full syntax.
 
 A notion of \textit{fuzzy timestamp}\footnote{\textit{fuzzy timestamp}
   support is not included in current version of \textbf{hamake}.}
@@ -228,18 +231,19 @@ framework. It would efficiently distribute computations across cluster
 of machines. The problem could be split into series of steps, each of
 them represented by a \textit{MapReduce job}:
 
-\begin{enumerate}
-\item Extract a plain text from native document format (e.g. PDF).
-\item Split plain text into a keywords. Stemming and taking care of
-  case differences, inflections, punctuation, accented characters,
-  etc.
-\item Filtering out \textit{stopwords} (e.g. words like \textit{a},
-  \textit{the}, \textit{are}) from list of keywords.
-\item For each text calculate a feature vector: a vector of
+\begin{description}
+\item[ExtractTextJob] Extract a plain text from native document format
+  (e.g. PDF).
+\item[ExtractKeywordsJob] Split plain text into a keywords. Stemming and
+  taking care of case differences, inflections, punctuation, accented
+  characters, etc.
+\item[FilterStopwordsJob] Filtering out \textit{stopwords} (e.g. words
+  like \textit{a}, \textit{the}, \textit{are}) from list of keywords.
+\item[CalculateFrequenciesJob] For each text calculate a feature vector: a vector of
   frequencies of keywords.
-\item Find books similar content by comparing their feature vectors
+\item[FindSimilarBooksJob] Find books similar content by comparing their feature vectors
   using cosine distance\cite{wiki:cosinesimilarity}.
-\end{enumerate}
+\end{description}
 
 Each of resulting six MapReduce jobs produces and output file which
 depends on input. The have to be invoked sequentially, as outputs of
