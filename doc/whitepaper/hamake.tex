@@ -75,43 +75,40 @@ v2.0. The project is hosted at google code at the following URL:
 
 \section{Processing Model}
 
-\textbf{hamake} operates on \textit{filesets} which consists of
-individual \textit{files}. Fileset defines group of files, residing on
-local or distributed filesystem accessible from Hadoop task (usually
-DFS). \textit{Dataflow transformation rules (DTR)} specify operations
-which could take some files or filesets as inputs (or dependecies) and
-possibly produce other filesets as output.
+\textbf{hamake} operates on \textit{files}, residing on local or
+distributed file system accessible from Hadoop job (usually it is
+HDFS). Each file has a timestamp, reflecting date and time of its last
+modification. A file system directory or folder is also a file, and
+has its own timestamp. A \textit{Data Transformation Rule (DTR)}
+defines an operation which takes some files or filesets as inputs and
+produce other files or filesets as outputs.
 
 If file \textit{A} is listed as input of a DTR, and file \textit{B}
 listed as output of the same DTR, it is said that \textit{``B depends
   on A''}. \textbf{hamake} is using file time stamps for dependency
-calculation. A time stamp of a file is date and time when it was last
-modified.  In hamke world, file system directory or folder is also a
-file, and has its own time stamp. DTR outputs said to be \textit{up to
-  date} if minimal time stamp on all outputs is greater or equal than
-maximum timestamp on all inputs (and dependency inputs[TODO: clarify
-as dep. inputs are not defined yet]). Groups of files and folders
-could be also organized into the \emph{sets} which could be also used
-as dependencies. See hamake syntax refererence\cite{hamakesyntax} for
-full syntax.
+up-to-date checks. DTR outputs said to be \textit{up to date} if
+minimum time stamp on all its outputs is greater or equal than maximum
+timestamp on all inputs. A user, for his or her convenience, could
+arrange groups of files and folders into a \emph{fileset} which later
+could be references as DTR's input or output . See hamake syntax
+reference\cite{hamakesyntax} for complete syntax.
 
-A notion of \textit{fuzzy timestamp}\footnote{\textit{fuzzy timestamp}
-  support is not included in current version of \textbf{hamake}.}
-allows us to compare two time stamps allowing certain margin or
-error. The ``fuzziness'' is controlled by tolerance
-$\sigma$. Timestamp $a$ is considered to be older than timestamp $b$
-if $b-a>\sigma$. Setting $\sigma=0$ gives us non-fuzzy, strict
-timestamp comparison.
+A \textit{fuzzy timestamps}\footnote{\textit{fuzzy timestamp} support
+  is not included in current stable version of \textbf{hamake}.}
+could be compared, allowing for a certain margin or error. The
+``fuzziness'' is controlled by tolerance $\sigma$. Timestamp $a$ is
+considered to be older than timestamp $b$ if $b-a>\sigma$. Setting
+$\sigma=0$ gives us non-fuzzy, strict timestamp comparison.
 
 \textbf{hamake} attempts to ensure that all DTR outputs are up to
-date\footnote{we do not try to ensure that files which are not listed
-  as DTR outputs are up to date, becase we have no way to update
-  them}. To do so it builds a \textit{dependency graph}. This graph
-have files or filesets as vertices and DTRs as edges. We will see
-below that this is guaranteed to be a \textit{direct acyclic graph}
-(DAG).
+date. (It do not try to ensure that files which are not listed as one
+of DTR outputs are up to date, because it has no way to update them.)
+To do so it builds a \textit{dependency graph}. This graph have
+individual files or filesets as vertices and DTRs as edges. We will
+see below that this is guaranteed to be a \textit{Direct Acyclic
+  Graph} (DAG).
 
-Then, the graph reduction algorithms shown on Figure~\ref{fig:grred}
+Then, a graph reduction algorithms shown on Figure~\ref{fig:grred}
 is performed.
 
 \begin{figure}[htp]
@@ -121,34 +118,50 @@ is performed.
 \label{fig:grred}
 \end{figure}
 
-Essentially, this a version of Kahn's
-algorithm\cite{kahn1962topological}, implementing topological
+It is using Kahn's algorithm\cite{kahn1962topological}, of topological
 ordering\cite{wiki:topsort}.
 
-Some steps could be executed in parallel: if more than one DTR without
-input dependencies is found on step 1, subsequent steps 2-5 could be
-executed for each discovered DTR in parallel.
+This algorithms allows for some parallelism. If more than one DTR
+without input dependencies is found during step 1, subsequent steps
+2-5 could be executed for each discovered DTR in parallel.
 
-It should be noted that if DTR exectuion has failed, we still can and
-will process other DTRs which do not depend directly or indirectly on
-results of this DTR. This allow us to fix the problem and re-run
-\textbf{hamake}, without need to re-process all data.
+It should be noted that if DTR exectuion has failed, hamake still can
+and will process other DTRs which do not depend directly or indirectly
+on results of this DTR. This permits user to fix the problem and
+re-run \textbf{hamake}, without need to re-process all data.
 
-Cyclic dependences has to be avoided, because workflow contaning them
-is not guaranteed to terminate. Implicit checks are perfomed during
-reading hamakefile and building dependency graph. If a cycle is
-detected, it is reported as an error. So the dependency graph used by
-\textbf{hamake} is \textit{directed acyclic graph}.
+Cyclic dependencies has to be avoided, because a dataflow containing
+such dependencies is not guaranteed to terminate. Implicit checks are
+performed during reading DAG definitions and building dependency
+graph. If a cycle is detected, it is reported as an error. So the
+dependency graph used by \textbf{hamake} guaranteed to be a
+\textit{directed acyclic graph}.
 
-However \textbf{hamake} supports a limited scenario of interative processing,
-where some output of one iteration are used as an input in the next
-one. We do not support more general case of \textit{fixed point}
-iterative calculations: each run of \textbf{hamake} is a signle pass. This
-mechanism is implemented via \textbf{hamake} feature called
-\textit{generations}. Each input or output file could be optionally
-marked with \emph{generation} attribute. Same file with with different
-generation numbers is treated as different vertex is dependency
-graph. (TODO: elaborate)
+However \textbf{hamake} supports a limited scenario of iterative
+processing, where some output of one hamake execution are used as an
+input in the next hamake run. This mechanism is implemented via
+\textbf{hamake} feature called \textit{generations}. Each input or
+output file could be optionally marked with \emph{generation}
+attribute. The two files with different generation numbers although
+referencing the same path on file system are treated as different
+vertex is dependency graph. [TODO: example]
+
+One useful consequence of hamake dataflow being a DAG, is that for
+each vertex we can calculate list of vertices it depends on, directly
+and indirectly using simple \textit{transitive closure}. On datasets,
+where the cost of re-calculation could be potentially high (due to
+data size or computational complexity) this allows us to estimate the
+amount of dataflow graph affected by updating one or more ones.
+
+[TODO: introduce hamakefiles]
+
+hamake dataflow language has a declarative semantics. The advantage of
+keeping it purely declarative, allows us in future to implement
+various dataflow analysis and optimization algorithms. Some examples
+of such algorithms could be: merging dataflows, execution
+parallelization, processing of independent datasets in case of
+processing of some of datasets failed, finding potential problems in
+dataflow, dataflow complexity analysis.
 
 \section{Scheduler}
 
@@ -222,14 +235,21 @@ duplicated titles circulating as well. Such duplicates may be caused
 by OCR errors, typos, differences in formatting, or added material such as
 foreword or publisher information.
 
-There are know approaches for estimating degree of similarity between
+There are known approaches for estimating degree of similarity between
 two text documents, but scaling them to work with corpus of millions
 of books poses a formidable technical challenge.
 
 This problem is a good match for implementation using Hadoop
 framework. It would efficiently distribute computations across cluster
-of machines. The problem could be split into series of steps, each of
-them represented by a \textit{MapReduce job}:
+of machines. For the purpose of illustration of hamake usage we will
+consider simple, ``brute force'' approach of pairwise comparison of
+all texts. This solution does not scale very well, as the
+computational complexity is [TODO: complexity using of bigO
+notation]. For practical usage more advances clustering algorithms
+will be more appropriate.
+
+The implementation could be split into series of steps, each of them
+represented by a \textit{MapReduce job}:
 
 \begin{description}
 \item[ExtractTextJob] Extract a plain text from native document format
@@ -287,6 +307,8 @@ soon as it will be finished, will execute jobs which depend on outputs
 of this task, and so on while all files are up to date. As a result of
 this data flow, you will get a file \textit{results.txt} with list of
 similar books.
+
+[TODO: an example of partial recalculation]
 
 \begin{figure}[htp]
 \centering
@@ -355,12 +377,26 @@ sequence is controlled by the data.
 \section{Future Work}
 
 Better integration with Hadoop schedulers (Fair Scheduler, Capacity
-Scheduler, etc.).
+Scheduler, etc.).[TODO: describe]
 
-Support for fixed-point computations.
+Another potential area of future extension is hamake dependency
+mechanism. Current implementation using fairly simple timestamp
+comparison to check if dependency is satisfied. This could be
+generalized, allowing user to specify custom dependency check
+predicates, implemented either as plugins, scripts in some embedded
+scripting language or external programs. This would allow to make
+decisions not only based on file meta data (such as timestamp) but
+also on its contents.
 
-Extending notion of dependency checks beyond timestamp comparison,
-with external dependency check scripts.
+Several users using hamake reported need for support of iterative
+computations with termination condition. Possible use-cases calling
+for this type of usage are fixed-point computations, iterative
+regression, or clustering algorithms. Presently to embed this kind of
+algorithms into hamake work flow require use of \textit{generations}
+feature combined with external automation, invoking hamake repeatedly
+until certain exit condition it satisfied. \textit{hamake} users could
+certainly benefit from native support for this kind of dataflows by
+hamake.
 
 \nocite{*}
 \bibliography{hamake}
