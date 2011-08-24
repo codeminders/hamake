@@ -23,7 +23,7 @@ Email: vorl@codeminders.com}}
 
 \input{graphviz}
 \begin{document}
-\lstset{language=XML,basicstyle=\tiny,markfirstintag=true,numbers=left, numberstyle=\tiny}
+\lstset{language=XML,basicstyle=\tiny,markfirstintag=true}
 
 \maketitle
 
@@ -308,7 +308,8 @@ a name of the main class name. Next, in the same way, we add all five
 Map-Reduce jobs that are left (lines 30-81). Hamake will determine
 jobs order by comparing their input with output of other jobs.
 
-\lstinputlisting[caption={Hamake file, that describes process for detecting similar books}, label=hamakeFile]{sample.xml}
+\lstinputlisting[caption={Hamake file, that describes process for
+  detecting similar books}, label=hamakeFile]{sample.xml}
 
 Hamake, when launched with this XML descriptor it will first search
 for tasks that has no inputs or which inputs are not outputs of other
