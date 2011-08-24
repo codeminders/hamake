@@ -259,8 +259,9 @@ represented by a \textit{MapReduce job}:
   characters, etc.
 \item[FilterStopwordsJob] Filtering out \textit{stopwords} (e.g. words
   like \textit{a}, \textit{the}, \textit{are}) from list of keywords.
-\item[CalculateFrequenciesJob] For each text calculate a feature vector: a vector of
-  frequencies of keywords.
+\item[CalculateTFJob] For each text calculate a feature vector: a
+  vector of frequencies of words. (Also known as \textit{term
+    frequency}\cite{manning2008introduction})
 \item[FindSimilarBooksJob] Find books similar content by comparing their feature vectors
   using cosine distance\cite{wiki:cosinesimilarity}.
 \end{description}
