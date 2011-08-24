@@ -1,6 +1,6 @@
 all: hamake.pdf
 
-hamake.pdf: hamake.tex hamake.bib twofold.png twoforeach.png twoforeachp.png GraphReduction.png sample.xml
+hamake.pdf: hamake.tex hamake.bib twofold.png twoforeach.png twoforeachp.png GraphReduction.eps sample.xml
 	pdflatex hamake.tex
 	bibtex hamake
 	pdflatex hamake.tex
@@ -18,4 +18,4 @@ else
 endif
 
 clean:
-	rm -f hamake.pdf hamake.toc hamake.out hamake.log hamake.dvi hamake.aux hamake.bbl hamake.bbg hamake.lof hamake.blg [a-z]*.png
+	rm -f hamake.pdf hamake.toc hamake.out hamake.log hamake.dvi hamake.aux hamake.bbl hamake.bbg hamake.lof hamake.blg [a-z]*.png *eps-converted-to.pdf
