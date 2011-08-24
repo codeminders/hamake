@@ -4,9 +4,16 @@
 \usepackage{url}
 \usepackage{amsmath}
 \usepackage{color}
-\author{Vadim Zaliva lord@crocodile.org, Vladimir Orlov vorl@codeminders.com}
-\date{2010}
+
 \title{Dataflow Approach to Data Processing in Hadoop with HAMAKE}
+
+\author{\IEEEauthorblockN{Vadim Zaliva}
+\IEEEauthorblockA{Tristero Consulting\\
+Email: lord@crocodile.org} \and \IEEEauthorblockN{Vladimir Orlov}
+\IEEEauthorblockA{Codeminders\\
+Email: vorl@codeminders.com}}
+
+\date{2011}
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{rotating}
@@ -335,7 +342,7 @@ feature-wise comparison. Please use it as a guideline, but read
 respective systems documentation to understand better which one is
 more suitable for your problem.
 
-\begin{sidewaystable}
+\begin{sidewaystable*}
   \begin{tabular}{ | p{3cm} | l | l | l | l |}
    \hline
     \textbf{Feature} & \textbf{hamake} & \textbf{Oozie} & \textbf{Azkaban} & \textbf{Cascading} \\ \hline
@@ -355,7 +362,7 @@ more suitable for your problem.
   \end{tabular}
   \caption{Feature comparison of popular Hadoop workflow engines }
   \label{table:1}
-\end{sidewaystable}
+\end{sidewaystable*}
 
 Below are some notes, discussing some key differences between \textbf{hamake}
 and some other popular products:
