@@ -119,7 +119,7 @@ is performed.
 
 \begin{figure}[htp]
 \centering
-\includegraphics[width=0.45\textwidth]{GraphReduction.eps}
+\includegraphics[width=4cm]{GraphReduction.eps}
 \caption{\textbf{hamake} dependency graph reduction algorithm}
 \label{fig:grred}
 \end{figure}
@@ -187,7 +187,7 @@ achived, as individual jobs will be launched for each input file.
 
 \begin{figure}[htp]
 \centering
-\includegraphics[width=6cm]{twofold.png}
+\includegraphics[width=0.45\textwidth]{twofold.png}
 \caption{Simple \emph{fold} DTR}
 \label{fig:fold1}
 \end{figure}
@@ -200,7 +200,7 @@ executued as as single job. At first glance, two dependent
 
 \begin{figure}[htp]
 \centering
-\includegraphics[width=7cm]{twoforeach.png}
+\includegraphics[width=0.45\textwidth]{twoforeach.png}
 \caption{Simple \emph{foreach} DTR}
 \label{fig:foreach1}
 \end{figure}
@@ -213,7 +213,7 @@ Figure~\ref{fig:foreach2}.
 
 \begin{figure}[htp]
 \centering
-\includegraphics[width=7cm]{twoforeachp.png}
+\includegraphics[width=0.45\textwidth]{twoforeachp.png}
 \caption{Decomposition of \emph{foreach} DTR}
 \label{fig:foreach2}
 \end{figure}
@@ -257,21 +257,21 @@ will be more appropriate.
 The implementation could be split into series of steps, each of them
 represented by a \textit{MapReduce job}:
 
-\begin{description}
-\item[ExtractTextJob] Extract a plain text from native document format
+\begin{description}[\IEEEsetlabelwidth{\emph{FilterStopwords}}]
+\item[\emph{ExtractText}] Extract a plain text from native document format
   (e.g. PDF).
-\item[TokenizationJob] Split plain text into a tokens, roughly
+\item[\emph{Tokenize}] Split plain text into a tokens, roughly
   corresponding to words. Dealing with hyphens, compound words,
   accents and diacritics, case-folding.
-\item[FilterStopwordsJob] Filtering out \textit{stopwords} (e.g. words
+\item[\emph{FilterStopwords}] Filtering out \textit{stopwords} (e.g. words
   like \textit{a}, \textit{the}, \textit{are}) from the list of
   tokens.
-\item[TermNormalizationJob] Stemming or lemmatization of tokens,
+\item[\emph{Normalize}] Stemming or lemmatization of tokens,
   resulting in list of \text{terms}.
-\item[CalculateTFJob] Using \textit{vector space
+\item[\emph{CalculateTF}] Using \textit{vector space
     model}\cite{manning2008introduction} for each text calculate a
   feature vector: a vector of term frequencies.
-\item[FindSimilarBooksJob] Find books similar content by comparing
+\item[\emph{FindSimilar}] Find books similar content by comparing
   their feature vectors (for example using cosine
   distance\cite{wiki:cosinesimilarity}).
 \end{description}
@@ -323,7 +323,7 @@ similar books.
 
 \begin{figure}[htp]
 \centering
-\includegraphics[width=10cm]{SimilarityAlgDAG.png}
+\includegraphics[width=0.45\textwidth]{SimilarityAlgDAG.png}
 \caption{Directed Acyclic Graph of a Hamake Process for detecting similar books}
 \label{fig:SimilarityAlgDAG}
 \end{figure}
