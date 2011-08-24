@@ -254,16 +254,20 @@ represented by a \textit{MapReduce job}:
 \begin{description}
 \item[ExtractTextJob] Extract a plain text from native document format
   (e.g. PDF).
-\item[ExtractKeywordsJob] Split plain text into a keywords. Stemming and
-  taking care of case differences, inflections, punctuation, accented
-  characters, etc.
+\item[TokenizationJob] Split plain text into a tokens, roughly
+  corresponding to words. Dealing with hyphens, compound words,
+  accents and diacritics, case-folding.
 \item[FilterStopwordsJob] Filtering out \textit{stopwords} (e.g. words
-  like \textit{a}, \textit{the}, \textit{are}) from list of keywords.
-\item[CalculateTFJob] For each text calculate a feature vector: a
-  vector of frequencies of words. (Also known as \textit{term
-    frequency}\cite{manning2008introduction})
-\item[FindSimilarBooksJob] Find books similar content by comparing their feature vectors
-  using cosine distance\cite{wiki:cosinesimilarity}.
+  like \textit{a}, \textit{the}, \textit{are}) from the list of
+  tokens.
+\item[TermNormalizationJob] Stemming or lemmatization of tokens,
+  resulting in list of \text{terms}.
+\item[CalculateTFJob] Using \textit{vector space
+    model}\cite{manning2008introduction} for each text calculate a
+  feature vector: a vector of term frequencies.
+\item[FindSimilarBooksJob] Find books similar content by comparing
+  their feature vectors (for example using cosine
+  distance\cite{wiki:cosinesimilarity}).
 \end{description}
 
 Each of resulting six MapReduce jobs produces and output file which
