@@ -251,14 +251,7 @@ framework. It would efficiently distribute computations across cluster
 of machines. For the purpose of illustration of \textbf{hamake} usage we will
 consider simple approach of running a 
 \textit{Canopy clustering algorithm}\cite{efficientClustering} on feature
-vectors of all documents. This solution does not scale very well, as the
-computational complexity is
-\begin{equation}\label{clusteringComplexityBigONotation}
-n^2C
-\end{equation}
-where \textit{n} is a number of documents and \textit{C}
-is complexity of distance measurements.
-For practical usage more advances clustering algorithms
+vectors of all documents. For practical usage more advances clustering algorithms
 will be more appropriate.
 
 The implementation could be split into series of steps, each of them
@@ -269,12 +262,11 @@ represented by a \textit{MapReduce job}:
   (e.g. PDF).
 \item[\emph{Tokenize}] Split plain text into a tokens, roughly
   corresponding to words. Dealing with hyphens, compound words,
-  accents and diacritics, case-folding. 
+  accents and diacritics, case-folding, stemming or lemmatization of tokens,
+  resulting in a list of \text{tokens}.
 \item[\emph{FilterStopwords}] Filtering out \textit{stopwords} (e.g. words
   like \textit{a}, \textit{the}, \textit{are}) from the list of
-  tokens.
-\item[\emph{Normalize}] Stemming or lemmatization of tokens,
-  resulting in list of \text{terms}.
+  terms.
 \item[\emph{CalculateTF}] Using \textit{vector space
     model}\cite{manning2008introduction} for each text calculate a
   feature vector: a vector of term frequencies.
@@ -296,11 +288,7 @@ Analyzing dependencies and launching required MapReduce jobs could be
 automated using \textbf{hamake}. The XML file describing the dataflow
 is show as Listing~\ref{hamakeFile}.
 
-First, for convinience, we define properties, that will be used by all
-data transformation rules (lines 4 - 5). In the same way, we define an
-input directory with books, an output file where list of similar books
-will be produced and a file with list of stop-words (lines 7 - 8).
-Next, we define the first Map Reduce job that converts a book from
+First, we define a Map Reduce job that converts a book from
 native format to plain text. In \textbf{hamake}, Hadoop jobs, Pig scripts or
 external process should be defined as data transformation rule
 (\textit{foreach} or \textit{fold}). For each data transformation rule
@@ -309,7 +297,7 @@ you should specify its input and output data. Our first job (lines
 a file, where converted book should be written.  As you can see, an
 input of the first job is a reference to a file-set of files within
 \textit{/data} folder, and output is a set of files with the same
-names, but within \textit{/tmp/plainText/} folder. With help of
+names, but within \textit{/plainText/} folder. With help of
 attributes \textit{jar} and \textit{main} of tag \textit{mapreduce} we
 specified a location of a Java archive with Hadoop Map Reduce jobs and
 a name of the main class name. Next, in the same way, we add all five
@@ -327,8 +315,14 @@ soon as it will be finished, will execute jobs which depend on outputs
 of this task, and so on while all files are up to date. As a result of
 this data flow, you will get a file \textit{results.txt} with list of
 similar books.
-
-[TODO: an example of partial recalculation]
+When new books are added, Hamake will not re-run DTRs: \textit{ExtractText}, 
+\textit{Tokenize}, \textit{FilterStopWords} for all books. It will select
+new books and add their terms to terms of other books. Next, it will 
+re-calculate feature vector in DTR \textit{CalculateTF} and will
+re-run DTRs: \textit{RunCanopyClusteringAlgorithm} and \textit{OutputResults}. 
+In case new stop-words are added, Hamake will re-run DTRs: \textit{FilterStopWords}
+\textit{CalculateTF}, \textit{RunCanopyClusteringAlgorithm} and \textit{OutputResults}
+on full data set. 
 
 \begin{figure}[htp]
 \centering
