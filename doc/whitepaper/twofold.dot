@@ -1,8 +1,0 @@
-digraph twofold  {
-        rankdir=LR; 
-        A [shape="box", label="A"]
-        B [shape="box", label="B"]
-        fold [shape="ellipse"]
-
-        A->fold->B;
-}
