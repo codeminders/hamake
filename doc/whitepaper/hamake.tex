@@ -23,7 +23,7 @@ Email: vorl@codeminders.com}}
 
 \input{graphviz}
 \begin{document}
-\lstset{language=XML,basicstyle=\tiny,markfirstintag=true}
+\lstset{language=XML,basicstyle=\tiny,markfirstintag=true,numbers=left,numbersep=1pt}
 
 \maketitle
 
@@ -144,7 +144,7 @@ implemented via \textbf{hamake} feature called
 \textit{generations}. Each input or output file could be optionally
 marked with \emph{generation} attribute. The two files with different
 generation numbers although referencing the same path on file system
-are treated as different vertex is dependency graph. [TODO: example]
+are treated as different vertex is dependency graph.
 
 One useful consequence of \textbf{hamake} dataflow being a DAG, is that for
 each vertex we can calculate list of vertices it depends on, directly
@@ -235,27 +235,18 @@ data files and spawned Hadoop jobs.
 
 \section{Example}
 
-Imagine an online library service, that allows to add, search and
-preview millions of books from libraries and users worldwide. Looking
-at the size of a library, it's hardly surprising that there's a lot of
-duplicated titles circulating as well. Such duplicates may be caused
-by OCR errors, typos, differences in formatting, or added material such as
-foreword or publisher information.
+Let us consider a hypothetical example, demonstrating \textbf{hamake}
+use. Imagine an online library containing digital copes of millions of
+books. Considering a size of such library, it's hardly surprising that
+there are duplicated titles in it. Such duplicates may be caused by
+OCR errors, typos, differences in formatting, or added material such
+as foreword or a publisher information.
 
-There are known approaches for estimating degree of similarity between
-two text documents, but scaling them to work with corpus of millions
-of books poses a formidable technical challenge.
-
-This problem is a good match for implementation using Hadoop
-framework. It would efficiently distribute computations across cluster
-of machines. For the purpose of illustration of \textbf{hamake} usage we will
-consider simple approach of running a 
-\textit{Canopy clustering algorithm}\cite{efficientClustering} on feature
-vectors of all documents. For practical usage more advances clustering algorithms
-will be more appropriate.
-
-The implementation could be split into series of steps, each of them
-represented by a \textit{MapReduce job}:
+For the purpose of illustration of \textbf{hamake} usage we will
+consider simple approach of using a \textit{Canopy clustering
+  algorithm}\cite{efficientClustering} on feature vectors of all
+documents. The implementation could be split into series of steps,
+each of them represented by a \textit{MapReduce job}:
 
 \begin{description}[\IEEEsetlabelwidth{\emph{FilterStopwords}}]
 \item[\emph{ExtractText}] Extract a plain text from native document format
@@ -277,57 +268,56 @@ represented by a \textit{MapReduce job}:
 \end{description}
 
 Each of resulting six MapReduce jobs produces and output file which
-depends on input. The have to be invoked sequentially, as outputs of
-one tasks are used as inputs of the next one. If one of source files
-has been updated, all dependent files have to be re-calculated. These
-dependencies could be naturally represented by direct acyclic graph,
-show on Figure~\ref{fig:SimilarityAlgDAG}, with vertices representing
-data files, and jobs assigned to edges.
+depends on input. For each book, they have to be invoked sequentially,
+as outputs of one tasks are used as inputs of the next
+one. Additionally, there is a configuration file containing list of
+stop words, and some tasks output depend on this file content. These
+dependencies could be represented by direct acyclic graph, show on
+Figure~\ref{fig:SimilarityAlgDAG}, with vertices representing data
+files, and jobs assigned to edges. The XML file describing the
+dataflow in \textbf{hamake} language is show as
+Listing~\ref{hamakeFile}.
 
-Analyzing dependencies and launching required MapReduce jobs could be
-automated using \textbf{hamake}. The XML file describing the dataflow
-is show as Listing~\ref{hamakeFile}.
+The first DTR (lines 10-25) converts a book from native format such as
+PDF or EPUB to plain text. The input of the DTR is a reference to to
+\emph{/doc} folder, and the output is \emph{/txt} folder. The
+\emph{foreach} DTR establishes one to one dependency between files
+with the same names in these two folders. The Hadoop job which
+performs actual text extraction is defined using \emph{mapreduce}
+element. It will be invoked by \textbf{hamake} for each unsatisfied
+file dependency. The job takes two parameters, defined with
+\emph{parameter} elements - an input a path to a book, and a path to a
+file, where plain text version should be written.
 
-First, we define a Map Reduce job that converts a book from
-native format to plain text. In \textbf{hamake}, Hadoop jobs, Pig scripts or
-external process should be defined as data transformation rule
-(\textit{foreach} or \textit{fold}). For each data transformation rule
-you should specify its input and output data. Our first job (lines
-10-25) takes two parameters - an input a path to a book, and a path to
-a file, where converted book should be written.  As you can see, an
-input of the first job is a reference to a file-set of files within
-\textit{/data} folder, and output is a set of files with the same
-names, but within \textit{/plainText/} folder. With help of
-attributes \textit{jar} and \textit{main} of tag \textit{mapreduce} we
-specified a location of a Java archive with Hadoop Map Reduce jobs and
-a name of the main class name. Next, in the same way, we add all five
-Map-Reduce jobs that are left. \textbf{hamake} will determine
-jobs order by comparing their input with output of other jobs.
+In the same way, we add all five Map-Reduce jobs that are
+left. \textbf{hamake} will determine jobs order by comparing their
+input with output of other jobs.
 
 \lstinputlisting[caption={\textit{hamakefile}, that describes process for
   detecting similar books}, label=hamakeFile]{sample.xml}
 
-\textbf{hamake}, when launched with this XML descriptor it will first search
-for tasks that has no inputs or which inputs are not outputs of other
-tasks. In our particular example, this is job with id
-\textit{extractPlainText}. \textbf{hamake} will launch this job first, an as
-soon as it will be finished, will execute jobs which depend on outputs
-of this task, and so on while all files are up to date. As a result of
-this data flow, you will get a file \textit{results.txt} with list of
-similar books.
-When new books are added, Hamake will not re-run DTRs: \textit{ExtractText}, 
-\textit{Tokenize}, \textit{FilterStopWords} for all books. It will select
-new books and add their terms to terms of other books. Next, it will 
-re-calculate feature vector in DTR \textit{CalculateTF} and will
-re-run DTRs: \textit{RunCanopyClusteringAlgorithm} and \textit{OutputResults}. 
-In case new stop-words are added, Hamake will re-run DTRs: \textit{FilterStopWords}
-\textit{CalculateTF}, \textit{RunCanopyClusteringAlgorithm} and \textit{OutputResults}
-on full data set. 
+\textbf{hamake}, when launched with this XML descriptor it will first
+search for tasks that has no inputs or which inputs are not outputs of
+other tasks. In our particular example, this is job with id
+\emph{extractPlainText}. \textbf{hamake} will launch this job first,
+an as soon as it will be finished, will execute jobs which depend on
+outputs of this task, and so on while all files are up to date. As a
+result of this data flow, you will get a file \emph{results.txt} with
+list of similar books.  When new books are added, Hamake will not
+re-run DTRs: \emph{ExtractText}, \emph{Tokenize},
+\emph{FilterStopWords} for all books. It will select new books and add
+their terms to terms of other books. Next, it will re-calculate
+feature vector in DTR \emph{CalculateTF} and will re-run DTRs:
+\emph{RunCanopyClusteringAlgorithm} and \emph{OutputResults}.  In case
+new stop-words are added, Hamake will re-run DTRs:
+\emph{FilterStopWords} \emph{CalculateTF},
+\emph{RunCanopyClusteringAlgorithm} and \emph{OutputResults} on full
+data set.
 
 \begin{figure}[htp]
 \centering
 \includegraphics[width=0.25\textwidth]{SimilarityAlgDAG.eps}
-\caption{Directed Acyclic Graph of a \textbf{hamake} Process for detecting similar books}
+\caption{Directed Acyclic Graph of a similar books detection data flow}
 \label{fig:SimilarityAlgDAG}
 \end{figure}
 
