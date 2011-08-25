@@ -146,12 +146,12 @@ marked with \emph{generation} attribute. The two files with different
 generation numbers although referencing the same path on file system
 are treated as different vertex is dependency graph.
 
-One useful consequence of \textbf{hamake} dataflow being a DAG, is that for
-each vertex we can calculate list of vertices it depends on, directly
-and indirectly using simple \textit{transitive closure}. On datasets,
-where the cost of re-calculation could be potentially high (due to
-data size or computational complexity) this allows to estimate the
-scope of dataflow graph affected by updating one or more ones.
+One useful consequence of \textbf{hamake} dataflow being a DAG, is
+that for each vertex we can calculate list of vertices it depends on,
+directly and indirectly using simple \textit{transitive closure}. On
+datasets, where the cost of re-calculation could be potentially high
+(due to data size or computational complexity) this allows to estimate
+the scope of dataflow graph affected by updating one or more files.
 
 \textbf{hamake} is driven by dataflow description, expressed in simple
 XML-based language. The full syntax is described in
