@@ -323,43 +323,30 @@ similar books.
 
 \section{Related Work}
 
-Table below attempts to compare \textbf{hamake} and
-similar workflow engines for Hadoop
-(\href{http://github.com/tucu00/oozie1}{Oozie},
-\href{http://sna-projects.com/azkaban/}{Azkaban},
-\href{http://www.cascading.org/}{Cascading}) based on key
-features. Although all of these systems could be used to solve similar
-problems, they differ significantly in design, philosophy, target user
-profile, usage scenarios, etc., limiting usefulness of simple
-feature-wise comparison. Please use it as a guideline, but read
-respective systems documentation to understand better which one is
-more suitable for your problem.
+Several workflow engines exist for Hadoop, such as
+\href{http://github.com/tucu00/oozie1}{Oozie},
+\href{http://sna-projects.com/azkaban/}{Azkaban}, and
+\href{http://www.cascading.org/}{Cascading}.  Although all of these
+products could be used to solve similar problems, they differ
+significantly in design, philosophy, target user profile, usage
+scenarios, etc., limiting usefulness of simple feature-wise
+comparison.
 
-
-Below are some notes, discussing some key differences between \textbf{hamake}
-and some other popular products:
-
-\subsection*{Cascading}
-
-In short: Cascading is an API, while \textbf{hamake} is an utility. Some differences:
-\begin{itemize}
-\item \textbf{hamake} does not require any custom programming. It helps to automate running your existing Hadoop tasks and PIG scripts
-\item You can use \textbf{hamake} to automate tasks written in other languages, for example using \textit{Hadoop streaming}
-\end{itemize}
-
-\subsection*{Oozie and Azkaban}
-
-Oozie and Azkaban are server-side systems that have to be installed
-and run as a service. \textbf{hamake} is a lightweight client-side
-utility that does not require installation and has very simple syntax
-for workflow definition.  Most importantly, \textbf{hamake} is built
-based on dataflow programming principles - your Hadoop tasks execution
-sequence is controlled by the data.
+The main, most significant difference between these engines and hamake
+lies in \textit{workflow} vs. \textit{dataflow} approach. All of them
+using the former, explicitly specifying dependencies between
+jobs. Hamake, on the other hand, using dependencies between datasets,
+to derive the workflow. Both approaches are have their advantages. One
+can argue that for some problems a dataflow representation, used by
+hamake is more natural than a workflow.
 
 \section{Future Work}
 
-Better integration with Hadoop schedulers (Fair Scheduler, Capacity
-Scheduler, etc.).[TODO: describe]
+One of possible hamake improvements is a better integration with
+Hadoop schedulers. For example if \textit{Capacity Scheduler} or
+\textit{Fair Scheduler} is used, a hamake can take into account
+information about its \textit{pools} or \textit{queues} capacities in
+job scheduling algorithm.
 
 Another potential area of future extension is hamake dependency
 mechanism. Current implementation using fairly simple timestamp
@@ -370,13 +357,13 @@ scripting language or external programs. This would allow to make
 decisions not only based on file meta data (such as timestamp) but
 also on its contents.
 
-Several users using hamake reported need for support of iterative
-computations with termination condition. Possible use-cases calling
-for this type of usage are fixed-point computations, iterative
-regression, or clustering algorithms. Presently to embed this kind of
-algorithms into hamake work flow require use of \textit{generations}
-feature combined with external automation, invoking hamake repeatedly
-until certain exit condition it satisfied. \textit{hamake} users could
+Several hamake users has requested support of iterative computations
+with termination condition. Possible use-cases calling for this type
+of usage are fixed-point computations, iterative regression, or
+clustering algorithms. Presently, to embed this kind of algorithms
+into hamake work flow require use of \textit{generations} feature
+combined with external automation, invoking hamake repeatedly until
+certain exit condition it satisfied. \textit{hamake} users could
 certainly benefit from native support for this kind of dataflows by
 hamake.
 
@@ -385,4 +372,3 @@ hamake.
 \bibliographystyle{unsrt}
 
 \end{document}
-
