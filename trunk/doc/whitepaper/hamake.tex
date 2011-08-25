@@ -243,33 +243,34 @@ OCR errors, typos, differences in formatting, or added material such
 as foreword or a publisher information.
 
 For the purpose of illustration of \textbf{hamake} usage we will
-consider simple approach of using a \textit{Canopy clustering
-  algorithm}\cite{efficientClustering} on feature vectors of all
-documents. The implementation could be split into series of steps,
-each of them represented by a \textit{MapReduce job}:
+consider simple approach of using d \textit{vector space
+  model}\cite{manning2008introduction} based on word frequencies and
+\textit{Canopy clustering algorithm}\cite{efficientClustering}. The
+implementation could be split into series of steps, each of them
+represented by a \textit{MapReduce job}:
 
 \begin{description}[\IEEEsetlabelwidth{\emph{FilterStopwords}}]
 \item[\emph{ExtractText}] Extract a plain text from native document format
-  (e.g. PDF).
+  (e.g. PDF or EPUB).
 \item[\emph{Tokenize}] Split plain text into a tokens, roughly
   corresponding to words. Dealing with hyphens, compound words,
-  accents and diacritics, case-folding, stemming or lemmatization of tokens,
-  resulting in a list of \text{tokens}.
+  accents and diacritics, case-folding, stemming or lemmatization of
+  tokens, resulting in a list of normalized \text{tokens}.
 \item[\emph{FilterStopwords}] Filtering out \textit{stopwords} (e.g. words
   like \textit{a}, \textit{the}, \textit{are}) from the list of
   terms.
-\item[\emph{CalculateTF}] Using \textit{vector space
-    model}\cite{manning2008introduction} for each text calculate a
-  feature vector: a vector of term frequencies.
+\item[\emph{CalculateTF}] For each document calculate a feature
+  vector: a vector of term frequencies.
 \item[\emph{FindSimilar}] Run \textit{Canopy clustering algorithm}
   for grouping similar books in clusters. Use
-  \textit{cosine distance} as a fast approximate distance metric. Output
-  book names, which are found in clusters with more than 1 elements
+  \textit{cosine distance} as a fast approximate distance metric. 
+\item[\emph{OutputResult}] Output book names, which are found in
+  clusters with more than 1 elements
 \end{description}
 
-Each of resulting six MapReduce jobs produces and output file which
-depends on input. For each book, they have to be invoked sequentially,
-as outputs of one tasks are used as inputs of the next
+Each of resulting six MapReduce jobs produces and output files which
+depends on inputs. For each book, they have to be invoked
+sequentially, as outputs of one tasks are used as inputs of the next
 one. Additionally, there is a configuration file containing list of
 stop words, and some tasks output depend on this file content. These
 dependencies could be represented by direct acyclic graph, show on
@@ -277,6 +278,9 @@ Figure~\ref{fig:SimilarityAlgDAG}, with vertices representing data
 files, and jobs assigned to edges. The XML file describing the
 dataflow in \textbf{hamake} language is show as
 Listing~\ref{hamakeFile}.
+
+\lstinputlisting[caption={\textit{hamakefile}, that describes process for
+  detecting similar books}, label=hamakeFile]{sample.xml}
 
 The first DTR (lines 10-25) converts a book from native format such as
 PDF or EPUB to plain text. The input of the DTR is a reference to to
@@ -287,32 +291,27 @@ performs actual text extraction is defined using \emph{mapreduce}
 element. It will be invoked by \textbf{hamake} for each unsatisfied
 file dependency. The job takes two parameters, defined with
 \emph{parameter} elements - an input a path to a book, and a path to a
-file, where plain text version should be written.
+file, where plain text version should be written. The remaining five
+DTRs are defined in the similar manner.
 
-In the same way, we add all five Map-Reduce jobs that are
-left. \textbf{hamake} will determine jobs order by comparing their
-input with output of other jobs.
-
-\lstinputlisting[caption={\textit{hamakefile}, that describes process for
-  detecting similar books}, label=hamakeFile]{sample.xml}
-
-\textbf{hamake}, when launched with this XML descriptor it will first
-search for tasks that has no inputs or which inputs are not outputs of
-other tasks. In our particular example, this is job with id
-\emph{extractPlainText}. \textbf{hamake} will launch this job first,
+\textbf{hamake}, when launched with this XML descriptor will first
+search for DTRs that has no inputs or which inputs are not outputs of
+other tasks. In our particular example, this is
+\emph{ExtractPlainText}. \textbf{hamake} will launch this job first,
 an as soon as it will be finished, will execute jobs which depend on
 outputs of this task, and so on while all files are up to date. As a
 result of this data flow, you will get a file \emph{results.txt} with
-list of similar books.  When new books are added, Hamake will not
-re-run DTRs: \emph{ExtractText}, \emph{Tokenize},
-\emph{FilterStopWords} for all books. It will select new books and add
-their terms to terms of other books. Next, it will re-calculate
-feature vector in DTR \emph{CalculateTF} and will re-run DTRs:
-\emph{RunCanopyClusteringAlgorithm} and \emph{OutputResults}.  In case
-new stop-words are added, Hamake will re-run DTRs:
-\emph{FilterStopWords} \emph{CalculateTF},
-\emph{RunCanopyClusteringAlgorithm} and \emph{OutputResults} on full
-data set.
+list of similar books.
+
+This data flow could be used for incremental processing. When new
+books are added, \textbf{hamake} will not re-run following DTRs:
+\emph{ExtractText}, \emph{Tokenize}, \emph{FilterStopWords}, and
+\emph{CalculateTF} for previously processed books. However it will run
+these DTRs for newly added books, and then, will re-run
+\emph{FindSimilar} and \emph{OutputResults}.  If list of stop words
+has been changed, \textbf{hamake} will re-run only
+\emph{FilterStopWords} \emph{CalculateTF}, \emph{FindSimilar}, and
+\emph{OutputResults} DTRs.
 
 \begin{figure}[htp]
 \centering
