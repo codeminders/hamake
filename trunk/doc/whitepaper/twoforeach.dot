@@ -1,8 +1,0 @@
-digraph twoforeach  {
-        rankdir=LR; 
-        A [shape="box"]
-        B [shape="box"]
-        foreach [shape="ellipse"]
-
-        A->foreach->B;
-}
