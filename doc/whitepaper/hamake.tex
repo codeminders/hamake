@@ -114,12 +114,12 @@ Then, a graph reduction algorithms shown on Figure~\ref{fig:grred} is
 executed. It is similar to Kahn's algorithm\cite{kahn1962topological},
 of topological ordering.
 
-\begin{figure}[htp]
-\centering
-\includegraphics[width=4cm]{GraphReduction.eps}
-\caption{\textbf{hamake} dependency graph reduction algorithm}
-\label{fig:grred}
-\end{figure}
+%\begin{figure}[htp]
+%\centering
+%\includegraphics[width=4cm]{GraphReduction.eps}
+%\caption{\textbf{hamake} dependency graph reduction algorithm}
+%\label{fig:grred}
+%\end{figure}
 
 The algorithms allows for parallelism. If more than one DTR without
 input dependencies is found during step 1, subsequent steps 2-5 could
@@ -263,18 +263,22 @@ represented by a \textit{MapReduce job}:
   (e.g. PDF).
 \item[\emph{Tokenize}] Split plain text into a tokens, roughly
   corresponding to words. Dealing with hyphens, compound words,
-  accents and diacritics, case-folding.
-\item[\emph{FilterStopwords}] Filtering out \textit{stopwords} (e.g. words
+  accents and diacritics, case-folding. Filter out \textit{stopwords} (e.g. words
   like \textit{a}, \textit{the}, \textit{are}) from the list of
-  tokens.
-\item[\emph{Normalize}] Stemming or lemmatization of tokens,
-  resulting in list of \text{terms}.
+  tokens. Optionally apply algorithm for stemming or lemmatization of tokens 
+%\item[\emph{FilterStopwords}] Filtering out \textit{stopwords} (e.g. words
+%  like \textit{a}, \textit{the}, \textit{are}) from the list of
+%  tokens.
+%\item[\emph{Normalize}] Stemming or lemmatization of tokens,
+%  resulting in list of \text{terms}.
 \item[\emph{CalculateTF}] Using \textit{vector space
     model}\cite{manning2008introduction} for each text calculate a
   feature vector: a vector of term frequencies.
-\item[\emph{FindSimilar}] Find books similar content by comparing
-  their feature vectors (for example using \textit{cosine
-  distance}).
+\item[\emph{Clusterize}] Run \textit{Canopy clustering
+    algorithm}\cite{efficientClustering} for grouping similar books in clusters. Use
+    \textit{cosine distance} as a fast approximate distance metric.
+\item[\emph{FindSimilar}] Output only those clusters, that contains 
+    more then 1 book
 \end{description}
 
 Each of resulting six MapReduce jobs produces and output file which
@@ -325,7 +329,7 @@ similar books.
 
 \begin{figure}[htp]
 \centering
-\includegraphics[width=0.45\textwidth]{SimilarityAlgDAG.png}
+\includegraphics[width=0.45\textwidth]{SimilarityAlgDAG1.png}
 \caption{Directed Acyclic Graph of a Hamake Process for detecting similar books}
 \label{fig:SimilarityAlgDAG}
 \end{figure}
