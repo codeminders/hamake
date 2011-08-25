@@ -95,7 +95,7 @@ timestamp on all inputs. A user, for his or her convenience, could
 arrange groups of files and folders into a \emph{fileset} which later
 could be references as DTR's input or output.
 
-\textbf{hamake} is using \textit{fuzzy timestamps}\footnote{current stable
+\textbf{hamake} is using \textit{fuzzy timestamps}\footnote{Current stable
   version of \textbf{hamake} is using exact (non-fuzzy) timestamps.}
 which could be compared, allowing for a certain margin or error. The
 ``fuzziness'' is controlled by tolerance $\sigma$. Timestamp $a$ is
@@ -103,7 +103,7 @@ considered to be older than timestamp $b$ if $(b-a)>\sigma$. Setting
 $\sigma=0$ gives us non-fuzzy, strict timestamp comparison.
 
 \textbf{hamake} attempts to ensure that all DTR outputs are up to
-date\footnote{It does not try to ensure that files which are not
+date\footnote{\textbf{hamake} does not try to ensure that files which are not
   listed as one of DTR outputs are up to date, because it has no way
   to update them.}.  To do so it builds a \textit{dependency
   graph}. This graph have individual files or filesets as vertices and
@@ -180,9 +180,10 @@ attempts to perform all required computations in shortest possible
 time. To achieve this it aims for maximal cluster utilization, running
 as many Hadoop jobs in parallel as cluster capacity permits.
 
-There are three main factors driving scheduling logic: files,
-dependencies, and cluster computational capacity. On highest level DTR
-dependencies determine sequence of DTRs jobs being launched.
+There are three main factors driving scheduling logic: file
+timestamps, dependencies, and cluster computational capacity. On
+highest level DTR dependencies determine sequence of DTRs jobs being
+launched.
 
 In case of \emph{fold} DTR, a single Hadoop job, PIG script or shell
 could be launched and hence there are not many opportunities to for
