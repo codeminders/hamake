@@ -49,7 +49,7 @@
     </mapreduce>
   </foreach>
   
-  <fold name="CalculateTF">
+  <foreach name="CalculateTF">
     <input>
       <file id="terms" path="/terms" />
     </input>
@@ -59,9 +59,9 @@
     <mapreduce jar="${dist}/hadoopJobs.job" main="com.example.CalculateTF">
       ...
     </mapreduce>
-  </fold>
+  </foreach>
 
-  <foreach name="RunCanopyClusteringAlgorithm">
+  <fold name="FindSimilar">
     <input>
       <file id="TFVector" path="/TF" />
     </input>
@@ -71,7 +71,7 @@
     <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.Canopy">
       ...
     </mapreduce>
-  </foreach>
+  </fold>
   
   <foreach name="OutputResult">
     <input>
