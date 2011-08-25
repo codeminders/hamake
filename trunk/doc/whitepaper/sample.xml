@@ -7,14 +7,14 @@
   <fileset id="input" path="/data/" mask="*.pdf" />
   <file id="output" path="./result.txt" />
   <file id="stopwords" path="./stopwords.txt" />
-  <file id="temporaryFolder" path="/tmp/" />
+  <file id="tmp" path="/tmp/" />
 
   <foreach name="extractPlainText">
     <input>
       <include idref="input" />
     </input>
     <output>
-      <file id="bookInPlainTextFormat" path="${temporaryFolder}/plainText/${foreach:filename}" />
+      <file id="bookInPlainTextFormat" path="${tmp}/plainText/${foreach:filename}" />
     </output>
     <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.ConvertFb2Text">
       <parameter>
@@ -28,11 +28,11 @@
 
   <foreach name="KeywordsExtractor">
     <input>
-      <file id="bookInPlainTextFormat" path="${temporaryFolder}/plainText" />
+      <file id="bookInPlainTextFormat" path="${tmp}/plainText" />
     </input>
     <output>
-      <file id="bookKeywords" path="${temporaryFolder}/keywords/${foreach:filename}" />
-      <file id="vacabulary" path="${temporaryFolder}/vacabulary" />
+      <file id="bookKeywords" path="${tmp}/keywords/${foreach:filename}" />
+      <file id="vacabulary" path="${tmp}/vacabulary" />
     </output>
     <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.KeywordsExtractor">
       ...
@@ -44,10 +44,10 @@
       <include idref="KeywordsExtractor" />
     </dependencies>
     <input>
-      <fileset id="vacabulary" path="${temporaryFolder}/vacabulary" />
+      <fileset id="vacabulary" path="${tmp}/vacabulary" />
     </input>
     <output>
-      <file id="vacabularyWithoutStopwords" path="${temporaryFolder}/vacabularyWOStopWords/${foreach:filename}" />
+      <file id="vacabularyWithoutStopwords" path="${tmp}/vacabularyWOStopWords/${foreach:filename}" />
     </output>
     <mapreduce jar="${dist}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.StopwordsExcluder">
       ...
@@ -56,11 +56,11 @@
 
   <fold name="FeatureVectorsFromDirectory">
     <input>
-      <file id="vacabularyWithoutStopwords" path="${temporaryFolder}/vacabularyWOStopWords" />
-      <file id="keywords" path="${temporaryFolder}/keywords" />
+      <file id="vacabularyWithoutStopwords" path="${tmp}/vacabularyWOStopWords" />
+      <file id="keywords" path="${tmp}/keywords" />
     </input>
     <output>
-      <file id="featureVectorsFile" path="${temporaryFolder}/featureVectors" />
+      <file id="featureVectorsFile" path="${tmp}/featureVectors" />
     </output>
     <mapreduce jar="${dist}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.FeatureVectorsFromDirectory">
       ...
@@ -69,7 +69,7 @@
 
   <foreach name="OutputResults">
     <input>
-      <file id="featureVectors" path="${temporaryFolder}/featureVectors" />
+      <file id="featureVectors" path="${tmp}/featureVectors" />
     </input>
     <output>
       <include idref="output" />
