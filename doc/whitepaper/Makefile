@@ -1,6 +1,6 @@
 all: hamake.pdf
 
-hamake.pdf: hamake.tex hamake.bib twofold.png twoforeach.png twoforeachp.png GraphReduction.eps sample.xml
+hamake.pdf: hamake.tex hamake.bib twofold.eps twoforeach.eps twoforeachp.png GraphReduction.eps sample.xml
 	pdflatex hamake.tex
 	bibtex hamake
 	pdflatex hamake.tex
