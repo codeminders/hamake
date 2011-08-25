@@ -1,80 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="cluster books">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:noNamespaceSchemaLocation="../../src/resources/com/codeminders/hamake/syntax/hamakefile.xsd"
+ name="cluster books">
 
-  <property name="lib" value="./lib/" />
+  <property name="lib" value="/lib/" />
   <property name="cosine.distance" value="0.02" />
 
   <fileset id="input" path="/data/" mask="*.pdf" />
-  <file id="output" path="./result.txt" />
-  <file id="stopwords" path="./stopwords.txt" />
-  <file id="tmp" path="/tmp/" />
+  <file id="output" path="/result.txt" />
 
-  <foreach name="extractPlainText">
+  <foreach name="ExtractText">
     <input>
       <include idref="input" />
     </input>
     <output>
-      <file id="bookInPlainTextFormat" path="${tmp}/plainText/${foreach:filename}" />
+      <file id="plainText" path="/plainText/${foreach:filename}" />
     </output>
-    <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.ConvertFb2Text">
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.TextExtractor">
       <parameter>
         <literal value="${foreach:path}" />
       </parameter>
       <parameter>
-        <reference idref="bookInPlainTextFormat" />
+        <reference idref="plainText" />
       </parameter>
     </mapreduce>
   </foreach>
 
-  <foreach name="KeywordsExtractor">
+  <foreach name="Tokenize">
     <input>
-      <file id="bookInPlainTextFormat" path="${tmp}/plainText" />
+      <file id="plainText" path="/plainText" />
     </input>
     <output>
-      <file id="bookKeywords" path="${tmp}/keywords/${foreach:filename}" />
-      <file id="vacabulary" path="${tmp}/vacabulary" />
+      <file id="tokens" path="/tokens/${foreach:filename}" />
+      <file id="vacabulary" path="/vacabulary" />
     </output>
-    <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.KeywordsExtractor">
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.Tokenizer">
       ...
     </mapreduce>
   </foreach>
 
-  <foreach name="ExcludeStopword">
-    <dependencies>
-      <include idref="KeywordsExtractor" />
-    </dependencies>
+  <fold name="CalculateTF">
     <input>
-      <fileset id="vacabulary" path="${tmp}/vacabulary" />
+      <file id="vacabulary" path="/vacabulary" />
+      <file id="tokens" path="/tokens" />
     </input>
     <output>
-      <file id="vacabularyWithoutStopwords" path="${tmp}/vacabularyWOStopWords/${foreach:filename}" />
+      <file id="TFVector" path="/TFVector" />
     </output>
-    <mapreduce jar="${dist}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.StopwordsExcluder">
-      ...
-    </mapreduce>
-  </foreach>
-
-  <fold name="FeatureVectorsFromDirectory">
-    <input>
-      <file id="vacabularyWithoutStopwords" path="${tmp}/vacabularyWOStopWords" />
-      <file id="keywords" path="${tmp}/keywords" />
-    </input>
-    <output>
-      <file id="featureVectorsFile" path="${tmp}/featureVectors" />
-    </output>
-    <mapreduce jar="${dist}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.FeatureVectorsFromDirectory">
+    <mapreduce jar="${dist}/hadoopJobs.job" main="com.example.CalculateTF">
       ...
     </mapreduce>
   </fold>
 
-  <foreach name="OutputResults">
+  <foreach name="RunCanopyClusteringAlgorithm">
     <input>
-      <file id="featureVectors" path="${tmp}/featureVectors" />
+      <file id="TFVector" path="/TFVector" />
+    </input>
+    <output>
+      <include idref="clustersList" path="/clusters"/>
+    </output>
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.Canopy">
+      ...
+    </mapreduce>
+  </foreach>
+  
+  <foreach name="OutputResult">
+    <input>
+      <file id="clustersList" path="/clusters" />
     </input>
     <output>
       <include idref="output" />
     </output>
-    <mapreduce jar="${lib}/hadoopJobs.job" main="com.fb2pdf.hadoop.cluster.OutputClusterResults">
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.OutputSimilarBooks">
       ...
     </mapreduce>
   </foreach>
