@@ -42,28 +42,16 @@
       <file id="tokens" path="/tokens" />
     </input>
     <output>
-      <file id="tokens1" path="/tokens1/${foreach:filename}" />
-    </output>
-    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.Tokenizer">
-      ...
-    </mapreduce>
-  </foreach>
-  
-  <foreach name="Normalize">
-    <input>
-      <file id="tokens1" path="/tokens1" />
-    </input>
-    <output>
       <file id="terms" path="/terms/${foreach:filename}" />
     </output>
     <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.Tokenizer">
       ...
     </mapreduce>
   </foreach>
-
+  
   <fold name="CalculateTF">
     <input>
-      <file id="tokens" path="/tokens" />
+      <file id="terms" path="/terms" />
     </input>
     <output>
       <file id="TFVector" path="/TF" />
