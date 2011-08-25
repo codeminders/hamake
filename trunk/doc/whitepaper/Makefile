@@ -1,6 +1,6 @@
 all: hamake.pdf
 
-hamake.pdf: hamake.tex hamake.bib SimilarityAlgDAG.eps twofold.eps twoforeach.eps twoforeachp.eps GraphReduction.eps sample.xml
+hamake.pdf: hamake.tex hamake.bib SimilarityAlgDAG.eps twofoldp.eps twoforeachp.eps GraphReduction.eps sample.xml
 	pdflatex hamake.tex
 	bibtex hamake
 	pdflatex hamake.tex

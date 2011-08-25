@@ -187,33 +187,23 @@ launched.
 
 In case of \emph{fold} DTR, a single Hadoop job, PIG script or shell
 could be launched and hence there are not many opportunities to for
-parallel execution. In example shown on Figure~\ref{fig:fold1}, since
+parallel execution. In example shown on Figure~\ref{fig:fold2}, since
 fileset \textit{B} depends on all files in fileset \textit{A}, a
 single job associated with \emph{fold} DTR will be executed.
 
 \begin{figure}[htp]
 \centering
-\includegraphics[width=0.3\textwidth]{twofold.eps}
+\includegraphics[width=0.3\textwidth]{twofoldp.eps}
 \caption{Simple \emph{fold} DTR}
-\label{fig:fold1}
+\label{fig:fold2}
 \end{figure}
 
-At first glance, \emph{foreach} DTR shown in Figure~\ref{fig:foreach1}
-looks similar to \emph{fold}.
-
-\begin{figure}[htp]
-\centering
-\includegraphics[width=0.3\textwidth]{twoforeach.eps}
-\caption{Simple \emph{foreach} DTR}
-\label{fig:foreach1}
-\end{figure}
-
-However \emph{foreach} DTRs works by mapping individual files in
-fileset \textit{A} to files in fileset \textit{B}. Assuming that
-fileset \textit{A} consists of 3 files: \textit{$a_1$},
-\textit{$a_2$}, \textit{$a_3$} the the dependency graph could be
-represented as shown on Figure~\ref{fig:foreach2}. In this case we
-have an opportunity to execute three jobs in parallel.
+\emph{foreach} DTRs works by mapping individual files in fileset
+\textit{A} to files in fileset \textit{B}. Assuming that fileset
+\textit{A} consists of 3 files: \textit{$a_1$}, \textit{$a_2$},
+\textit{$a_3$} the the dependency graph could be represented as shown
+on Figure~\ref{fig:foreach2}. In this case we have an opportunity to
+execute three jobs in parallel.
 
 \begin{figure}[htp]
 \centering
