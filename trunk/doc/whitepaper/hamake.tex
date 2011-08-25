@@ -99,7 +99,7 @@ could be references as DTR's input or output.
   version of \textbf{hamake} is using exact (non-fuzzy) timestamps.}
 which could be compared, allowing for a certain margin or error. The
 ``fuzziness'' is controlled by tolerance $\sigma$. Timestamp $a$ is
-considered to be older than timestamp $b$ if $b-a>\sigma$. Setting
+considered to be older than timestamp $b$ if $(b-a)>\sigma$. Setting
 $\sigma=0$ gives us non-fuzzy, strict timestamp comparison.
 
 \textbf{hamake} attempts to ensure that all DTR outputs are up to
