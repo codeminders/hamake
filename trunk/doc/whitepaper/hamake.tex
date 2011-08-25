@@ -44,7 +44,7 @@ Email: vorl@codeminders.com}}
   These ideas inspired the creation of \textbf{hamake} utility. We
   attempted to emphasize data and allowing the developer to formulate
   his problem as a data flow (opposed to a workflow approach commonly
-  used). Hamake language using just two data flow instructions:
+  used). Hamake language using just two data flow operators:
   \emph{fold} and \emph{foreach} providing a clear processing model,
   similar to MapReduce, but on a dataset level.
 \end{abstract}
@@ -63,7 +63,6 @@ resources. This makes incremental processing important. Or initial
 inspiration was Unix \emph{make} utility. While applying some of ideas
 implemented in it to Hadoop, we took an opportunity to generalise
 processing model in terms of dataflow programming.
-
 
 \textbf{hamake} was developed in late 2008 to address the problem of
 incremental processing of big data sets in a collaborative filtering
@@ -113,7 +112,7 @@ DTRs as edges. We will see below that this is guaranteed to be a
 
 Then, a graph reduction algorithms shown on Figure~\ref{fig:grred} is
 executed. It is similar to Kahn's algorithm\cite{kahn1962topological},
-of topological ordering\cite{wiki:topsort}.
+of topological ordering.
 
 \begin{figure}[htp]
 \centering
@@ -154,7 +153,17 @@ where the cost of re-calculation could be potentially high (due to
 data size or computational complexity) this allows to estimate the
 scope of dataflow graph affected by updating one or more ones.
 
-[TODO: introduce hamakefiles]
+hamake is driven by dataflow description, expressed in simple
+XML-based language. The full syntax is described in
+\cite{hamakesyntax}. Two main elements \emph{fold} and \emph{foreach},
+corresponding to two types of DTRs. Each of them have inputs, outputs
+and processing instruction. Executing processing instruction should
+bring DTR outputs up to date, compared to its inputs. \emph{fold}
+implies many-to-one dependency between inputs and the outputs. In
+other words, outputs depends on all inputs and if either of inputs
+have been changed, outputs needs to be updated. \emph{foreach} implies
+one-to-one dependency: where for each file in input set there is a
+corresponding output file, each of them updated independently.
 
 hamake dataflow language has a declarative semantics. Keeping it
 purely declarative, makes it easy in future to implement various
@@ -214,15 +223,15 @@ have an opportunity to execute three jobs in parallel.
 
 The Hadoop cluster capacity is defined in terms of number of
 \textit{map slots} and \textit{reduce slots}. DTR launches Hadoop job
-(either directly as defined by \emph{mapreduce} instruction or via PIG
-script, single job will spawn one or more \emph{mapper} and
-\emph{reducer} tasks, each taking one respecive slot. Number of
+(either directly as defined by \emph{mapreduce} processing instruction
+or via PIG script, single job will spawn one or more \emph{mapper} and
+\emph{reducer} tasks, each taking one respective slot. Number of
 mappers and reducers lauched depends on many factors, such as size of
 HDFS block, Hadoop cluster settings, \emph{JobConf} settings. In
 general, \textbf{hamake} does not have an neither visibility nor
 control over most of these factors, so the \textbf{hamake} scheduler
-currently does not deal with invidual tasks. It knows only about data
-files and spawned Hadoop jobs.
+currently does not deal with individual tasks. It knows only about
+data files and spawned Hadoop jobs.
 
 \section{Example}
 
@@ -264,8 +273,8 @@ represented by a \textit{MapReduce job}:
     model}\cite{manning2008introduction} for each text calculate a
   feature vector: a vector of term frequencies.
 \item[\emph{FindSimilar}] Find books similar content by comparing
-  their feature vectors (for example using cosine
-  distance\cite{wiki:cosinesimilarity}).
+  their feature vectors (for example using \textit{cosine
+  distance}).
 \end{description}
 
 Each of resulting six MapReduce jobs produces and output file which
