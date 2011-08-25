@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:noNamespaceSchemaLocation="../../src/resources/com/codeminders/hamake/syntax/hamakefile.xsd"
- name="cluster books">
+<project name="FindSimilarBooks">
 
   <property name="lib" value="/lib/" />
   <property name="cosine.distance" value="0.02" />
 
-  <fileset id="input" path="/data/" mask="*.pdf" />
+  <fileset id="input" path="/doc" mask="*.pdf" />
   <file id="output" path="/result.txt" />
 
   <foreach name="ExtractText">
@@ -14,7 +12,7 @@
       <include idref="input" />
     </input>
     <output>
-      <file id="plainText" path="/plainText/${foreach:filename}" />
+      <file id="plainText" path="/txt/${foreach:filename}" />
     </output>
     <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.TextExtractor">
       <parameter>
@@ -28,11 +26,35 @@
 
   <foreach name="Tokenize">
     <input>
-      <file id="plainText" path="/plainText" />
+      <file id="plainText" path="/txt" />
     </input>
     <output>
       <file id="tokens" path="/tokens/${foreach:filename}" />
-      <file id="vacabulary" path="/vacabulary" />
+    </output>
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.Tokenizer">
+      ...
+    </mapreduce>
+  </foreach>
+
+  <foreach name="FilterStopWords">
+    <input>
+      <file id="stopWords" path="/stopwords" />
+      <file id="tokens" path="/tokens" />
+    </input>
+    <output>
+      <file id="tokens1" path="/tokens1/${foreach:filename}" />
+    </output>
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.Tokenizer">
+      ...
+    </mapreduce>
+  </foreach>
+  
+  <foreach name="Normalize">
+    <input>
+      <file id="tokens1" path="/tokens1" />
+    </input>
+    <output>
+      <file id="terms" path="/terms/${foreach:filename}" />
     </output>
     <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.Tokenizer">
       ...
@@ -41,11 +63,10 @@
 
   <fold name="CalculateTF">
     <input>
-      <file id="vacabulary" path="/vacabulary" />
       <file id="tokens" path="/tokens" />
     </input>
     <output>
-      <file id="TFVector" path="/TFVector" />
+      <file id="TFVector" path="/TF" />
     </output>
     <mapreduce jar="${dist}/hadoopJobs.job" main="com.example.CalculateTF">
       ...
@@ -54,7 +75,7 @@
 
   <foreach name="RunCanopyClusteringAlgorithm">
     <input>
-      <file id="TFVector" path="/TFVector" />
+      <file id="TFVector" path="/TF" />
     </input>
     <output>
       <include idref="clustersList" path="/clusters"/>
