@@ -31,21 +31,19 @@ Email: vorl@codeminders.com}}
   Most non-trivial data processing scenarios using Hadoop typically
   involve launching more than one MapReduce job. Usually, such
   processing is data-driven, with the data funneled through a sequence
-  of jobs. The processing model could be expressed in terms of
-  dataflow programming.
-  
-  It could be represented as a directed graph, with datasets as
-  vertices. Using \textit{fuzzy timestamps} as a way to detect which
-  dataset needs to be updated, we can calculate a sequence in which
-  Hadoop jobs need to be launched to bring all datasets up to
+  of jobs.  The processing model could be expressed in terms of
+  dataflow programming, represented as a directed graph with datasets
+  as vertices. Using \textit{fuzzy timestamps} as a way to detect
+  which dataset needs to be updated, we can calculate a sequence in
+  which Hadoop jobs need to be launched to bring all datasets up to
   date. Incremental data processing and parallel job execution fit
   well into this approach.
 
   These ideas inspired the creation of the \textbf{hamake} utility. We
   attempted to emphasize data and allowing the developer to formulate
-  his or her problem as a data flow (as opposed to the workflow approach
-  commonly used). \textbf{Hamake} language uses just two data flow
-  operators: \emph{fold} and \emph{foreach}, providing a clear
+  his or her problem as a data flow (as opposed to the workflow
+  approach commonly used). \textbf{Hamake} language uses just two data
+  flow operators: \emph{fold} and \emph{foreach}, providing a clear
   processing model similar to MapReduce, but on a dataset level.
 \end{abstract}
 
