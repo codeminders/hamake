@@ -242,7 +242,7 @@ represented by a \textit{MapReduce job}:
 
 \begin{description}[\IEEEsetlabelwidth{\emph{FilterStopwords}}]
 \item[\emph{ExtractText}] Extract a plain text from native document format
-  (e.g. PDF or EPUB).
+  (e.g. PDF).
 \item[\emph{Tokenize}] Split plain text into a tokens, roughly
   corresponding to words. Dealing with hyphens, compound words,
   accents and diacritics, case-folding, stemming or lemmatization of
@@ -274,7 +274,7 @@ Listing~\ref{hamakeFile}.
   detecting similar books}, label=hamakeFile]{sample.xml}
 
 The first DTR (lines 10-25) converts a book from native format such as
-PDF or EPUB to plain text. The input of the DTR is a reference to to
+PDF to plain text. The input of the DTR is a reference to to
 \emph{/doc} folder, and the output is \emph{/txt} folder. The
 \emph{foreach} DTR establishes one to one dependency between files
 with the same names in these two folders. The Hadoop job which
