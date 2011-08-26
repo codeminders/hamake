@@ -13,7 +13,7 @@ Email: lord@crocodile.org} \and \IEEEauthorblockN{Vladimir Orlov}
 \IEEEauthorblockA{Codeminders\\
 Email: vorl@codeminders.com}}
 
-\date{2011}
+\date{\today}
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{rotating}
@@ -78,11 +78,11 @@ URL: \url{http://code.google.com/p/hamake/}.
 
 \textbf{Hamake} operates on \textit{files}, residing on a local or
 distributed file system accessible from the Hadoop job (usually it is
-HDFS). Each file has a timestamp, reflecting the date and time of its last
-modification. A file system directory or folder is also a file, and
-has its own timestamp. A \textit{Data Transformation Rule (DTR)}
-defines an operation which takes files or filesets as input and
-produces other files or filesets as output.
+HDFS). Each file has a timestamp, reflecting the date and time of its
+last modification. A file system directory or folder is also a file,
+and has its own timestamp. A \textit{Data Transformation Rule (DTR)}
+defines an operation which takes files as input and produces other
+files as output.
 
 If file \textit{A} is listed as input of a DTR, and file \textit{B}
 listed as output of the same DTR, it is said that \textit{``B depends
@@ -106,7 +106,7 @@ date\footnote{\textbf{hamake} does not try to ensure that files which
   no way to update them.}.  To do so, it builds a \textit{dependency
   graph}. This graph has individual files or filesets as vertices and
 DTRs as edges. Below, we will show that this graph is guaranteed to be
-a \textit{Direct Acyclic Graph} (DAG).
+a \textit{Directed Acyclic Graph} (DAG).
 
 After building a \textit{dependency graph}, a graph reduction algorithm (shown in Figure~\ref{fig:grred}) is
 executed. Step 1 makes use of Kahn's algorithm\cite{kahn1962topological} of
@@ -122,7 +122,7 @@ DTRs are also removed.
 \end{figure}
 
 The algorithm allows for parallelism. If more than one DTR without
-input dependencies is found during step 1, subsequent steps 2-5 could
+input dependencies is found during step 1, subsequent steps 2-6 could
 be executed in parallel for each discovered DTR.
 
 It should be noted that if DTR exectuion has failed, \textbf{hamake} can
@@ -263,7 +263,7 @@ Each of the resulting six MapReduce jobs produces an output file which
 depends on its input. For each book, these jobs must be invoked
 sequentially, as the output of one task is used as input of the next. Additionally, there is a configuration file containing a list of
 stop words, and some tasks' output depend on this file content. These
-dependencies could be represented by a direct acyclic graph, shown in
+dependencies could be represented by a directed acyclic graph, shown in
 Figure~\ref{fig:SimilarityAlgDAG}, with vertices representing data
 files, and jobs assigned to edges. The XML file describing the
 dataflow in \textbf{hamake} language is show as
