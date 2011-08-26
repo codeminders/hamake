@@ -164,12 +164,12 @@ any input has been changed, the output needs to be
 updated. \emph{Foreach} implies one-to-one dependency: where for each
 file in an input set there is a corresponding file in an output set, each updated independently.
 
-\textbf{Hamake} dataflow language has a declarative semantics. Keeping it
-purely declarative makes it easy to implement various
-dataflow analysis and optimization algorithms on top of it in the future. Some
-examples of such algorithms could be: merging dataflows, further
-execution parallelization, dataflow complexity analysis and
-estimation.
+\textbf{Hamake} dataflow language has a declarative semantics. Keeping
+it purely declarative makes it easy to implement various dataflow
+analysis and optimization algorithms on top of it in the future. Some
+examples of such algorithms could be: merging dataflows, finding
+further execution parallelization opportunities, dataflow complexity
+analysis and estimation.
 
 \section{Parallel Execution}
 
@@ -184,16 +184,17 @@ timestamps, dependencies, and cluster computational capacity. On the
 highest level DTR dependencies determine the sequence of DTR jobs being
 launched.
 
-In the case of \emph{fold} DTR, a single Hadoop job, PIG script or shell
-could be launched and hence there are not many opportunities for
-parallel execution. In the example shown in Figure~\ref{fig:fold2}, since
-fileset \textit{B} depends on all files in fileset \textit{A}, a
-single job associated with \emph{fold} DTR will be executed.
+In the case of \emph{fold} DTR, a single Hadoop job, PIG script or
+shell command could be launched and hence there are not many
+opportunities for parallel execution. In the example shown in
+Figure~\ref{fig:fold2}, since fileset \textit{B} depends on all files
+in fileset \textit{A}, a single job associated with \emph{fold} DTR
+will be executed.
 
 \begin{figure}[htp]
 \centering
 \includegraphics[width=0.3\textwidth]{twofoldp.eps}
-\caption{Simple \emph{fold} DTR}
+\caption{Decomposition of \emph{fold} DTR}
 \label{fig:fold2}
 \end{figure}
 
@@ -212,17 +213,17 @@ execute three jobs in parallel.
 \end{figure}
 
 The Hadoop cluster capacity is defined in terms of the number of
-\textit{map slots} and \textit{reduce slots}. When a DTR launches a Hadoop job
-(either directly as defined by \emph{mapreduce} processing instruction
-or via PIG script), a single job will spawn one or more \emph{mapper}
-and \emph{reducer} tasks, each taking one respective slot. The number of
-mappers and reducers launched depends on many factors, such as size of the
-HDFS block, Hadoop cluster settings, and individual job settings. In
-general, \textbf{hamake} has neither visibility of nor
-control over most of these factors, so the \textbf{hamake} scheduler
-currently does not deal with individual tasks. Thus \textbf{hamake}
-parallel execution logic is controlled by a command line option
-specifying how many jobs it is allowed run in parallel.
+\textit{map slots} and \textit{reduce slots}. When a DTR launches a
+Hadoop job (either directly as defined by \emph{mapreduce} processing
+instruction or via PIG script), a single job will spawn one or more
+\emph{mapper} and \emph{reducer} tasks, each taking one respective
+slot. The number of mappers and reducers launched depends on many
+factors, such as size of the HDFS block, Hadoop cluster settings, and
+individual job settings. In general, \textbf{hamake} has neither
+visibility of nor control over most of these factors, so it currently
+does not deal with individual tasks. Thus \textbf{hamake} parallel
+execution logic is controlled by a command line option specifying how
+many jobs it is allowed run in parallel.
 
 \section{Example}
 
@@ -285,11 +286,11 @@ file, where the plain text version should be written. The remaining five
 DTRs are defined in a similar manner.
 
 \textbf{Hamake}, when launched with this XML dataflow definition, will
-first search for DTRs that have no input or for which the input is not also the
-output of other tasks. In our particular example, this is
+perform graph reduction algorithm, shown in Figure~\ref{fig:grred} and
+will find first DTR to process. In our particular example, this is
 \emph{ExtractPlainText}. \textbf{Hamake} will launch corresponding
-Hadoop jobs first, and as soon as they are finished, it will
-execute DTRs which depend on the output of this DTR, and so on until all
+Hadoop jobs first, and as soon as they are finished, it will execute
+DTRs which depend on the output of this DTR, and so on until all
 output files are up to date. As a result of this data flow, a file
 \emph{results.txt} with list of similar books will be generated.
 
@@ -338,13 +339,14 @@ information about its \textit{pools} or \textit{queues} capacities in a
 job scheduling algorithm.
 
 More granular control over parallelism could be achieved if the
-\textbf{hamake} internal dependency graph contained individual
-files, not just DTRs. For example, consider a dataflow consisting of
-three datasets \textit{A}, \textit{B}, \textit{C}, and two
-\emph{foreach} DTR's: \textit{$D_1$} mapping \textit{A} to \textit{B}
-and \textit{$D_2$} mapping \textit{B} to \textit{C}. File-level
-dependencies would allow some jobs to run from \textit{$D_2$}
-without waiting for all jobs in \textit{$D_1$} to complete.
+\textbf{hamake} internal dependency graph for \emph{foreach} DTR
+contained individual files, not just filesets. For example, consider a
+dataflow consisting of three filesets \textit{A}, \textit{B},
+\textit{C}, and two \emph{foreach} DTR's: \textit{$D_1$} mapping
+\textit{A} to \textit{B} and \textit{$D_2$} mapping \textit{B} to
+\textit{C}. File-level dependencies would allow some jobs to run from
+\textit{$D_2$} without waiting for all jobs in \textit{$D_1$} to
+complete.
 
 Another potential area of future extension is \textbf{hamake} dependency
 mechanism. The current implementation uses a fairly simple timestamp
