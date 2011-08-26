@@ -2,7 +2,6 @@
 <project name="FindSimilarBooks">
 
   <property name="lib" value="/lib/" />
-  <property name="cosine.distance" value="0.02" />
 
   <fileset id="input" path="/doc" mask="*.pdf" />
   <file id="output" path="/result.txt" />
