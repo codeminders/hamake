@@ -38,7 +38,7 @@
 
   <foreach name="FilterStopWords">
     <input>
-      <file id="stopWords" path="/stopwords" />
+      <file id="stopWords" path="/stopwords.txt" />
       <file id="tokens" path="/tokens" />
     </input>
     <output>
