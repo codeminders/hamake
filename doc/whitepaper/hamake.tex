@@ -330,13 +330,20 @@ to derive the workflow. Both approaches are have their advantages. One
 can argue that for some problems a dataflow representation, used by
 \textbf{hamake} is more natural than a workflow.
 
-\section{Future Work}
+\section{Future Directions}
 
 One of possible \textbf{hamake} improvements is a better integration with
 Hadoop schedulers. For example if \textit{Capacity Scheduler} or
 \textit{Fair Scheduler} is used, a \textbf{hamake} can take into account
 information about its \textit{pools} or \textit{queues} capacities in
 job scheduling algorithm.
+
+More granular control over parallelism could be achieved if
+\textbf{hamake} internal dependency graph would contain individual
+files, not just DTRs. For example, if \emph{foreach} DTR \textit{B}
+depends on \emph{foreach} DTR \textit{A}, it would allow to run some
+of jobs from \textit{B} without waiting for all jobs in \textit{A} to
+complete.
 
 Another potential area of future extension is \textbf{hamake} dependency
 mechanism. Current implementation using fairly simple timestamp
