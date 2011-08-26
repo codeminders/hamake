@@ -342,10 +342,12 @@ job scheduling algorithm.
 
 More granular control over parallelism could be achieved if
 \textbf{hamake} internal dependency graph would contain individual
-files, not just DTRs. For example, if \emph{foreach} DTR \textit{B}
-depends on \emph{foreach} DTR \textit{A}, it would allow to run some
-of jobs from \textit{B} without waiting for all jobs in \textit{A} to
-complete.
+files, not just DTRs. For example, consider a dataflow consisting of
+three datasets \textit{A}, \textit{B}, \textit{C}, and two
+\emph{foreach} DTR's: \textit{$D_1$} mapping \textit{A} to \textit{B}
+and \textit{$D_2$} mapping \textit{B} to \textit{C}. File-level
+dependencies would allow to run some of jobs from \textit{$D_2$}
+without waiting for all jobs in \textit{$D_1$} to complete.
 
 Another potential area of future extension is \textbf{hamake} dependency
 mechanism. Current implementation using fairly simple timestamp
