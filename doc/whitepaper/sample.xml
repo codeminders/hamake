@@ -73,7 +73,7 @@
     </mapreduce>
   </fold>
   
-  <foreach name="OutputResult">
+  <fold name="OutputResult">
     <input>
       <file id="clustersList" path="/clusters" />
     </input>
@@ -83,5 +83,5 @@
     <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.OutputSimilarBooks">
       ...
     </mapreduce>
-  </foreach>
+  </fold>
 </project>
