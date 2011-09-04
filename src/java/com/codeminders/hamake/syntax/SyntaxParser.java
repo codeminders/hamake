@@ -176,6 +176,8 @@ public class SyntaxParser extends BaseSyntaxParser {
 		for (int i = 0, sz = tx.getLength(); i < sz; i++) {
 			Element t = (Element) tx.item(i);
 			String dattr = getOptionalAttribute(t, "disabled");
+            if (dattr != null)
+                dattr = Utils.replaceVariables(rootContext, dattr);
 			if ("yes".equalsIgnoreCase(dattr) || "true".equalsIgnoreCase(dattr)) {
 				if (rootContext.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
 					System.out.println("Ignoring disabled task "
@@ -188,6 +190,8 @@ public class SyntaxParser extends BaseSyntaxParser {
 		for (int i = 0, sz = tx.getLength(); i < sz; i++) {
 			Element t = (Element) tx.item(i);
 			String dattr = getOptionalAttribute(t, "disabled");
+            if (dattr != null)
+                dattr = Utils.replaceVariables(rootContext, dattr);
 			if ("yes".equalsIgnoreCase(dattr) || "true".equalsIgnoreCase(dattr)) {
 				if (rootContext.getBoolean(Context.HAMAKE_PROPERTY_VERBOSE))
 					System.out.println("Ignoring disabled task "
@@ -207,6 +211,9 @@ public class SyntaxParser extends BaseSyntaxParser {
 
 		String batchSizeValue = getOptionalAttribute(root, "batch_size", "1");
 		int batchSize = Integer.parseInt(batchSizeValue);
+
+		String parallelismValue = getOptionalAttribute(root, "parallelism", "-1");
+		int parallelism = Integer.parseInt(parallelismValue);
 
 		Element input = getOneSubElement(root, "input");
 		if(input == null){

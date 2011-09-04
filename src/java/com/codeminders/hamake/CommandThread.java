@@ -16,14 +16,17 @@ public class CommandThread extends ContextAware implements Runnable{
 
     private Task task;
     private Semaphore jobSemaphore;
+    private Semaphore taskSemaphore;
     private int rc = -200;
 
     public CommandThread(Task task,
                          Context parentContext,
-                         Semaphore jobSemaphore) {
+                         Semaphore jobSemaphore,
+                         Semaphore taskSemaphore) {
     	super(parentContext);
         this.task = task;
         this.jobSemaphore = jobSemaphore;
+        this.taskSemaphore = taskSemaphore;
     }
 
     public int getReturnCode() {
@@ -46,6 +49,7 @@ public class CommandThread extends ContextAware implements Runnable{
                 }
         } finally {
         	jobSemaphore.release();
+        	taskSemaphore.release();
         }
     }
 

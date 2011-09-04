@@ -50,11 +50,16 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 			return true;
 		}
 		
-		public GraphNode getRootParent(){
+		public boolean getNotDoneRootParents(Map<String, GraphNode> nodes){
+            if (isDone())
+                return false;
+            boolean found = false;
 			for(GraphNode node : parents){
-				return node.getRootParent(); 
-			}			
-			return this;
+                found = node.getNotDoneRootParents(nodes) || found;
+			}
+            if (!found)
+                nodes.put(getTask().getName(), this);
+			return true;
 		}
 		
 	}
@@ -88,13 +93,16 @@ class NoDepsExecutionGraph implements ExecutionGraph {
 	public Set<String> getReadyForRunTasks(String[] targets) {
 		//retrieve all root nodes
 		Map<String, GraphNode> nodes = new HashMap<String, GraphNode>();
+		boolean hadValidTarget = false;
 		for(String target : targets){
-			if(hash.containsKey(target)){
-				GraphNode node = hash.get(target).getRootParent();
-				nodes.put(node.getTask().getName(), node);
+			GraphNode node = hash.get(target);
+			if (node != null)
+			{
+				hadValidTarget = true;
+				node.getNotDoneRootParents(nodes);
 			}
 		}
-		if(nodes.size() > 0){
+		if(hadValidTarget){
 			return getReadyForRunTasks(new ArrayList<GraphNode>(nodes.values()));
 		}
 		else{
