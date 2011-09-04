@@ -87,7 +87,7 @@
 
 	<target name="compile" depends="ivy-retrieve-common">
 		<mkdir dir="${build.dir}/classes" />
-		<javac classpathref="library.commons.classpath" destdir="${build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
+		<javac classpathref="library.commons.classpath" destdir="${build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}" includeantruntime="false">
 			<src path="${src.dir}" />
 		</javac>
 		<copy todir="${build.dir}/classes">
@@ -97,7 +97,7 @@
 
 	<target name="compile-test" depends="compile">
 		<mkdir dir="${test.build.dir}/classes" />
-		<javac classpathref="test.classpath" destdir="${test.build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}">
+		<javac classpathref="test.classpath" destdir="${test.build.dir}/classes" debug="${compiler.debug}" deprecation="${compiler.deprecation}" nowarn="${compiler.generate.no.warnings}" fork="yes" memoryMaximumSize="${compiler.max.memory}" includeantruntime="false">
 			<src path="${test.src.dir}" />
 		</javac>
 	</target>
@@ -257,6 +257,7 @@
 			<batchtest haltonfailure="no" todir="${test.build.dir}/test_report" fork="yes">
 				<fileset dir="${test.build.dir}/classes">
 					<include name="**/*Test*.class" />
+                                        <exclude name="**/*$*.class" />
 					<exclude name="**/com/codeminders/hamake/perfomance/**" />
 				</fileset>
 				<formatter type="xml" />

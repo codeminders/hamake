@@ -28,16 +28,17 @@
     <xs:complexType>
       <xs:group ref="dtrElement"/>
       <xs:attribute name="name" type="xs:ID"/>
-      <xs:attribute name="disabled" type="xs:boolean"/>
+      <xs:attribute name="disabled" type="xs:string"/>
       <xs:attribute name="delete_first" type="xs:boolean"/>
       <xs:attribute name="batch_size" type="xs:positiveInteger"/>
+      <xs:attribute name="parallelism" type="xs:integer"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="fold">
     <xs:complexType>
       <xs:group ref="dtrElement"/>
       <xs:attribute name="name" use="required" type="xs:ID"/>
-      <xs:attribute name="disabled" type="xs:boolean"/>
+      <xs:attribute name="disabled" type="xs:string"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="input">

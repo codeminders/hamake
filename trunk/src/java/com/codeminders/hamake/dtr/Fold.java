@@ -84,7 +84,21 @@ public class Fold extends DataTransformationRule {
 					LOG.error(e);
 				}
 			}
-			return getTask().execute(getContext());
+
+			try {
+				semaphore.acquire();
+			} catch (InterruptedException e) {
+				LOG.error(getName() + ": Error running " + getName(), e);
+				return -11;
+			}
+			try
+			{
+				return getTask().execute(getContext());
+			}
+			finally
+			{
+				semaphore.release();
+			}
 		}
 		else{
 			LOG.info("Output of " + getName()

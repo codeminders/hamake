@@ -40,7 +40,7 @@
             </optional>
             <optional>
                 <attribute name="disabled">
-                    <data type="boolean"/>
+                    <data type="string"/>
                 </attribute>
             </optional>
             <optional>
@@ -51,6 +51,11 @@
             <optional>
                 <attribute name="batch_size">
                     <data type="positiveInteger"/>
+                </attribute>
+            </optional>
+            <optional>
+                <attribute name="parallelism">
+                    <data type="integer"/>
                 </attribute>
             </optional>
             <interleave>
@@ -104,7 +109,7 @@
             </optional>
             <optional>
                 <attribute name="disabled">
-                    <data type="boolean"/>
+                    <data type="string"/>
                 </attribute>
             </optional>
             <interleave>
