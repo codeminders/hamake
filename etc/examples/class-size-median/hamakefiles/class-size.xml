@@ -2,19 +2,18 @@
 
 <project name="test">
 
-    <property name="output"  value="build/test"/>
-    <property name="lib"     value="build/lib"/>
-    <property name="dist"    value="dist/examples"/>
-    <property name="scripts" value="test/resources/scripts"/>
+    <property name="output.dir"  value="${env:RUN_FOLDER}/result"/>
+    <property name="data.dir"     value="${env:RUN_FOLDER}/data"/>
+    <property name="scripts.dir" value="${env:RUN_FOLDER}/scripts"/>
 
     <foreach name="jar-listings">
         <input>
-            <fileset path="${lib}" mask="*.jar"/>
+            <fileset path="${data.dir}" mask="*.jar"/>
         </input>
         <output>
-            <file id="jarListing" path="${output}/jar-listings/${foreach:filename}"/>
+            <file id="jarListing" path="${output.dir}/jar-listings/${foreach:filename}"/>
         </output>
-        <mapreduce jar="${dist}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.JarListing">
+        <mapreduce jar="${env:RUN_FOLDER}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.JarListing">
           <parameter>
               <literal value="${foreach:path}"/>
           </parameter>
@@ -26,12 +25,12 @@
 
     <foreach name="filter-listing">
         <input>
-            <fileset path="${output}/jar-listings"/>
+            <fileset path="${output.dir}/jar-listings"/>
         </input>
         <output>
-            <file id="filterListing" path="${output}/jar-listings-filtered/${foreach:filename}"/>
+            <file id="filterListing" path="${output.dir}/jar-listings-filtered/${foreach:filename}"/>
         </output>
-        <mapreduce jar="${dist}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.JarListingFilter">
+        <mapreduce jar="${env:RUN_FOLDER}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.JarListingFilter">
           <parameter>
             <literal value="${foreach:path}"/>
           </parameter>
@@ -43,12 +42,12 @@
 
     <fold name="histogram">
         <input>
-            <file id="histogramIn" path="${output}/jar-listings-filtered"/>
+            <file id="histogramIn" path="${output.dir}/jar-listings-filtered"/>
         </input>
         <output>
-            <file id="histogramOut" path="${output}/class-size-histogram"/>
+            <file id="histogramOut" path="${output.dir}/class-size-histogram"/>
         </output>
-        <mapreduce jar="${dist}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
+        <mapreduce jar="${env:RUN_FOLDER}/hamake-examples-${hamake:version}.jar" main="com.codeminders.hamake.examples.ClassSizeHistogram">
           <parameter>
             <reference idref="histogramIn"/>
           </parameter>
@@ -60,12 +59,12 @@
 
     <fold name="median">
         <input>
-            <file id="medianIn" path="${output}/class-size-histogram"/>
+            <file id="medianIn" path="${output.dir}/class-size-histogram"/>
         </input>
         <output>
-            <file id="medianOut" path="${output}/class-size-median-bin"/>
+            <file id="medianOut" path="${output.dir}/class-size-median-bin"/>
         </output>
-        <pig script="${scripts}/median.pig">
+        <pig script="${scripts.dir}/median.pig">
           <parameter name="infile">
             <reference idref="medianIn"/>
           </parameter>

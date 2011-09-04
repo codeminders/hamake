@@ -21,9 +21,7 @@ import com.codeminders.hamake.context.Context;
 import com.codeminders.hamake.data.DataFunction;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Attributes;
