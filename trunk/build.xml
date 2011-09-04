@@ -12,6 +12,8 @@
 	<property name="compiler.max.memory" value="128m" />
 	<property name="src.dir" value="${basedir}/src/java" />
 	<property name="resources.dir" value="${basedir}/src/resources" />
+	<property name="etc.dir" value="${basedir}/etc" />
+	<property name="examples.dir" value="${etc.dir}/examples" />
 	<property name="lib.dir" value="${basedir}/lib" />
 	<property name="build.dir" value="${basedir}/build" />
 	<property name="rpmroot" value="${build.dir}/rpmroot" />
@@ -72,8 +74,8 @@
 
 	<path id="test.classpath">
 		<path refid="library.commons.classpath" />
-	    <pathelement location="${build.dir}/classes" />
-	    <fileset file="${test.resources.dir}/testMapReduceLib/*.jar" />
+		<pathelement location="${build.dir}/classes" />
+		<fileset file="${test.resources.dir}/testMapReduceLib/*.jar" />
 	</path>
 
 	<path id="test.runtime.classpath">
@@ -104,7 +106,9 @@
 
 	<!-- ============================= DISTRIBUTION ============================================== -->
 
-	<target name="dist" depends="compile, build-examples">
+	<target name="dist" depends="core.jar, dist.examples" />
+
+	<target name="core.jar" depends="compile">
 		<mkdir dir="${dist.dir}" />
 		<mkdir dir="${dist.examples.dir}" />
 		<copy todir="${dist.dir}">
@@ -129,25 +133,6 @@
 			<fileset dir="${build.dir}" includes="lib/*.jar" />
 			<zipfileset dir="lib/hadoop-0.18" includes="pig-0.4.0-core.jar" prefix="lib" />
 		</jar>
-		<mkdir dir="${dist.examples.dir}/hamakefiles" />
-		<copy todir="${dist.examples.dir}/hamakefiles">
-			<fileset dir="${test.current.hamakefiles.dir}">
-				<patternset includes="class-size*.xml" />
-			</fileset>
-		</copy>
-		<mkdir dir="${dist.examples.dir}/scripts" />
-		<copy todir="${dist.examples.dir}/scripts">
-			<fileset file="${test.resources.dir}/scripts/median.pig" />
-		</copy>
-		<mkdir dir="${dist.examples.dir}/data" />
-		<copy todir="${dist.examples.dir}/data">
-			<fileset dir="${build.dir}/lib" includes="*.jar" />
-		</copy>
-		<copy todir="${dist.examples.dir}/bin">
-			<fileset file="${test.resources.dir}/bin/*" />
-		</copy>
-		<replace value="${hamake.version}-${release.number}" file="${dist.examples.dir}/bin/start-class-size-example.sh" token="#@hamake.version@" />
-
 	</target>
 
 	<target name="build.rpm" depends="dist">
@@ -210,9 +195,36 @@
 		</exec>
 	</target>
 
-	<target name="build-examples" depends="compile">
-		<mkdir dir="${dist.dir}/examples" />
-		<jar destfile="${dist.dir}/examples/hamake-examples-${hamake.version}-${release.number}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" excludes="com/codeminders/hamake/examples/DummyTestMapReduce**" />
+	<target name="dist.examples" depends="compile">
+		<property name="class-size-median.example.dist.dir" value="${dist.examples.dir}/class-size-median" />
+		<property name="class-size-median.example.dir" value="${examples.dir}/class-size-median" />
+		<mkdir dir="${class-size-median.example.dist.dir}" />
+		<mkdir dir="${class-size-median.example.dist.dir}/hamakefiles" />
+		<copy todir="${class-size-median.example.dist.dir}/hamakefiles">
+			<fileset dir="${class-size-median.example.dir}/hamakefiles">
+				<patternset includes="class-size*.xml" />
+			</fileset>
+		</copy>
+		<mkdir dir="${class-size-median.example.dist.dir}/scripts" />
+		<copy todir="${class-size-median.example.dist.dir}/scripts">
+			<fileset file="${class-size-median.example.dir}/scripts/median.pig" />
+		</copy>
+		<mkdir dir="${class-size-median.example.dist.dir}/data" />
+		<copy todir="${class-size-median.example.dist.dir}/data">
+			<fileset dir="${build.dir}/lib" includes="*.jar" />
+		</copy>
+		<mkdir dir="${class-size-median.example.dist.dir}/bin" />
+		<copy todir="${class-size-median.example.dist.dir}/bin">
+			<fileset file="${class-size-median.example.dir}/bin/*" />
+			<filterset begintoken="$${" endtoken="}">
+				<filtersfile file="${basedir}/build.properties" />
+			</filterset>
+		</copy>
+		<chmod perm="ugo+x" file="${class-size-median.example.dist.dir}/bin/run.sh" />
+		<copy todir="${class-size-median.example.dist.dir}">
+			<fileset file="${dist.dir}/hamake-${hamake.version}-${release.number}.jar" />
+		</copy>
+		<jar destfile="${class-size-median.example.dist.dir}/hamake-examples-${hamake.version}-${release.number}.jar" basedir="${build.dir}/classes" includes="com/codeminders/hamake/examples/**" excludes="com/codeminders/hamake/examples/DummyTestMapReduce**" />
 	</target>
 
 	<!-- ============================= TEST ====================================================== -->
@@ -257,7 +269,7 @@
 			<batchtest haltonfailure="no" todir="${test.build.dir}/test_report" fork="yes">
 				<fileset dir="${test.build.dir}/classes">
 					<include name="**/*Test*.class" />
-                                        <exclude name="**/*$*.class" />
+					<exclude name="**/*$*.class" />
 					<exclude name="**/com/codeminders/hamake/perfomance/**" />
 				</fileset>
 				<formatter type="xml" />
@@ -276,68 +288,7 @@
 		</junitreport>
 
 	</target>
-
-	<target name="examples.local" depends="dist">
-		<pathconvert targetos="unix" property="classpath.unix" refid="pig.classpath" />
-		<pathconvert targetos="windows" property="classpath.windows" refid="pig.classpath" />
-
-		<!--<delete dir="${test.build.dir}"/>-->
-		<mkdir dir="${test.build.dir}" />
-		<exec executable="hadoop" osfamily="unix">
-			<env key="HADOOP_CLASSPATH" path="${classpath.unix}" />
-			<arg value="jar" />
-			<arg value="${dist.dir}/hamake-${hamake.version}-${release.number}.jar" />
-			<arg value="-f" />
-			<arg value="file://${test.current.hamakefiles.dir}/class-size.xml" />
-			<arg value="-j" />
-			<arg value="1" />
-			<arg value="-v" />
-			<arg value="-w" />
-			<arg value="file://${basedir}" />
-
-		</exec>
-
-		<exec executable="hadoop.bat" osfamily="windows">
-			<env key="HADOOP_CLASSPATH" path="${classpath.windows}" />
-			<arg value="jar" />
-			<arg value="${dist.dir}/hamake-${hamake.version}-${release.number}.jar" />
-			<arg value="-f" />
-			<arg value="file:///${test.current.hamakefiles.dir}/class-size.xml" />
-			<arg value="-j" />
-			<arg value="1" />
-			<arg value="-v" />
-			<arg value="-w" />
-			<arg value="file:///${basedir}" />
-		</exec>
-
-	</target>
-
-	<target name="examples.distributed" depends="dist">
-		<pathconvert targetos="unix" property="classpath.unix" refid="pig.classpath" />
-		<pathconvert targetos="windows" property="classpath.windows" refid="pig.classpath" />
-
-		<!--<delete dir="${test.build.dir}"/>-->
-		<mkdir dir="${test.build.dir}" />
-		<exec executable="hadoop" osfamily="unix">
-			<env key="HADOOP_CLASSPATH" path="${classpath.unix}" />
-			<arg value="jar" />
-			<arg value="${dist.dir}/hamake-${hamake.version}-${release.number}.jar" />
-			<arg value="-f" />
-			<arg value="file://${test.current.hamakefiles.dir}/class-size.xml" />
-			<arg value="-v" />
-		</exec>
-
-		<exec executable="hadoop.bat" osfamily="windows">
-			<env key="HADOOP_CLASSPATH" path="${classpath.windows}" />
-			<arg value="jar" />
-			<arg value="${dist.dir}/hamake-${hamake.version}-${release.number}.jar" />
-			<arg value="-f" />
-			<arg value="file:///${test.current.hamakefiles.dir}/class-size.xml" />
-			<arg value="-v" />
-		</exec>
-
-	</target>
-
+	
 	<target name="all" depends="dist" description="build all" />
 
 	<!-- ============================= IVY ========================================================== -->

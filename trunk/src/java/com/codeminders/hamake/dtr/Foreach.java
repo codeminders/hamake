@@ -22,11 +22,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -158,9 +156,7 @@ public class Foreach extends DataTransformationRule {
 		LOG.info(getName() + ": Has " + inputlist.size() + " files to process");
 
 		Map<List<String>, List<Path>> inputPathsByOutputList = new HashMap<List<String>, List<Path>>();
-		int inputNumber = 0;
 		for(Path ipath : inputlist){
-			++inputNumber;
 			Context icontext = new Context(getContext());
 			icontext.setForbidden(FULL_FILENAME_VAR, ipath.toString());
 			icontext.setForbidden(SHORT_FILENAME_VAR, FilenameUtils.getName(ipath.toString()));
@@ -232,7 +228,6 @@ public class Foreach extends DataTransformationRule {
 				taskSemaphore = new Semaphore(parallelism);
 
 			int outputSetCount = 0;
-			int effectiveBatchSize = batchSize == 0 ? inputPathsByOutputList.size() : batchSize;
 			List<Path> inputPaths = new ArrayList<Path>();
 			List<String> fullFilenames = new ArrayList<String>();
 			List<String> shortFilenames = new ArrayList<String>();
