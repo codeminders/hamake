@@ -49,8 +49,8 @@ Email: vorl@codeminders.com}}
 
 Hadoop\cite{bialecki2005hadoop} is a popular  open-source implementation of MapReduce, a data processing model introduced by Google\cite{dean2008map}.
 
-Hadoop is typically used to process large amounts of data through series of relatively simple operations. Usually Hadoop jobs are I/O-bound
-\cite{hadoopattwitter, hs2010hadoopbench}, and execution of even
+Hadoop is typically used to process large amounts of data through a series of relatively simple operations. Usually Hadoop jobs are I/O-bound
+\cite{hadoopattwitter,hs2010hadoopbench}, and execution of even
 trivial operations on a large dataset could take significant system
 resources. This makes incremental processing especially important. Our initial
 inspiration was the Unix \emph{make} utility. While applying some of the ideas implemented by \emph{make} to Hadoop, we took the opportunity to generalize the processing model in terms of dataflow programming.
@@ -58,7 +58,7 @@ inspiration was the Unix \emph{make} utility. While applying some of the ideas i
 \textbf{Hamake} was developed in late 2008 to address the problem of
 incremental processing of large data sets in a collaborative filtering project.
 
-We've striven to create a easy to use utility that developers can
+We've striven to create an easy to use utility that developers can
 start using right away without complex installation or extensive
 learning curve. 
 
@@ -76,8 +76,8 @@ defines an operation which takes files as input and produces other
 files as output.
 
 If file \textit{A} is listed as input of a DTR, and file \textit{B}
-listed as output of the same DTR, it is said that \textit{``B depends
-  on A''}. \textbf{Hamake} uses file time stamps for dependency
+is listed as output of the same DTR, it is said that \textit{``B depends
+  on A.''} \textbf{Hamake} uses file time stamps for dependency
 up-to-date checks. DTR output is said to be \textit{up to date} if the minimum time stamp on all outputs is greater than or equal to the maximum timestamp on all inputs. For the sake of convenience, a user could arrange groups of files and folders into a \emph{fileset} which could later be referenced as the DTR's input or output.
 
 \textbf{Hamake} uses \textit{fuzzy timestamps}\footnote{The current stable
@@ -114,7 +114,7 @@ One useful consequence of \textbf{hamake} dataflow being a DAG is
 that for each vertex we can calculate the list of vertices it depends on directly and indirectly using simple \textit{transitive closure}. This allows us to easily estimate the part of a dataflow graph being affected by updating one or more files, which could be especially useful for datasets where the cost of re-calculation is potentially high due to data size or computational complexity. 
 
 \textbf{Hamake} is driven by dataflow description, expressed in a simple XML-based language. The full syntax is described in
-\cite{hamakesyntax}. The two main elements, \emph{fold} and \emph{foreach}, correspond to two types of DTRs. Each element has input, output, and processing instructions. The execution of processing instructions brings DTR output up to date. 
+\cite{hamakesyntax}. The two main elements, \emph{fold} and \emph{foreach}, correspond to two types of DTRs. Each element has input, output, and processing instructions. The execution of processing instructions brings the DTR output up to date. 
 
 \emph{Fold} implies a many-to-one dependency between input and output. In other words, the output depends on the entirety of the input, and if any of the inputs have been changed, the outputs need to be updated. \emph{Foreach} implies a one-to-one dependency where for each file in an input set there is a corresponding file in an output set, each updated independently.
 
@@ -155,14 +155,14 @@ in Figure~\ref{fig:foreach2}. In this case, we have an opportunity to execute th
 
 The Hadoop cluster capacity is defined in terms of the number of
 \textit{map slots} and \textit{reduce slots}. When a DTR launches a
-Hadoop job, either directly as defined by \emph{mapreduce} processing instruction or via PIG script, a single job will spawn one or more \emph{mapper} or \emph{reducer} tasks, each taking one respective slot. The number of mappers and reducers launched depends on many factors, such as size of the HDFS block, Hadoop cluster settings, and individual job settings. In general, \textbf{hamake} has neither visibility of nor control over most of these factors, so it does not currently  deal with individual tasks. Thus \textbf{hamake} parallel
+Hadoop job, either directly as defined by \emph{mapreduce} processing instruction or via PIG script, a single job will spawn one or more \emph{mapper} or \emph{reducer} tasks, each taking one respective slot. The number of mappers and reducers launched depends on many factors, such as the size of the HDFS block, Hadoop cluster settings, and individual job settings. In general, \textbf{hamake} has neither visibility of nor control over most of these factors, so it does not currently  deal with individual tasks. Thus \textbf{hamake} parallel
 execution logic is controlled by a command line option specifying how many jobs it may run in parallel.
 
 \section{Example}
 
 In a large, online library, the \textbf{hamake} utility can be used to automate searches for duplicates within a corpus of millions of digital text documents. Documents with slight differences due to OCR errors, typos, differences in formatting, or added material such as a foreword or publisher’s note can be found and reported.
  
-To illustrating \textbf{hamake} usage, consider the simple approach of using the \textit{Canopy clustering algorithm}\cite{efficientClustering} and a \textit{vector space model}\cite{manning2008introduction} based on word frequencies. The implementation could be split into a series of steps, each implemented as \textit{MapReduce job}:
+To illustrate \textbf{hamake} usage, consider the simple approach of using the \textit{Canopy clustering algorithm}\cite{efficientClustering} and a \textit{vector space model}\cite{manning2008introduction} based on word frequencies. The implementation could be split into a series of steps, each implemented as \textit{MapReduce job}:
 
 \begin{description}[\IEEEsetlabelwidth{\emph{FilterStopwords}}]
 \item[\emph{ExtractText}] Extract a plain text from native document format
@@ -174,7 +174,7 @@ To illustrating \textbf{hamake} usage, consider the simple approach of using the
   like \textit{a}, \textit{the}, and \textit{are}.
 \item[\emph{CalculateTF}]  Calculate a feature vector of term frequencies for each document.
 \item[\emph{FindSimilar}] Run \textit{Canopy clustering algorithm}
-  to group similar books into clusters using
+  to group similar documents into clusters using
   \textit{cosine distance} as a fast approximate distance metric. 
 \item[\emph{OutputResult}] Output document names, which are found in
   clusters with more than one element.
@@ -184,7 +184,7 @@ Each of the six MapReduce jobs produces an output file which
 depends on its input. For each document, these jobs must be invoked
 sequentially, as the output of one task is used as input of the next. Additionally, there is a configuration file containing a list of
 stop words, and some task outputs depend on this file content. These
-dependencies could be represented by a directed acyclic graph, as shown in Figure~\ref{fig:SimilarityAlgDAG}, with vertices representing documents and jobs assigned to edges. The XML file describing this dataflow in \textbf{hamake} language is shown as
+dependencies could be represented by a DAG, as shown in Figure~\ref{fig:SimilarityAlgDAG}, with vertices representing documents and jobs assigned to edges. The XML file describing this dataflow in \textbf{hamake} language is shown as
 Listing~\ref{hamakeFile}.
 
 \lstinputlisting[caption={\textit{hamakefile}, describing process for detecting duplicate documents}, label=hamakeFile]{sample.xml}
