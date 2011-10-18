@@ -29,89 +29,66 @@ Email: vorl@codeminders.com}}
 \begin{abstract}
   Most non-trivial data processing scenarios using Hadoop typically
   involve launching more than one MapReduce job. Usually, such
-  processing is data-driven, with the data funneled through a sequence
+  processing is data-driven with the data funneled through a sequence
   of jobs.  The processing model could be expressed in terms of
   dataflow programming, represented as a directed graph with datasets
   as vertices. Using \textit{fuzzy timestamps} as a way to detect
   which dataset needs to be updated, we can calculate a sequence in
-  which Hadoop jobs need to be launched to bring all datasets up to
+  which Hadoop jobs should be launched to bring all datasets up to
   date. Incremental data processing and parallel job execution fit
   well into this approach.
 
-  These ideas inspired the creation of the \textbf{hamake} utility. We
-  attempted to emphasize data and allowing the developer to formulate
-  his or her problem as a data flow (as opposed to the workflow
-  approach commonly used). \textbf{Hamake} language uses just two data
+  These ideas inspired the creation of the \textbf{hamake} utility.    We attempted to emphasize data allowing the developer to formulate
+  the problem as a data flow, in contrast to the workflow
+  approach commonly used. \textbf{Hamake} language uses just two data
   flow operators: \emph{fold} and \emph{foreach}, providing a clear
   processing model similar to MapReduce, but on a dataset level.
 \end{abstract}
 
-\section{Motivation and History}
+\section{Motivation and Background}
 
-MapReduce data processing model have been introduced by
-Google\cite{dean2008map}. Hadoop\cite{bialecki2005hadoop} is a popular
-open-source implementation of MapReduce.
+Hadoop\cite{bialecki2005hadoop} is a popular  open-source implementation of MapReduce, a data processing model introduced by Google\cite{dean2008map}.
 
-Hadoop is typically used to process big amounts of data via series of
-relatively simple operations. Usually Hadoop jobs are I/O-bound
+Hadoop is typically used to process large amounts of data through series of relatively simple operations. Usually Hadoop jobs are I/O-bound
 \cite{hadoopattwitter},\cite{hs2010hadoopbench}, and execution of even
 trivial operations on a large dataset could take significant system
-resources. This makes incremental processing important. Our initial
-inspiration was the Unix \emph{make} utility. While applying some of the same ideas implemented by \emph{make}
-to Hadoop, we took an opportunity to generalize the
-processing model in terms of dataflow programming.
+resources. This makes incremental processing especially important. Our initial
+inspiration was the Unix \emph{make} utility. While applying some of the ideas implemented by \emph{make} to Hadoop, we took the opportunity to generalize the processing model in terms of dataflow programming.
 
 \textbf{Hamake} was developed in late 2008 to address the problem of
-incremental processing of big data sets in a collaborative filtering
-project.
+incremental processing of large data sets in a collaborative filtering project.
 
-We've striven to create a simple-to-use utility that developers can
-start using right away without complex installation or an extensive
+We've striven to create a easy to use utility that developers can
+start using right away without complex installation or extensive
 learning curve. 
 
-\textbf{Hamake} is open source, distributed under Apache
+\textbf{Hamake} is open source and is distributed under Apache
 License v2.0. The project is hosted at Google Code at the following
 URL: \url{http://code.google.com/p/hamake/}.
 
 \section{Processing Model}
 
-\textbf{Hamake} operates on \textit{files}, residing on a local or
-distributed file system accessible from the Hadoop job (usually it is
-HDFS). Each file has a timestamp, reflecting the date and time of its
-last modification. A file system directory or folder is also a file,
-and has its own timestamp. A \textit{Data Transformation Rule (DTR)}
+\textbf{Hamake} operates on \textit{files} residing on a local or
+distributed file system accessible from the Hadoop job. Each file has a timestamp reflecting the date and time of its
+last modification. A file system directory or folder is also a file
+with its own timestamp. A \textit{Data Transformation Rule (DTR)}
 defines an operation which takes files as input and produces other
 files as output.
 
 If file \textit{A} is listed as input of a DTR, and file \textit{B}
 listed as output of the same DTR, it is said that \textit{``B depends
   on A''}. \textbf{Hamake} uses file time stamps for dependency
-up-to-date checks. DTR output is said to be \textit{up to date} if the
-minimum time stamp on all output is greater or equal to the maximum
-timestamp on all input. For the sake of convenience, a user could
-arrange groups of files and folders into a \emph{fileset} which later
-could be referenced as the DTR's input or output.
+up-to-date checks. DTR output is said to be \textit{up to date} if the minimum time stamp on all outputs is greater than or equal to the maximum timestamp on all inputs. For the sake of convenience, a user could arrange groups of files and folders into a \emph{fileset} which could later be referenced as the DTR's input or output.
 
-\textbf{Hamake} uses \textit{fuzzy timestamps}\footnote{Current stable
+\textbf{Hamake} uses \textit{fuzzy timestamps}\footnote{The current stable
   version of \textbf{hamake} uses exact (non-fuzzy) timestamps.}
-which could be compared, allowing for a certain margin or error. The
-``fuzziness'' is controlled by tolerance $\sigma$. Timestamp $a$ is
-considered to be older than timestamp $b$ if $(b-a)>\sigma$. Setting
-$\sigma=0$ gives us non-fuzzy, strict timestamp comparison.
+which can be compared, allowing for a slight margin of error. The
+``fuzziness'' is controlled by a tolerance of $\sigma$. Timestamp $a$ is considered to be older than timestamp $b$ if $(b-a)>\sigma$. Setting $\sigma=0$ gives us a non-fuzzy, strict timestamp comparison.
 
-\textbf{Hamake} attempts to ensure that all output from a DTR are up to
-date\footnote{\textbf{hamake} does not try to ensure that files which
-  are not listed as one of a DTR's output are up to date, because it has
-  no way to update them.}.  To do so, it builds a \textit{dependency
-  graph}. This graph has individual files or filesets as vertices and
-DTRs as edges. Below, we will show that this graph is guaranteed to be
-a \textit{Directed Acyclic Graph} (DAG).
+\textbf{Hamake} attempts to ensure that all outputs from a DTR are up to
+date\footnote{Because textbf{hamake} has no way to update them, it does not attempt to ensure that files are up to date, unless they are listed as one of a DTR's outputs.} To do so, it builds a \textit{dependency graph} with DTRs as edges and individual files or filesets as vertices. Below, we show that this graph is guaranteed to be a \textit{Directed Acyclic Graph} (DAG).
 
-After building a \textit{dependency graph}, a graph reduction algorithm (shown in Figure~\ref{fig:grred}) is
-executed. Step 1 makes use of Kahn's algorithm\cite{kahn1962topological} of
-topological ordering. In step 6, when the completed DTR is
-removed from the dependency graph, all edges pointing to it from other
-DTRs are also removed.
+After building a \textit{dependency graph}, a graph reduction algorithm (shown in Figure~\ref{fig:grred}) is executed. Step 1 uses Kahn's algorithm\cite{kahn1962topological} of topological ordering. In step 6, when the completed DTR is removed from the dependency graph, all edges pointing to it from other DTRs are also removed.
 
 \begin{figure}[htp]
 \centering
@@ -121,74 +98,40 @@ DTRs are also removed.
 \end{figure}
 
 The algorithm allows for parallelism. If more than one DTR without
-input dependencies is found during step 1, subsequent steps 2-6 could
-be executed in parallel for each discovered DTR.
+input dependencies is found during step 1, the subsequent steps 2-6 can be executed in parallel for each discovered DTR.
 
-It should be noted that if DTR exectuion has failed, \textbf{hamake} can
-and will continue to process other DTRs which do not depend directly or indirectly
-on the results of this DTR. This permits the user to fix problems later and
-re-run \textbf{hamake}, without the need to re-process all data, saving valuable time.
+It should be noted that if DTR exectuion has failed, \textbf{hamake} can and will continue to process other DTRs which do not depend directly or indirectly on the results of this DTR. This permits the user to fix problems later and re-run \textbf{hamake}, without the need to re-process all data.
 
 Cyclic dependencies must be avoided, because a dataflow containing
-such dependencies is not guaranteed to terminate. Implicit checks are
-performed during reading DAG definitions and building the dependency
-graph. If a cycle is detected, it is reported as an error. Thus the
-dependency graph used by \textbf{hamake} is ensured to be a
-\textit{directed acyclic graph}.
+such dependencies is not guaranteed to terminate. Implicit checks are performed during the reading of DAG definitions and the building of the dependency graph. If a cycle is detected, it is reported as an error. Thus the dependency graph used by \textbf{hamake} is assured to be a \textit{directed acyclic graph}.
 
-However \textbf{hamake} supports a limited scenario of iterative
-processing via a feature called \textit{generations}. Each input or
-output file has the option to be marked with a \emph{generation}
-attribute. Two files with different generation numbers while
-referencing the same path in the file system are treated as different
-vertices in the dependency graph. This allows for the resolution of cyclic dependencies
-in the context of a single \textbf{hamake} execution.
+However, \textbf{hamake} supports a limited scenario of iterative
+processing with a feature called \textit{generations}. Each input or
+output file can be marked with a \emph{generation}
+attribute. Any two files referencing the same path in the file system while having different generations are represented as two distinct vertices in the dependency graph. This permits resolution of cyclic dependencies within the context of a single \textbf{hamake} execution.
 
 One useful consequence of \textbf{hamake} dataflow being a DAG is
-that for each vertex we can calculate list of vertices it depends on,
-directly and indirectly using simple \textit{transitive closure}. On
-datasets, where the cost of re-calculation could be potentially high
-(due to data size or computational complexity) this allows us to estimate
-the scope of a dataflow graph affected by updating one or more files.
+that for each vertex we can calculate the list of vertices it depends on directly and indirectly using simple \textit{transitive closure}. This allows us to easily estimate the part of a dataflow graph being affected by updating one or more files, which could be especially useful for datasets where the cost of re-calculation is potentially high due to data size or computational complexity. 
 
-\textbf{Hamake} is driven by dataflow description, expressed in simple
-XML-based language. The full syntax is described in
-\cite{hamakesyntax}. The two main elements, \emph{fold} and \emph{foreach},
- correspond to two types of DTRs. Each have input,
-output and processing instruction. Executing processing instruction
-should bring DTR output up to date, compared to its
-input. \emph{Fold} implies a many-to-one dependency between input and
- output. In other words, output depends on the entirety of the input, and if
-any input has been changed, the output needs to be
-updated. \emph{Foreach} implies one-to-one dependency: where for each
-file in an input set there is a corresponding file in an output set, each updated independently.
+\textbf{Hamake} is driven by dataflow description, expressed in a simple XML-based language. The full syntax is described in
+\cite{hamakesyntax}. The two main elements, \emph{fold} and \emph{foreach}, correspond to two types of DTRs. Each element has input, output, and processing instructions. The execution of processing instructions brings DTR output up to date. 
 
-\textbf{Hamake} dataflow language has a declarative semantics. Keeping
-it purely declarative makes it easy to implement various dataflow
-analysis and optimization algorithms on top of it in the future. Some
-examples of such algorithms could be: merging dataflows, finding
-further execution parallelization opportunities, dataflow complexity
-analysis and estimation.
+\emph{Fold} implies a many-to-one dependency between input and output. In other words, the output depends on the entirety of the input, and if any of the inputs have been changed, the outputs need to be updated. \emph{Foreach} implies a one-to-one dependency where for each file in an input set there is a corresponding file in an output set, each updated independently.
+
+\textbf{Hamake} dataflow language has declarative semantics making it easy to implement various dataflow analysis and optimization algorithms in the future. Examples of such algorithms include: merging dataflows, further execution parallelization, and analysis and estimation of dataflow complexity.
 
 \section{Parallel Execution}
 
-While determining the sequence and launching Hadoop jobs required to
-bring all datasets up-to-date, \textbf{hamake} attempts to perform all
-required computations in the shortest possible time. To achieve this, it
-aims for maximal cluster utilization, running as many Hadoop jobs in
-parallel as cluster capacity permits.
+While determining the sequence and launching of Hadoop jobs required to bring all datasets up-to-date, \textbf{hamake} attempts to perform all required computations in the shortest possible time. To achieve this, \textbf{hamake} aims for maximal cluster utilization, running as many Hadoop jobs in parallel as cluster capacity permits.
 
-There are three main factors driving job scheduling logic: file
+There are three main factors that drive job scheduling logic: file
 timestamps, dependencies, and cluster computational capacity. On the
-highest level DTR dependencies determine the sequence of DTR jobs being
+highest level, DTR dependencies determine the sequence of jobs to be 
 launched.
 
 In the case of \emph{fold} DTR, a single Hadoop job, PIG script or
-shell command could be launched and hence there are not many
-opportunities for parallel execution. In the example shown in
-Figure~\ref{fig:fold2}, since fileset \textit{B} depends on all files
-in fileset \textit{A}, a single job associated with \emph{fold} DTR
-will be executed.
+shell command, may be launched, and hence there is no opportunity for parallel execution. In the example shown in
+Figure~\ref{fig:fold2}, since fileset \textit{B} depends on all files in fileset \textit{A}, a single job associated with \emph{fold} DTR will be executed.
 
 \begin{figure}[htp]
 \centering
@@ -200,9 +143,8 @@ will be executed.
 A \emph{foreach} DTR works by mapping individual files in fileset
 \textit{A} to files in fileset \textit{B}. Assuming that fileset
 \textit{A} consists of 3 files: \textit{$a_1$}, \textit{$a_2$},
-\textit{$a_3$} the the dependency graph could be represented as shown
-in Figure~\ref{fig:foreach2}. In this case we have an opportunity to
-execute three jobs in parallel.
+\textit{$a_3$}, the dependency graph could be represented as shown
+in Figure~\ref{fig:foreach2}. In this case, we have an opportunity to execute the three jobs in parallel.
 
 \begin{figure}[htp]
 \centering
@@ -213,100 +155,67 @@ execute three jobs in parallel.
 
 The Hadoop cluster capacity is defined in terms of the number of
 \textit{map slots} and \textit{reduce slots}. When a DTR launches a
-Hadoop job (either directly as defined by \emph{mapreduce} processing
-instruction or via PIG script), a single job will spawn one or more
-\emph{mapper} and \emph{reducer} tasks, each taking one respective
-slot. The number of mappers and reducers launched depends on many
-factors, such as size of the HDFS block, Hadoop cluster settings, and
-individual job settings. In general, \textbf{hamake} has neither
-visibility of nor control over most of these factors, so it currently
-does not deal with individual tasks. Thus \textbf{hamake} parallel
-execution logic is controlled by a command line option specifying how
-many jobs it is allowed run in parallel.
+Hadoop job, either directly as defined by \emph{mapreduce} processing instruction or via PIG script, a single job will spawn one or more \emph{mapper} or \emph{reducer} tasks, each taking one respective slot. The number of mappers and reducers launched depends on many factors, such as size of the HDFS block, Hadoop cluster settings, and individual job settings. In general, \textbf{hamake} has neither visibility of nor control over most of these factors, so it does not currently  deal with individual tasks. Thus \textbf{hamake} parallel
+execution logic is controlled by a command line option specifying how many jobs it may run in parallel.
 
 \section{Example}
 
-Let us consider a hypothetical example demonstrating \textbf{hamake}
-use. Imagine an online library containing digital copies of millions of
-books. Considering the size of such a library, it's hardly surprising that
-there are duplicated titles in it. Such duplicates may be caused by
-OCR errors, typos, differences in formatting, or added material such
-as a foreword or publisher information.
-
-For the purpose of illustrating \textbf{hamake} usage, we will
-consider the simple approach of using a \textit{vector space
-  model}\cite{manning2008introduction} based on word frequencies and
-\textit{Canopy clustering algorithm}\cite{efficientClustering}. The
-implementation could be split into a series of steps, each of them
-represented by a \textit{MapReduce job}:
+In a large, online library, the \textbf{hamake} utility can be used to automate searches for duplicates within a corpus of millions of digital text documents. Documents with slight differences due to OCR errors, typos, differences in formatting, or added material such as a foreword or publisher’s note can be found and reported.
+ 
+To illustrating \textbf{hamake} usage, consider the simple approach of using the \textit{Canopy clustering algorithm}\cite{efficientClustering} and a \textit{vector space model}\cite{manning2008introduction} based on word frequencies. The implementation could be split into a series of steps, each implemented as \textit{MapReduce job}:
 
 \begin{description}[\IEEEsetlabelwidth{\emph{FilterStopwords}}]
 \item[\emph{ExtractText}] Extract a plain text from native document format
   (e.g. PDF).
-\item[\emph{Tokenize}] Split plain text into a tokens, roughly
-  corresponding to words. Dealing with hyphens, compound words,
-  accents and diacritics, case-folding, stemming or lemmatization of
-  tokens, resulting in a list of normalized \text{tokens}.
-\item[\emph{FilterStopwords}] Filtering out \textit{stopwords} (e.g. words
-  like \textit{a}, \textit{the}, \textit{are}) from the list of
-  terms.
-\item[\emph{CalculateTF}] For each document calculate a feature
-  vector: a vector of term frequencies.
+\item[\emph{Tokenize}] Split plain text into tokens which roughly
+  correspond to words. Deal with hyphens, compound words,
+  accents, and diacritics, as well as case-folding, stemming, or lemmatization, resulting in a list of normalized \text{tokens}.
+\item[\emph{FilterStopwords}] Filter out \textit{stopwords}, 
+  like \textit{a}, \textit{the}, and \textit{are}.
+\item[\emph{CalculateTF}]  Calculate a feature vector of term frequencies for each document.
 \item[\emph{FindSimilar}] Run \textit{Canopy clustering algorithm}
-  for grouping similar books in clusters. Use
+  to group similar books into clusters using
   \textit{cosine distance} as a fast approximate distance metric. 
-\item[\emph{OutputResult}] Output book names, which are found in
-  clusters with more than one elements
+\item[\emph{OutputResult}] Output document names, which are found in
+  clusters with more than one element.
 \end{description}
 
-Each of the resulting six MapReduce jobs produces an output file which
-depends on its input. For each book, these jobs must be invoked
+Each of the six MapReduce jobs produces an output file which
+depends on its input. For each document, these jobs must be invoked
 sequentially, as the output of one task is used as input of the next. Additionally, there is a configuration file containing a list of
-stop words, and some tasks' output depend on this file content. These
-dependencies could be represented by a directed acyclic graph, shown in
-Figure~\ref{fig:SimilarityAlgDAG}, with vertices representing data
-files, and jobs assigned to edges. The XML file describing the
-dataflow in \textbf{hamake} language is show as
+stop words, and some task outputs depend on this file content. These
+dependencies could be represented by a directed acyclic graph, as shown in Figure~\ref{fig:SimilarityAlgDAG}, with vertices representing documents and jobs assigned to edges. The XML file describing this dataflow in \textbf{hamake} language is shown as
 Listing~\ref{hamakeFile}.
 
-\lstinputlisting[caption={\textit{hamakefile}, that describes process for
-  detecting similar books}, label=hamakeFile]{sample.xml}
+\lstinputlisting[caption={\textit{hamakefile}, describing process for detecting duplicate documents}, label=hamakeFile]{sample.xml}
 
-The first DTR (lines 10-25) converts a book from a native format such
+The first DTR (lines 10-25) converts a document from a native format such
 as PDF to plain text. The input of the DTR is a reference to the
 \emph{/doc} folder, and the output is the \emph{/txt} folder. The
-\emph{foreach} DTR establishes one-to-one dependency between files
-with the same names in these two folders. The Hadoop job which
+\emph{foreach} DTR establishes one-to-one dependencies between files
+with identical names in these two folders. The Hadoop job which
 performs the actual text extraction is defined using the \emph{mapreduce}
 element. It will be invoked by \textbf{hamake} for each unsatisfied
-file dependency. The job takes two parameters, defined with
-\emph{parameter} elements - a path to a book as the input, and a path to a
-file, where the plain text version should be written. The remaining five
-DTRs are defined in a similar manner.
+dependency. The job takes two parameters, defined with
+\emph{parameter} elements - a path to an original document as the input and a path to a file where the plain text version will be written. The remaining five DTRs are defined in a similar manner.
 
-\textbf{Hamake}, when launched with this XML dataflow definition, will
-perform graph reduction algorithm, shown in Figure~\ref{fig:grred} and
-will find first DTR to process. In our particular example, this is
-\emph{ExtractPlainText}. \textbf{Hamake} will launch corresponding
-Hadoop jobs first, and as soon as they are finished, it will execute
-DTRs which depend on the output of this DTR, and so on until all
-output files are up to date. As a result of this data flow, a file
-\emph{results.txt} with list of similar books will be generated.
+\textbf{Hamake}, when launched with this XML dataflow definition, will execute a graph reduction algorithm, as shown in Figure~\ref{fig:grred}, and will find the first DTR to process. In our example, this is
+\emph{ExtractPlainText}. First, \textbf{Hamake} will launch the  corresponding Hadoop job and immediately following, execute DTRs which depend on the output of this DTR, and so on until all output files are up to date. As a result of this data flow, a file named
+\emph{results.txt} with a list of similar documents will be generated.
 
-This data flow could be used for incremental processing. When new
-books are added, \textbf{hamake} will not re-run the following DTRs:
-\emph{ExtractText}, \emph{Tokenize}, \emph{FilterStopWords}, and
-\emph{CalculateTF} for previously processed books. However it will run
-these DTRs for newly added books, and then, will re-run
-\emph{FindSimilar} and \emph{OutputResults}.  If the list of stop
+This data flow could be used for incremental processing. 
+
+When new documents are added, \textbf{hamake} will refrain from running the following DTRs: \emph{ExtractText}, \emph{Tokenize}, \emph{FilterStopWords}, and \emph{CalculateTF} for previously processed documents. However, it will run those DTRs for newly added documents and then, re-run \emph{FindSimilar} and \emph{OutputResults}. 
+
+If the list of stop
 words has been changed, \textbf{hamake} will re-run only
-\emph{FilterStopWords} \emph{CalculateTF}, \emph{FindSimilar}, and
-\emph{OutputResults} DTRs.
+\emph{FilterStopWords}, \emph{CalculateTF}, \emph{FindSimilar}, and
+\emph{OutputResults}.
 
 \begin{figure}[htp]
 \centering
 \includegraphics[width=0.25\textwidth]{SimilarityAlgDAG.eps}
-\caption{Directed Acyclic Graph of a similar books detection data flow}
+\caption{Directed acyclic graph of a data flow for duplicate document detection}
 \label{fig:SimilarityAlgDAG}
 \end{figure}
 
@@ -317,56 +226,44 @@ Several workflow engines exist for Hadoop, such as
 \href{http://sna-projects.com/azkaban/}{Azkaban}, and
 \href{http://www.cascading.org/}{Cascading}.  Although all of these
 products could be used to solve similar problems, they differ
-significantly in design, philosophy, target user profile, usage
-scenarios, etc., limiting the usefulness of simple feature-wise
+significantly in design, philosophy, target user profile, and usage
+scenarios limiting the usefulness of a simple, feature-wise
 comparison.
 
 The most significant difference between these engines and \textbf{hamake}
 lies in the \textit{workflow} vs. \textit{dataflow} approach. All of them
 use the former, explicitly specifying dependencies between
-jobs. \textbf{Hamake}, on the other hand, uses dependencies between datasets
-to derive workflow. Both approaches have their advantages. One
-could argue that for some problems, the dataflow representation as used by
+jobs. \textbf{Hamake}, in contrast, uses dependencies between datasets to derive workflow. Both approaches have their advantages, but for some problems, the dataflow representation as used by
 \textbf{hamake} is more natural.
 
 \section{Future Directions}
 
-One possible \textbf{hamake} improvement may be developing better integration with
-Hadoop schedulers. For example, if \textit{Capacity Scheduler} or
-\textit{Fair Scheduler} is used, it would be useful for \textbf{hamake} to take into account
-information about its \textit{pools} or \textit{queues} capacities in a
-job scheduling algorithm.
+One possible \textbf{hamake} improvement may be better integration with Hadoop schedulers. For example, if \textit{Capacity Scheduler} or \textit{Fair Scheduler} is used, it would be useful for \textbf{hamake} to take information about scheduler \textit{pools} or \textit{queues} capacity into account in its job scheduling algorithm.
 
 More granular control over parallelism could be achieved if the
 \textbf{hamake} internal dependency graph for \emph{foreach} DTR
-contained individual files, not just filesets. For example, consider a
+contained individual files rather than just filesets. For example, consider a
 dataflow consisting of three filesets \textit{A}, \textit{B},
-\textit{C}, and two \emph{foreach} DTR's: \textit{$D_1$} mapping
-\textit{A} to \textit{B} and \textit{$D_2$} mapping \textit{B} to
+\textit{C}, and two \emph{foreach} DTR's: \textit{$D_1$}, mapping
+\textit{A} to \textit{B}, and \textit{$D_2$}, mapping \textit{B} to
 \textit{C}. File-level dependencies would allow some jobs to run from
 \textit{$D_2$} without waiting for all jobs in \textit{$D_1$} to
 complete.
 
-Another potential area of future extension is \textbf{hamake} dependency
+Another potential area of future extension is the \textbf{hamake} dependency
 mechanism. The current implementation uses a fairly simple timestamp
-comparison to check if dependency is satisfied. This could be
+comparison to check whether dependency is satisfied. This could be
 generalized, allowing the user to specify custom dependency check
-predicates, implemented either as plugins, scripts in some embedded
-scripting language or external programs. This would allow for
-decisions based not only on file meta data (such as timestamp) but
-also on its contents.
+predicates, implemented either as plugins, scripts 
+(in some embedded
+scripting languages), or external programs. This would allow for
+decisions based not only on file meta data, such as the timestamp, but also on its contents.
 
-Several \textbf{hamake} users have requested support of iterative computations
-with a termination condition. Possible use-cases calling for this type
-of usage are fixed-point computations, iterative regression, or
-clustering algorithms. Presently, to embed this kind of algorithm
-into \textbf{hamake}, dataflow requires the use of the \textit{generations} feature
-combined with external automation, invoking \textbf{hamake} repeatedly until
-certain exit conditions are satisfied. \textbf{Hamake} users could
-certainly benefit from native support for this kind of dataflow by
-\textbf{hamake}.
+Several \textbf{hamake} users have requested support for iterative computations with a termination condition. Possible use-cases include fixed-point computations and clustering or iterative regression algorithms. Presently, to embed this kind of algorithm into the \textbf{hamake} dataflow, it requires the use of the \textit{generations} feature combined with external automation, which invokes \textbf{hamake} repeatedly until a certain exit condition is satisfied. \textbf{Hamake} users could
+certainly benefit from native support for this kind of dataflow.
 
 \bibliography{hamake}
 \bibliographystyle{unsrt}
 
 \end{document}
+
