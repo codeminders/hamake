@@ -86,7 +86,7 @@ which can be compared, allowing for a slight margin of error. The
 ``fuzziness'' is controlled by a tolerance of $\sigma$. Timestamp $a$ is considered to be older than timestamp $b$ if $(b-a)>\sigma$. Setting $\sigma=0$ gives us a non-fuzzy, strict timestamp comparison.
 
 \textbf{Hamake} attempts to ensure that all outputs from a DTR are up to
-date\footnote{Because textbf{hamake} has no way to update them, it does not attempt to ensure that files are up to date, unless they are listed as one of a DTR's outputs.} To do so, it builds a \textit{dependency graph} with DTRs as edges and individual files or filesets as vertices. Below, we show that this graph is guaranteed to be a \textit{Directed Acyclic Graph} (DAG).
+date\footnote{Because \textbf{hamake} has no way to update them, it does not attempt to ensure that files are up to date, unless they are listed as one of a DTR's outputs.} To do so, it builds a \textit{dependency graph} with DTRs as edges and individual files or filesets as vertices. Below, we show that this graph is guaranteed to be a \textit{Directed Acyclic Graph} (DAG).
 
 After building a \textit{dependency graph}, a graph reduction algorithm (shown in Figure~\ref{fig:grred}) is executed. Step 1 uses Kahn's algorithm\cite{kahn1962topological} of topological ordering. In step 6, when the completed DTR is removed from the dependency graph, all edges pointing to it from other DTRs are also removed.
 
