@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="FindSimilarBooks">
+
+  <property name="lib" value="/lib/" />
+
+  <fileset id="input" path="/doc" mask="*.pdf" />
+  <file id="output" path="/result.txt" />
+
+  <foreach name="ExtractText">
+    <input>
+      <include idref="input" />
+    </input>
+    <output>
+      <file id="plainText" path="/txt/${foreach:filename}" />
+    </output>
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.TextExtractor">
+      <parameter>
+        <literal value="${foreach:path}" />
+      </parameter>
+      <parameter>
+        <reference idref="plainText" />
+      </parameter>
+    </mapreduce>
+  </foreach>
+
+  <foreach name="Tokenize">
+    <input>
+      <file id="plainText" path="/txt" />
+    </input>
+    <output>
+      <file id="tokens" path="/tokens/${foreach:filename}" />
+    </output>
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.Tokenizer">
+      ...
+    </mapreduce>
+  </foreach>
+
+  <foreach name="FilterStopWords">
+    <input>
+      <file id="stopWords" path="/stopwords.txt" />
+      <file id="tokens" path="/tokens" />
+    </input>
+    <output>
+      <file id="terms" path="/terms/${foreach:filename}" />
+    </output>
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.Tokenizer">
+      ...
+    </mapreduce>
+  </foreach>
+  
+  <foreach name="CalculateTF">
+    <input>
+      <file id="terms" path="/terms" />
+    </input>
+    <output>
+      <file id="TFVector" path="/TF" />
+    </output>
+    <mapreduce jar="${dist}/hadoopJobs.job" main="com.example.CalculateTF">
+      ...
+    </mapreduce>
+  </foreach>
+
+  <fold name="FindSimilar">
+    <input>
+      <file id="TFVector" path="/TF" />
+    </input>
+    <output>
+      <include idref="clustersList" path="/clusters"/>
+    </output>
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.Canopy">
+      ...
+    </mapreduce>
+  </fold>
+  
+  <fold name="OutputResult">
+    <input>
+      <file id="clustersList" path="/clusters" />
+    </input>
+    <output>
+      <include idref="output" />
+    </output>
+    <mapreduce jar="${lib}/hadoopJobs.job" main="com.example.OutputSimilarBooks">
+      ...
+    </mapreduce>
+  </fold>
+</project>
