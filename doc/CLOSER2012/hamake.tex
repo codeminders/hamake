@@ -38,24 +38,22 @@
 
 \keywords{hadoop, hamake, dataflow}
 
-\abstract{
-  Most non-trivial data processing scenarios using Hadoop typically
-  involve launching more than one MapReduce job. Usually, such
-  processing is data-driven with the data funneled through a sequence
-  of jobs.  The processing model could be expressed in terms of
-  dataflow programming, represented as a directed graph with datasets
-  as vertices. Using \textit{fuzzy timestamps} as a way to detect
-  which dataset needs to be updated, we can calculate a sequence in
-  which Hadoop jobs should be launched to bring all datasets up to
-  date. Incremental data processing and parallel job execution fit
-  well into this approach.
-  These ideas inspired the creation of the \textbf{hamake} utility.
-  We attempted to emphasize data allowing the developer to formulate
-  the problem as a data flow, in contrast to the workflow approach
-  commonly used. \textbf{Hamake} language uses just two data flow
-  operators: \emph{fold} and \emph{foreach}, providing a clear
-  processing model similar to MapReduce, but on a dataset level.
-}
+\abstract{Most non-trivial data processing scenarios using Hadoop
+  typically involve launching more than one MapReduce job. Usually,
+  such processing is data-driven with the data funneled through a
+  sequence of jobs.  The processing model could be expressed in terms
+  of dataflow programming, represented as a directed graph with
+  datasets as vertices. Using \textit{fuzzy timestamps} as a way to
+  detect which dataset needs to be updated, we can calculate a
+  sequence in which Hadoop jobs should be launched to bring all
+  datasets up to date. Incremental data processing and parallel job
+  execution fit well into this approach.  These ideas inspired the
+  creation of the hamake utility.  We attempted to emphasize data
+  allowing the developer to formulate the problem as a data flow, in
+  contrast to the workflow approach commonly used. Hamake language
+  uses just two data flow operators: \emph{fold} and \emph{foreach},
+  providing a clear processing model similar to MapReduce, but on a
+  dataset level.  }
 
 \onecolumn \maketitle \normalsize \vfill
 
@@ -63,11 +61,15 @@
 
 Hadoop\cite{bialecki2005hadoop} is a popular  open-source implementation of MapReduce, a data processing model introduced by Google\cite{dean2008map}.
 
-Hadoop is typically used to process large amounts of data through a series of relatively simple operations. Usually Hadoop jobs are I/O-bound
-\cite{hadoopattwitter,hs2010hadoopbench}, and execution of even
-trivial operations on a large dataset could take significant system
-resources. This makes incremental processing especially important. Our initial
-inspiration was the Unix \emph{make} utility. While applying some of the ideas implemented by \emph{make} to Hadoop, we took the opportunity to generalize the processing model in terms of dataflow programming.
+Hadoop is typically used to process large amounts of data through a
+series of relatively simple operations. Usually Hadoop jobs are
+I/O-bound \cite{hadoopattwitter,hs2010hadoopbench}, and execution of
+even trivial operations on a large dataset could take significant
+system resources. This makes incremental processing especially
+important. Our initial inspiration was the Unix \emph{make}
+utility. While applying some of the ideas implemented by \emph{make}
+to Hadoop, we took the opportunity to generalize the processing model
+in terms of dataflow programming.
 
 \textbf{Hamake} was developed in late 2008 to address the problem of
 incremental processing of large data sets in a collaborative filtering project.
