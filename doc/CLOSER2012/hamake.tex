@@ -244,11 +244,16 @@ used to solve similar problems, they differ significantly in design,
 philosophy, target user profile, and usage scenarios limiting the
 usefulness of a simple, feature-wise comparison.
 
-The most significant difference between these engines and \textbf{hamake}
-lies in the \textit{workflow} vs. \textit{dataflow} approach. All of them
-use the former, explicitly specifying dependencies between
-jobs. \textbf{Hamake}, in contrast, uses dependencies between datasets to derive workflow. Both approaches have their advantages, but for some problems, the dataflow representation as used by
-\textbf{hamake} is more natural.
+The most significant difference between these engines and
+\textbf{hamake} lies in the \textit{workflow} vs. \textit{dataflow}
+approach. All of them use the former, explicitly specifying
+dependencies between jobs. \textbf{Hamake}, in contrast, uses
+dependencies between datasets to derive workflow. Both approaches have
+their advantages, but for some problems, the dataflow representation
+as used by \textbf{hamake} is more natural.
+
+Kangaroo\cite{zhang2011kangaroo} is using similar data-flow DAG
+processing model, but not integrated with Hadoop.
 
 \section{\uppercase{Future Directions}}
 
