@@ -19,9 +19,9 @@ These ideas inspired the creation of **HAMAKE** utility. We tried emphasizing da
 To install Hamake simply copy hamake-x.x.jar to the directory of your choice and make sure that hadoop command is in your $PATH variable. We also provide RPM and DEB packages.
 
 # Documentation #
-  1. [QuickStart](https://github.com/vzaliva/hamake/blob/wiki/)
-  1. [HamakeFileSyntaxReference](https://github.com/vzaliva/hamake/blob/wiki/)
-  1. [FAQ](FAQ.md)
-  1. [Hamake Comparison With Other Hadoop Workflow Engines](HamakeComparisonWithOtherWorkflowEngines.md)
-  1. HamakeManual
+  1. [QuickStart](https://github.com/vzaliva/hamake/blob/wiki/QuickStart.md)
+  1. [HamakeFileSyntaxReference](https://github.com/vzaliva/hamake/blob/wiki/HamakeFileSyntaxReference.md)
+  1. [FAQ](https://github.com/vzaliva/hamake/blob/wiki/FAQ.md)
+  1. [Hamake Comparison With Other Hadoop Workflow Engines](https://github.com/vzaliva/hamake/blob/wiki/HamakeComparisonWithOtherWorkflowEngines.md)
+  1. [HamakeManual](https://github.com/vzaliva/hamake/blob/wiki/HamakeManual.md)
   1. [Whitepaper](http://hamake.googlecode.com/files/hamake_whitepaper.pdf)
