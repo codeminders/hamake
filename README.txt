@@ -1,1 +1,1 @@
-Please visit http://code.google.com/p/hamake/
+Please visit https://github.com/vzaliva/hamake
